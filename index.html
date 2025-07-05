@@ -75,12 +75,8 @@
 
 <script>
   function clickZoom(e) {
-    map.setView(e.target.getLatLng(),5);
+    map.panTo(e.target.getLatLng());
 }
-
-  marker.addEventListener("click", function (e){
-  map.panTo(this.getLatLng());
-});
   
   class Location {
     constructor(name, address, lat, lng, note) {

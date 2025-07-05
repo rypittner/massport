@@ -145,11 +145,26 @@
 
         bounds.push([loc.lat, loc.lng]);
       });
-
-        const Tucson = L.marker([32.263504320851, -110.925721303205], {zIndexOffset:1000}).addTo(map);
-  Tucson.addEventListener("click", function(e){
+      
+      var Tucson1 = L.marker([32.263504320851, -110.925721303205], {zIndexOffset:10000});
+      Tucson1.addEventListener("click", function(e){
   map.flyTo([32.263504320851, -110.925721303205],11,{duration:2});
   });
+
+var zoomCities = new L.FeatureGroup();
+
+zoomCities.addLayer(Tucson1);
+map.addLayer(zoomCities);
+
+map.on('zoom', function() {
+    if (map.getZoom() >6){
+            map.removeLayer(zoomCities);
+    }
+    else {
+            map.addLayer(zoomCities);
+        }
+});
+
 
     } catch (error) {
       console.error('Error loading locations:', error);

@@ -108,7 +108,7 @@
     map.setView([35, -100], 3);
     map.flyTo([35, -100], 4);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
       minZoom: 4,
     }).addTo(map);
 

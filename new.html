@@ -219,7 +219,7 @@
       marker.bindPopup(popupHTML, { maxWidth: 250, closeButton: false });
 
       marker.on('click', () => {
-        map.panTo(marker.getLatLng());
+        map.panTo([marker.getLatLng().lat + 3, marker.getLatLng().lng]);
 
         setTimeout(() => {
           const img = document.getElementById(uniqueImgId);

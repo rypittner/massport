@@ -211,7 +211,7 @@
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-      ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="${imgUrl}" alt="${name}">` : ''}
+      ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" alt="${name}">` : ''}
         <h2 class="heading">${name}</h2>
         <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ryan's MassPort</title>
+   <link rel="stylesheet" href="https://unpkg.com/photoswipe@5/dist/photoswipe.css">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+  <!-- Leaflet Fullscreen Plugin -->
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet" />
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/xT5k075d/icon-MARKER.png">
+  
+  <script type="module">
+  import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5/dist/photoswipe-lightbox.esm.js';
+
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '#my-gallery',
+    children: 'a',
+    pswpModule: () => import('https://unpkg.com/photoswipe@5/dist/photoswipe.esm.js')
+  });
+
+  lightbox.init();
+</script>
+
+  <style>
+      .pswp-gallery {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 10px;
+    }
+
+    .pswp-gallery a {
+      scroll-snap-align: center;
+      flex: 0 0 auto;
+      margin:0;
+      padding:0;
+    }
+
+    .pswp-gallery img {
+      max-height: auto;
+      cursor: pointer;
+      border-radius: 8px;
+      margin:0;
+            padding:0;
+    }
+      /* Remove Leaflet default popup padding/margin */
+    .leaflet-popup-content-wrapper,
+    .leaflet-popup-content {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .heading {
+      font-family: 'Yrsa', serif;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 500;
+    }
+
+    .popup-link {
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: #000000 !important;
+      text-decoration: underline;
+      display: inline-block;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+
+    .popup-link.no-note {
+      display: block;
+      margin-bottom: 1em;
+      padding-bottom: 1em;
+    }
+
+    .description {
+      font-family: 'Inter', sans-serif;
+      color: #000000 !important;
+      display: inline-block;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<!-- Fullscreen Plugin -->
+<script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+
+<script>
+  
+  class Location {
+    constructor(name, address, lat, lng, note) {
+      this.name = name;
+      this.address = address;
+      this.lat = parseFloat(lat);
+      this.lng = parseFloat(lng);
+      this.note = note;
+    }
+  }
+
+  async function fetchAndParseLocations(tsvUrl) {
+    const response = await fetch(tsvUrl);
+    const tsvText = await response.text();
+
+    const rows = tsvText.trim().split('\n');
+    const locations = rows.slice(1).map(row => {
+      const cols = row.split('\t');
+      const [name, address, lat, lng, note] = cols;
+      return new Location(name, address, lat, lng, note);
+    });
+
+    return locations;
+  }
+
+  async function initMap() {
+    const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?output=tsv';
+
+    const map = L.map('map',  {attributionControl:false, zoomControl:false});
+    map.toggleFullscreen();
+    map.setView([35, -100], 3);
+    map.flyTo([35, -100], 4);
+    L.control.zoom({
+    position: 'bottomright'
+}).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+      minZoom: 4,
+    }).addTo(map);
+
+    const icon = L.icon({
+      iconUrl: 'https://i.postimg.cc/xT5k075d/icon-MARKER.png',
+      shadowUrl: '',
+      iconSize: [30, 30],
+      shadowSize: [0, 0],
+      iconAnchor: [15, 30],
+      shadowAnchor: [0, 0],
+      popupAnchor: [0, -20]
+    });
+
+      const tucsonIcon = L.icon({
+      iconUrl: 'https://i.postimg.cc/BngHg85Q/tucson-ICON.png',
+      shadowUrl: '',
+      iconSize: [50, 50],
+      shadowSize: [0, 0],
+      iconAnchor: [25, 50],
+      shadowAnchor: [0, 0],
+      popupAnchor: [0, -20]
+    });
+        var val = 1;
+    try {
+
+      const locations = await fetchAndParseLocations(tsvUrl);
+      const bounds = [];
+
+      locations.forEach(loc => {
+                      val = val+1;
+
+        const hasNote = loc.note && loc.note.trim();
+        let popupHTML = `
+        <div class="popup-gallery" id="popup-gallery" style="width:300px; height:auto;">
+        <a href="https://cdn.photoswipe.com/photoswipe-demo-images/photos/3/img-2500.jpg"
+          data-pswp-width="1669" data-pswp-height="2500" target="_blank">
+          <img src="https://cdn.photoswipe.com/photoswipe-demo-images/photos/3/img-200.jpg" alt="Full Image" class="popup-image">
+        </a>
+      </div>
+  <div class="marginz"> <h2 class="heading">${loc.name}</h2>
+  <a class="popup-link${!hasNote ? ' no-note' : ''}" href="https://maps.google.com/?q=${encodeURIComponent(loc.name)}">${loc.address}</a>
+`;
+
+        if (hasNote) {
+          popupHTML += `<p class="description">${loc.note.trim()}</p>`;
+        }
+
+        const marker = L.marker([loc.lat, loc.lng], {icon: icon, zIndexOffset:val}).addTo(map);
+        marker.bindPopup(popupHTML, { maxWidth: 200, closeButton: false });
+        marker.addEventListener("click", function(e){
+        map.panTo(this.getLatLng());
+    });
+
+        bounds.push([loc.lat, loc.lng]);
+      });
+      
+      var Tucson1 = L.marker([32.1, -110.925721303205], {zIndexOffset:10000, icon:tucsonIcon});
+      Tucson1.addEventListener("click", function(e){
+  map.flyTo([32.263504320851, -110.925721303205],11,{duration:1.5});
+  });
+
+var zoomCities = new L.FeatureGroup();
+
+zoomCities.addLayer(Tucson1);
+map.addLayer(zoomCities);
+
+map.on('zoom', function() {
+    if (map.getZoom() >6){
+            map.removeLayer(zoomCities);
+    }
+    else {
+            map.addLayer(zoomCities);
+        }
+});
+
+
+    } catch (error) {
+      console.error('Error loading locations:', error);
+      alert('Failed to load or parse TSV.');
+    }
+  }
+
+
+  initMap();
+
+
+</script>
+
+</body>
+</html>

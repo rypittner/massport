@@ -96,7 +96,7 @@
     .modal-content {
       margin: auto;
       display: block;
-      width: 80%;
+      height: 80%;
       max-width: 700px;
             border-radius: 10px;
     }
@@ -109,6 +109,9 @@
       text-align: center;
       color: #ccc;
       padding: 10px 0;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      line-height: 1.4;
     }
 
     .close {
@@ -211,7 +214,7 @@
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-      ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" alt="${name}">` : ''}
+      ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" alt="${name} | ${city}">` : ''}
         <h2 class="heading">${name}</h2>
         <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         

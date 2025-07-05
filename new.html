@@ -212,7 +212,7 @@
       const popupHTML = `
       ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="${imgUrl}" alt="${name}">` : ''}
         <h2 class="heading">${name}</h2>
-        <a class="popup-link" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);

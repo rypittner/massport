@@ -109,7 +109,7 @@
     map.flyTo([35, -100], 4);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      minZoom: 3,
+      minZoom: 4,
     }).addTo(map);
 
     const icon = L.icon({
@@ -118,6 +118,16 @@
       iconSize: [30, 30],
       shadowSize: [0, 0],
       iconAnchor: [15, 30],
+      shadowAnchor: [0, 0],
+      popupAnchor: [0, -20]
+    });
+
+      const tucsonIcon = L.icon({
+      iconUrl: 'https://i.postimg.cc/BngHg85Q/tucson-ICON.png',
+      shadowUrl: '',
+      iconSize: [50, 50],
+      shadowSize: [0, 0],
+      iconAnchor: [25, 50],
       shadowAnchor: [0, 0],
       popupAnchor: [0, -20]
     });
@@ -146,9 +156,9 @@
         bounds.push([loc.lat, loc.lng]);
       });
       
-      var Tucson1 = L.marker([32.263504320851, -110.925721303205], {zIndexOffset:10000});
+      var Tucson1 = L.marker([32.1, -110.925721303205], {zIndexOffset:10000, icon:tucsonIcon});
       Tucson1.addEventListener("click", function(e){
-  map.flyTo([32.263504320851, -110.925721303205],11,{duration:2});
+  map.flyTo([32.263504320851, -110.925721303205],11,{duration:1.5});
   });
 
 var zoomCities = new L.FeatureGroup();

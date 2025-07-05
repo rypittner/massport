@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+ <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script> 
+     
+<script src='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css' rel='stylesheet' />
+     
+  <style>
+  .heading{
+  font-family: 'Yrsa', serif;
+  font-size:24px;
+  line-height:1;
+  font-weight: 500;
+  margin-bottom:10px;}
+
+  .popup-link {
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+    color: #000000 !important;
+    text-decoration: underline;
+    display: inline-block;
+    margin-bottom:0px;
+    font-weight: 400;
+    letter-spacing:0.3px;
+    line-height:1.4;
+  }
+  
+  .description{
+  margin-top:0;
+    font-family: 'Inter', sans-serif;
+    color: #000000 !important;
+    display: inline-block;
+      font-weight: 600;
+            letter-spacing:0.3px;
+                line-height:1.4;}
+                
+                body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }
+                
+}
+  </style>
+  
+<head>
+<title>Page Title</title>
+</head>
+<body>
+ <div id="map"></div>
+<script>
+
+// Create a new map with a fullscreen button:
+
+
+	const map = L.map('map').setView([35, -100], 4);
+    
+    
+
+
+	const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+    
+    var icon = L.icon({
+    iconUrl: 'https://i.postimg.cc/xT5k075d/icon-MARKER.png',
+    shadowUrl: 'leaf-shadow.png',
+
+    iconSize:     [30, 30], // size of the icon
+    shadowSize:   [0, 0], // size of the shadow
+    iconAnchor:   [0, 0], // point of the icon which will correspond to marker's location
+    shadowAnchor: [0, 0],  // the same for the shadow
+    popupAnchor:  [15, 0] // point from which the popup should open relative to the iconAnchor
+});
+    
+L.marker([38.9895325, -105.115713], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">El Tesoro de los Angeles Retreat Center</h2> <a class="popup-link" href="https://maps.google.com/?q=El Tesoro de los Angeles Retreat Center">238 Blossom Rd, Woodland Park, CO 80863, USA</a><p class="description">Freedom Project Weekend, March 27-30, 2025</p>`, { maxWidth: 200, closeButton:false});
+L.marker([34.8187636, -83.503174], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St Mary's Chapel - Camp Covecrest</h2> <a class="popup-link" href="https://maps.google.com/?q=St Mary's Chapel - Camp Covecrest">126 R V Ln, Tiger, GA 30576, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([34.0244402, -84.1016985999999], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Catholic Church of St. Monica</h2> <a class="popup-link" href="https://maps.google.com/?q=Catholic Church of St. Monica">1700 Buford Hwy, Duluth, GA 30097, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([32.3001978, -110.8976597], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Thomas the Apostle Roman Catholic Parish</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Thomas the Apostle Roman Catholic Parish">5150 N Valley View Rd, Tucson, AZ 85718, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.2477416, -96.0221296], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. John Paul II Newman Center</h2> <a class="popup-link" href="https://maps.google.com/?q=St. John Paul II Newman Center">1221 S 71st St, Omaha, NE 68106, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.2508005, -96.0465334], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Christ the King Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Christ the King Catholic Church">654 S 86th St, Omaha, NE 68114, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.6629187, -96.9243667], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Our Lady of Schoenstatt Shrine Cor Mariae</h2> <a class="popup-link" href="https://maps.google.com/?q=Our Lady of Schoenstatt Shrine Cor Mariae">340 NE-103, Crete, NE 68333, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.8614443, -96.7361688], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">North American Martyrs Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=North American Martyrs Catholic Church">1101 Isaac Dr, Lincoln, NE 68521, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([32.897155, -105.958435], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Immaculate Conception Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Immaculate Conception Catholic Church">705 Delaware Ave, Alamogordo, NM 88310, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([32.4217441, -104.2331142], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St Edward Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=St Edward Catholic Church">205 N Guadalupe St, Carlsbad, NM 88220, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([43.3177019, 11.3289071], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Siena Cathedral</h2> <a class="popup-link" href="https://maps.google.com/?q=Siena Cathedral">Piazza del Duomo, 8, 53100 Siena SI, Italy</a>`, { maxWidth: 200, closeButton:false});
+L.marker([43.3201297, 11.3264507], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Basilica Cateriniana San Domenico</h2> <a class="popup-link" href="https://maps.google.com/?q=Basilica Cateriniana San Domenico">Piazza S. Domenico, 1, 53100 Siena SI, Italy</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.9021666999999, 12.4539367], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Peter’s Basilica</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Peter’s Basilica">Piazza San Pietro, 00120 Città del Vaticano, Vatican City</a>`, { maxWidth: 200, closeButton:false});
+L.marker([38.642345, -90.2547832], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">The Cathedral Basilica of St. Louis</h2> <a class="popup-link" href="https://maps.google.com/?q=The Cathedral Basilica of St. Louis">4431 Lindell Blvd, St. Louis, MO 63108, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([35.9891981, -105.9317274], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Santuario de Chimayo</h2> <a class="popup-link" href="https://maps.google.com/?q=Santuario de Chimayo">15 Santuario Dr, Chimayo, NM 87522, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([35.6856277, -105.9374917], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">The Loretto Chapel</h2> <a class="popup-link" href="https://maps.google.com/?q=The Loretto Chapel">207 Old Santa Fe Trail, Santa Fe, NM 87501, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([33.5838126, -84.0680118], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Monastery of The Holy Spirit</h2> <a class="popup-link" href="https://maps.google.com/?q=Monastery of The Holy Spirit">2625 GA-212 SW, Conyers, GA 30094, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([39.5751607, -95.1111217], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Benedict's Abbey</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Benedict's Abbey">1020 N 2nd St Abbey, Atchison, KS 66002, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.266379, -95.9719054999999], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Cecilia Cathedral</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Cecilia Cathedral">701 N 40th St, Omaha, NE 68131, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.0751506, -96.2782321999999], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Holy Family Shrine</h2> <a class="popup-link" href="https://maps.google.com/?q=Holy Family Shrine">23132 Pflug Rd, Gretna, NE 68028, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([41.7752981, -88.1449379], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saints Peter and Paul Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Saints Peter and Paul Catholic Church">36 N Ellsworth St, Naperville, IL 60540, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([45.4292964, -84.9906611999999], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Holy Childhood of Jesus Catholic Church, Harbor Springs</h2> <a class="popup-link" href="https://maps.google.com/?q=Holy Childhood of Jesus Catholic Church, Harbor Springs">150 W Main St, Harbor Springs, MI 49740, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([45.5516221, -85.1153145], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Ignatius Catholic Church at Good Hart</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Ignatius Catholic Church at Good Hart">101 N Lamkin Rd, Harbor Springs, MI 49740, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([32.8439012, -117.2733651], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Mary, Star of the Sea Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Mary, Star of the Sea Catholic Church">7669 Girard Ave, La Jolla, CA 92037, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([45.267933, -111.293569], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Big Sky Chapel</h2> <a class="popup-link" href="https://maps.google.com/?q=Big Sky Chapel">510 Little Coyote Rd, Big Sky, MT 59716, USA</a><p class="description">Visited for FOCUS Summer Projects 2023, Yellowstone Club</p>`, { maxWidth: 200, closeButton:false});
+L.marker([37.689701, -112.1541243], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Dominic Chapel</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Dominic Chapel">Bryce Canyon City, UT 84764, USA</a><p class="description">Visited for Bryce Canyon Retreat with University of Utah</p>`, { maxWidth: 200, closeButton:false});
+L.marker([40.7248442, -111.8776323], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Ann Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Ann Catholic Church">450 E 2100 S, Salt Lake City, UT 84115, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.727497, -111.82454], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Ambrose Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Ambrose Catholic Church">2315 E Redondo Ave, Salt Lake City, UT 84108, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.7696583, -111.8817207], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Cathedral of the Madeleine</h2> <a class="popup-link" href="https://maps.google.com/?q=Cathedral of the Madeleine">331 E S Temple St, Salt Lake City, UT 84111, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([37.8654609, -122.2534217], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Newman Hall-Holy Spirit Parish</h2> <a class="popup-link" href="https://maps.google.com/?q=Newman Hall-Holy Spirit Parish">2700 Dwight Way, Berkeley, CA 94704, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([33.642839, -117.5832561], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">San Francisco Solano Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=San Francisco Solano Catholic Church">22082 Antonio Pkwy, Rancho Santa Margarita, CA 92688, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([33.5912548, -117.6614687], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Kilian Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Kilian Church">26872 Estanciero Dr, Mission Viejo, CA 92691, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([30.5014620999999, -97.6886902], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint William Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint William Catholic Church">620 Round Rock W Dr, Round Rock, TX 78681, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.8160956, -96.6977819999999], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Newman Center – St. Thomas Aquinas Church</h2> <a class="popup-link" href="https://maps.google.com/?q=Newman Center – St. Thomas Aquinas Church">320 N 16th St, Lincoln, NE 68508, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([40.8095492, -96.7008374], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Saint Mary's Catholic Church, Lincoln</h2> <a class="popup-link" href="https://maps.google.com/?q=Saint Mary's Catholic Church, Lincoln">1420 K St, Lincoln, NE 68508, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([45.3721183, -84.9553066], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Francis Xavier Catholic Church, Petoskey</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Francis Xavier Catholic Church, Petoskey">513 Howard St, Petoskey, MI 49770, USA</a><p class="description">Visited at FOCUS Summer Projects 2022, Boyne Mountain</p>`, { maxWidth: 200, closeButton:false});
+L.marker([42.1573720999999, -88.3980869], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Mary Catholic Church</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Mary Catholic Church">10307 Dundee-Huntley Rd, Huntley, IL 60142, USA</a><p class="description">June 28, 2025 ⋆ Nuptial Mass uniting Tyler and Kaylee Pondel</p>`, { maxWidth: 200, closeButton:false});
+L.marker([40.7586117, -73.9761953], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">St. Patrick's Cathedral</h2> <a class="popup-link" href="https://maps.google.com/?q=St. Patrick's Cathedral">5th Ave, New York, NY 10022, USA</a>`, { maxWidth: 200, closeButton:false});
+L.marker([45.8502451, -84.6114843], {icon: icon}).addTo(map).bindPopup(`<h2 class="heading">Sainte Anne's Catholic Church, Mackinac Island</h2> <a class="popup-link" href="https://maps.google.com/?q=Sainte Anne's Catholic Church, Mackinac Island">Main St, Mackinac Island, MI 49757, USA</a>`, { maxWidth: 200, closeButton:false});
+
+</script>
+
+</body>
+</html>

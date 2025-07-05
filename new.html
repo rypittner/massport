@@ -75,7 +75,7 @@
     }
 
     .popup-image {
-      border-radius: 5px;
+      border-radius: 10px 10px 0px 0px;
       cursor: pointer;
       width: 100%;
       max-width: 300px;
@@ -98,6 +98,7 @@
       display: block;
       width: 80%;
       max-width: 700px;
+            border-radius: 10px;
     }
 
     #caption {
@@ -148,12 +149,14 @@
 
 <script>
   class Location {
-    constructor(name, address, lat, lng, note) {
+    constructor(name, address, city, lat, lng, note, imgUrl) {
       this.name = name;
       this.address = address;
+      this.city = city;
       this.lat = parseFloat(lat);
       this.lng = parseFloat(lng);
       this.note = note;
+      this.imgUrl = imgUrl;
     }
   }
 
@@ -163,13 +166,13 @@
 
     const rows = tsvText.trim().split('\n');
     return rows.slice(1).map((row) => {
-      const [name, address, lat, lng, note] = row.split('\t');
-      return new Location(name, address, lat, lng, note);
+      const [name, address, city, lat, lng, note, imgUrl] = row.split('\t');
+      return new Location(name, address, city, lat, lng, note, imgUrl);
     });
   }
 
   async function initMap() {
-    const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?output=tsv';
+    const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?gid=575250179&single=true&output=tsv';
 
     const map = L.map('map', { attributionControl: false, zoomControl: false });
     map.setView([35, -100], 4);
@@ -202,14 +205,15 @@
       const uniqueImgId = `popup-img-${index}`;
       const name = loc.name;
       const address = loc.address;
+      const city = loc.city;
       const hasNote = loc.note && loc.note.trim();
+      const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-        <img id="${uniqueImgId}" class="popup-image" src="https://newsroom.churchofjesuschrist.org/media/960x720/pb-series-temples-2.jpg" alt="${name}">
+      ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="${imgUrl}" alt="${name}">` : ''}
         <h2 class="heading">${name}</h2>
-        <a class="popup-link" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${address}</a>
-        ${hasNote ? `<p class="description">${loc.note}</p>` : ''}
-      `;
+        <a class="popup-link" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+        
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);
       marker.bindPopup(popupHTML, { maxWidth: 250, closeButton: false });

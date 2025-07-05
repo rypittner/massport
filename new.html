@@ -200,12 +200,14 @@
 
     locations.forEach((loc, index) => {
       const uniqueImgId = `popup-img-${index}`;
+      const name = loc.name;
+      const address = loc.address;
       const hasNote = loc.note && loc.note.trim();
 
       const popupHTML = `
-        <img id="${uniqueImgId}" class="popup-image" src="https://newsroom.churchofjesuschrist.org/media/960x720/pb-series-temples-2.jpg" alt="${loc.name}">
-        <h2 class="heading">${loc.name}</h2>
-        <a class="popup-link" href="https://maps.google.com/?q=${encodeURIComponent(loc.name)}">${loc.address}</a>
+        <img id="${uniqueImgId}" class="popup-image" src="https://newsroom.churchofjesuschrist.org/media/960x720/pb-series-temples-2.jpg" alt="${name}">
+        <h2 class="heading">${name}</h2>
+        <a class="popup-link" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${address}</a>
         ${hasNote ? `<p class="description">${loc.note}</p>` : ''}
       `;
 

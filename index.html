@@ -110,7 +110,6 @@
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 3,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
     const icon = L.icon({
@@ -147,6 +146,11 @@
         bounds.push([loc.lat, loc.lng]);
       });
 
+        const Tucson = L.marker([32.263504320851, -110.925721303205], {zIndexOffset:1000}).addTo(map);
+  Tucson.addEventListener("click", function(e){
+  map.flyTo([32.263504320851, -110.925721303205],11,{duration:2});
+  });
+
     } catch (error) {
       console.error('Error loading locations:', error);
       alert('Failed to load or parse TSV.');
@@ -155,6 +159,7 @@
 
 
   initMap();
+
 
 </script>
 

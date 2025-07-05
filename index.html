@@ -74,6 +74,10 @@
 <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
 
 <script>
+  function clickZoom(e) {
+    map.setView(e.target.getLatLng(),5);
+}
+  
   class Location {
     constructor(name, address, lat, lng, note) {
       this.name = name;
@@ -137,6 +141,7 @@
 
         const marker = L.marker([loc.lat, loc.lng], {icon: icon}).addTo(map);
         marker.bindPopup(popupHTML, { maxWidth: 200, closeButton: false });
+        marker.on('click', clickZoom);
 
         bounds.push([loc.lat, loc.lng]);
       });

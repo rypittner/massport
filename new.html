@@ -175,9 +175,9 @@
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?gid=575250179&single=true&output=tsv';
 
     const map = L.map('map', { attributionControl: false, zoomControl: false });
-	map.setView([35, -100], 4);
-	map.flyTo([35, -100], 4);
-	map.toggleFullscreen();
+	map.setView([35, -100], 3);
+    map.flyTo([35, -100], 4);
+    map.toggleFullscreen();
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -213,7 +213,7 @@
       const popupHTML = `
       ${imgUrl ? `<img id="${uniqueImgId}" class="popup-image" src="${imgUrl}" alt="${name}">` : ''}
         <h2 class="heading">${name}</h2>
-        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);

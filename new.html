@@ -175,8 +175,9 @@
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?gid=575250179&single=true&output=tsv';
 
     const map = L.map('map', { attributionControl: false, zoomControl: false });
-    map.setView([35, -100], 4);
-    map.toggleFullscreen();
+	map.setView([35, -100], 4);
+	map.flyTo([35, -100], 4);
+	map.toggleFullscreen();
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 

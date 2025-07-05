@@ -74,9 +74,6 @@
 <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
 
 <script>
-  function clickZoom(e) {
-    map.panTo(e.target.getLatLng());
-}
   
   class Location {
     constructor(name, address, lat, lng, note) {
@@ -105,9 +102,11 @@
   async function initMap() {
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?output=tsv';
 
-    const map = L.map('map',  {attributionControl:false}).setView([35, -100], 4);
+    const map = L.map('map',  {attributionControl:false});
     map.addControl(new L.Control.Fullscreen());
     map.toggleFullscreen();
+    map.setView([35, -100], 3);
+    map.flyTo([35, -100], 4);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       minZoom: 3,
@@ -141,7 +140,9 @@
 
         const marker = L.marker([loc.lat, loc.lng], {icon: icon}).addTo(map);
         marker.bindPopup(popupHTML, { maxWidth: 200, closeButton: false });
-        marker.on('click', clickZoom);
+        marker.addEventListener("click", function(e){
+        map.panTo(this.getLatLng());
+    });
 
         bounds.push([loc.lat, loc.lng]);
       });
@@ -152,7 +153,9 @@
     }
   }
 
+
   initMap();
+
 </script>
 
 </body>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Keeley's MassPort</title>
+  <title>Ryan's MassPort</title>
 
   <!-- Leaflet CSS -->
   
@@ -268,6 +268,7 @@
 
   async function initMap() {
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRK8hfoJr8iHOLmpl7D4q9nIlxLUtdIjpc741LNOmJBpqhXasrZzkvGJzEvxuErz3-R-bzvZa3Tt9Ei/pub?gid=505183679&single=true&output=tsv';
+
     const map = L.map('map', { attributionControl: false, zoomControl: false });
 	map.setView([35, -100], 3);
     map.flyTo([35, -100], 4);
@@ -363,7 +364,7 @@ left: -20%;">
 right: -20%;">
 <span class="material-symbols-rounded">chevron_forward</span></button>
 ${imgUrl ? `<div class="croppedDiv">
-<img id="${uniqueImgId}" src="${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
+<img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
   </div>` : ''}
 <h2 class="heading">${name}</h2>
 <a class="popup-link" target="_blank" href="${searchLink}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;

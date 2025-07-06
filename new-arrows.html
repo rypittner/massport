@@ -363,31 +363,12 @@ function showMarker(index) {
   marker.openPopup();
 
   // Zoom logic based on city name
-  if (location.city.toLowerCase().includes(", az") || location.city.toLowerCase().includes(", ut")) {
+  if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){
   map.setZoom(11, { duration: 1.2 });
-  } else {
-    map.setZoom(4, { duration: 1.2 });
   }
 }
     
-
     if (markers.length > 0) showMarker(0);
-    
-
-    const Tucson1 = L.marker([32.1, -110.925721303205], { zIndexOffset: 10000, icon: tucsonIcon });
-    Tucson1.on("click", () => map.flyTo([32.263504320851, -110.925721303205], 11, { duration: 1.5 }));
-
-    const zoomCities = new L.FeatureGroup();
-    zoomCities.addLayer(Tucson1);
-    map.addLayer(zoomCities);
-
-    map.on('zoom', () => {
-      if (map.getZoom() > 6) {
-        map.removeLayer(zoomCities);
-      } else {
-        map.addLayer(zoomCities);
-      }
-    });
   }
 
   initMap();

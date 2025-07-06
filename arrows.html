@@ -43,6 +43,7 @@
       width: 100%; height: 100%; object-fit: cover; object-position: center;
       display: block; filter: blur(4px); transition: opacity 0.3s, filter 0.3s;
       opacity: 0; cursor: pointer;
+      touch-action: manipulation; /* enable tap */
     }
     .croppedDiv img.loaded {
       opacity: 1; filter: blur(0);
@@ -54,6 +55,8 @@
     .modal-content {
       margin: auto; display: block; height: 80%; max-width: 700px;
       border-radius: 10px;
+      touch-action: manipulation; /* enable tap */
+      cursor: zoom-out; /* show pointer */
     }
     #caption {
       margin: auto; display: block; width: 80%; max-width: 700px;
@@ -62,6 +65,7 @@
     }
     .close {
       position: absolute; top: 15px; right: 35px; cursor: pointer; z-index: 10001;
+      user-select: none;
     }
     /* Updated close button style: white text, no background, no padding, no border-radius */
     .close .material-icons-round {
@@ -83,20 +87,27 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
       display: flex; align-items: center; justify-content: center;
       z-index: 10000; transition: background-color 0.3s ease;
+      touch-action: manipulation; /* enable tap on mobile */
     }
     .arrow-btn:hover { background-color: rgba(220,220,220,0.95); }
     #backBtn { left: 10px; }
     #forwardBtn { right: 10px; }
+    /* Ensure arrows are visible on all screen sizes */
+    @media (max-width: 600px) {
+      .arrow-btn {
+        display: flex !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
-  <button id="backBtn" class="arrow-btn" aria-label="Previous location">
+  <button id="backBtn" class="arrow-btn" aria-label="Previous location" tabindex="0">
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2">
       <polyline points="15 18 9 12 15 6"/>
     </svg>
   </button>
-  <button id="forwardBtn" class="arrow-btn" aria-label="Next location">
+  <button id="forwardBtn" class="arrow-btn" aria-label="Next location" tabindex="0">
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2">
       <polyline points="9 18 15 12 9 6"/>
     </svg>
@@ -137,7 +148,7 @@
 
   function centerMarker(loc, map) {
     const offsetX = 0;
-    const offsetY = -100; // negative to move marker UP on screen
+    const offsetY = -100; // negative to move marker UP on screen vertically
     const targetPoint = map.project([loc.lat, loc.lng], map.getZoom()).subtract([offsetX, offsetY]);
     const targetLatLng = map.unproject(targetPoint, map.getZoom());
     map.panTo(targetLatLng);
@@ -151,7 +162,8 @@
       } else {
         img.onload = () => img.classList.add('loaded');
       }
-      img.onclick = () => {
+      // add click and touchstart for mobile
+      img.onclick = img.ontouchstart = () => {
         modal.style.display = "block";
         modal.setAttribute("aria-hidden", "false");
         modalImg.src = img.src;
@@ -193,6 +205,8 @@
       captionText.innerText = "";
     };
     document.querySelector(".close").onclick = closeModal;
+    // also allow closing modal on touchstart for mobile close button
+    document.querySelector(".close").ontouchstart = closeModal;
 
     const popupIds = [];
 
@@ -200,7 +214,7 @@
       const uniqueImgId = `popup-img-${index}`;
       popupIds.push(uniqueImgId);
 
-      // Correct raw GitHub URL (main branch)
+      // Use main branch raw URL for GitHub images
       const imageSrc = `https://raw.githubusercontent.com/rypittner/massport/main/${loc.imgUrl}`;
 
       const popupHTML = `${loc.imgUrl && loc.imgUrl.trim() ? `
@@ -251,8 +265,14 @@
     document.getElementById('backBtn').onclick = () => {
       showMarker((currentIndex - 1 + markers.length) % markers.length);
     };
+    document.getElementById('backBtn').ontouchstart = () => {
+      showMarker((currentIndex - 1 + markers.length) % markers.length);
+    };
 
     document.getElementById('forwardBtn').onclick = () => {
+      showMarker((currentIndex + 1) % markers.length);
+    };
+    document.getElementById('forwardBtn').ontouchstart = () => {
       showMarker((currentIndex + 1) % markers.length);
     };
 

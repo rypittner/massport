@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Keeley's MassPort</title>
+
+  <!-- Leaflet CSS -->
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=chevron_backward,chevron_forward, close_small" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+  <!-- Leaflet Fullscreen Plugin -->
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet" />
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/xT5k075d/icon-MARKER.png">
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.css" rel="stylesheet">
+
+  <style>
+    html, body, #map {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    .leaflet-popup-content-wrapper, .leaflet-popup-content {
+      padding: 0 !important;
+      margin: 0 !important;
+      width: auto !important;
+      padding-bottom: 12px !important;
+      overflow-x: hidden !important;
+    }
+
+    h2, p {
+      padding: 0 20px;
+      margin: 0 !important;
+    }
+
+    .heading {
+      font-family: 'Yrsa', serif;
+      font-size: 24px;
+      line-height: 1;
+      font-weight: 500;
+      padding-top: 20px;
+      width: 210px;
+    }
+
+    .popup-link {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      color: #757575;
+      background-color: #F5F5F5;
+      border-radius: 8px;
+      padding: 4px 8px;
+	margin-top: 12px;
+	margin-left: 20px;
+	margin-right: 20px;
+      display: inline-block;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+    .modal-city {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      color: #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      margin-top: 10px;
+      padding: 4px 8px;
+      display: inline-block;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .description {
+      font-family: 'Inter', sans-serif;
+      color: #000;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      line-height: 1.4;
+      margin-top: 12px !important;
+    }
+
+    .popup-image {
+      border-radius: 10px 10px 0px 0px;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+    }
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.9);
+  touch-action: manipulation;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: white;
+  background: black;
+    border-radius: 100%;
+  font-size: 40px;
+  cursor: pointer;
+  z-index: 1000001;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.modal-content {
+  max-width: 90vw;   /* max 90% of viewport width */
+  max-height: 85vh;  /* max 90% of viewport height */
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  object-fit: contain; /* ensures image scales nicely */
+    position: absolute;
+  left: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  top: 45%;
+  transform: translate(-50%, -50%);
+}
+
+#caption {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw; /* full viewport width */
+  transform: none; /* remove centering transform */
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  z-index: 1000001;
+  padding-top: 20px;
+  padding-left:8px;
+  padding-right:8px;
+  padding-bottom:24px;
+  background: rgba(0,0,0,1);
+  pointer-events: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+}
+
+    .close:hover {
+      color: #bbb;
+    }
+    
+    .croppedDiv{
+    width: 250px !important; height: 150px !important; overflow: hidden;
+    border-radius: 10px 10px 0px 0px;
+    background-color: #6F603B;}
+    
+    .croppedDiv img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: blur(4px);
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  opacity: 0
+  touch-action: manipulation;;
+}
+
+.croppedDiv img.loaded {
+  opacity: 1;
+  filter: blur(0);
+}
+
+.arrow-btn {
+      background-color: rgba(255,255,255,0.85); border: none;
+      border-radius: 14px; width: 44px; height: 44px; cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; transition: background-color 0.3s ease;
+      touch-action: manipulation; /* enable tap on mobile */
+    }
+ 
+ #cornerPhoto {
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+  z-index: 10001; /* Above Leaflet elements */
+  background-color: #00000000;
+  border-radius: 8px;
+  max-width: 100px;
+  max-height: 100px;
+  overflow: hidden;
+}
+
+#cornerPhoto img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+
+<div id="cornerPhoto">
+  <img src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/mass-port.png" alt="Corner Photo">
+</div>
+
+
+<!-- Modal HTML -->
+<div id="myModal" class="modal">
+  <span class="close material-symbols-rounded">close_small</span>
+  <img class="modal-content" id="img01">
+  <div id="caption"></div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<!-- Fullscreen Plugin -->
+<script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
+
+<script>
+  class Location {
+    constructor(name, address, city, lat, lng, note, imgUrl) {
+      this.name = name;
+      this.address = address;
+      this.city = city;
+      this.lat = parseFloat(lat);
+      this.lng = parseFloat(lng);
+      this.note = note;
+      this.imgUrl = imgUrl;
+    }
+  }
+
+  async function fetchAndParseLocations(tsvUrl) {
+    const response = await fetch(tsvUrl);
+    const tsvText = await response.text();
+
+    const rows = tsvText.trim().split('\n');
+    return rows.slice(1).map((row) => {
+      const [name, address, city, lat, lng, note, imgUrl] = row.split('\t');
+      return new Location(name, address, city, lat, lng, note, imgUrl);
+    });
+  }
+
+  async function initMap() {
+    const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRK8hfoJr8iHOLmpl7D4q9nIlxLUtdIjpc741LNOmJBpqhXasrZzkvGJzEvxuErz3-R-bzvZa3Tt9Ei/pub?gid=505183679&single=true&output=tsv';
+    const map = L.map('map', { attributionControl: false, zoomControl: false });
+	map.setView([35, -100], 3);
+    map.flyTo([35, -100], 4);
+    map.toggleFullscreen();
+    
+map.on('popupopen', function(e) {
+  const popup = e.popup._container;
+  const popupHeight = popup.offsetHeight;
+
+  setTimeout(() => {
+    const backBtn = popup.querySelector('[data-dir="back"]');
+    const forwardBtn = popup.querySelector('[data-dir="forward"]');
+    const img = popup.querySelector('img');
+    const modal = document.getElementById("myModal");
+    const modalImg = document.getElementById("img01");
+    const captionText = document.getElementById("caption");
+    const closeBtn = document.querySelector(".close");
+
+    // Position the navigation buttons
+    const verticalOffset = popupHeight / 2;
+    if (backBtn) {
+      backBtn.style.top = `${verticalOffset}px`;
+      backBtn.style.transform = `translateY(-50%)`;
+      backBtn.onclick = () => showMarker(currentIndex - 1);
+    }
+    if (forwardBtn) {
+      forwardBtn.style.top = `${verticalOffset}px`;
+      forwardBtn.style.transform = `translateY(-50%)`;
+      forwardBtn.onclick = () => showMarker(currentIndex + 1);
+    }
+
+    // Modal behavior
+    if (img) {
+      img.onclick = function () {
+        modal.style.display = "block";
+        modalImg.src = this.src;
+        captionText.innerHTML = this.alt;
+      };
+    }
+
+    if (closeBtn) {
+      closeBtn.onclick = function () {
+        modal.style.display = "none";
+      };
+    }
+
+    // Center the popup
+    const px = map.project(e.popup._latlng);
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+  }, 10);
+});
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+      minZoom: 2
+    }).addTo(map);
+
+    const icon = L.icon({
+      iconUrl: 'https://i.postimg.cc/xT5k075d/icon-MARKER.png',
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -20]
+    });
+
+    const tucsonIcon = L.icon({
+      iconUrl: 'https://i.postimg.cc/BngHg85Q/tucson-ICON.png',
+      iconSize: [50, 50],
+      iconAnchor: [25, 50],
+      popupAnchor: [0, -20]
+    });
+
+    const locations = await fetchAndParseLocations(tsvUrl);
+    const bounds = [];
+    const markers = [];
+    let currentIndex = 0;
+
+    locations.forEach((loc, index) => {
+      const uniqueImgId = `popup-img-${index}`;
+      const name = loc.name;
+      const address = loc.address;
+      const city = loc.city;
+      const hasNote = loc.note && loc.note.trim();
+      const imgUrl = loc.imgUrl && loc.imgUrl.trim();
+      const searchLink = `https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}`
+
+      const popupHTML = `
+<button class="arrow-btn" data-dir="back" style="position: absolute; 
+left: -20%;">
+<span class="material-symbols-rounded">chevron_backward</span></button>
+<button class="arrow-btn" data-dir="forward" style="position: absolute; 
+right: -20%;">
+<span class="material-symbols-rounded">chevron_forward</span></button>
+${imgUrl ? `<div class="croppedDiv">
+<img id="${uniqueImgId}" src="${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
+  </div>` : ''}
+<h2 class="heading">${name}</h2>
+<a class="popup-link" target="_blank" href="${searchLink}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+        
+
+      const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);
+      marker.bindPopup(popupHTML, { maxWidth: 250, minWidth:250, closeButton: false });
+
+      marker.on('click', () => {
+      currentIndex = index;
+
+        setTimeout(() => {
+          const img = document.getElementById(uniqueImgId);
+          const modal = document.getElementById("myModal");
+          const modalImg = document.getElementById("img01");
+          const captionText = document.getElementById("caption");
+          const span = document.getElementsByClassName("close")[0];
+
+          if (img) {
+            img.onclick = function () {
+              modal.style.display = "block";
+              modalImg.src = this.src;
+              captionText.innerHTML = this.alt;
+            };
+          }
+
+          if (span) {
+            span.onclick = function () {
+              modal.style.display = "none";
+            };
+          }
+        }, 100);
+      });
+
+      bounds.push([loc.lat, loc.lng]);
+      markers.push(marker);
+    });
+    
+function showMarker(index) {
+  if (index < 0) index = markers.length - 1;
+  if (index >= markers.length) index = 0;
+  currentIndex = index;
+
+  const marker = markers[index];
+  const location = locations[index];
+
+  marker.openPopup();
+
+  // Zoom logic based on city name
+  if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){
+  map.setZoom(11, { duration: 1.2 });
+  }
+}
+    
+    if (markers.length > 0) showMarker(0);
+  }
+
+  initMap();
+</script>
+
+</body>
+</html>

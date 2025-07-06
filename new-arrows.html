@@ -138,7 +138,7 @@
     position: absolute;
   left: 50%;
   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-  top: 48%;
+  top: 45%;
   transform: translate(-50%, -50%);
 }
 
@@ -153,6 +153,8 @@
   text-align: center;
   z-index: 1000001;
   padding-top: 20px;
+  padding-left:8px;
+  padding-right:8px;
   padding-bottom:24px;
   background: rgba(0,0,0,1);
   pointer-events: none;
@@ -352,6 +354,7 @@ map.on('popupopen', function(e) {
       const city = loc.city;
       const hasNote = loc.note && loc.note.trim();
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
+      const searchLink = `https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}`
 
       const popupHTML = `
 <button class="arrow-btn" data-dir="back" style="position: absolute; 
@@ -364,7 +367,7 @@ ${imgUrl ? `<div class="croppedDiv">
 <img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
   </div>` : ''}
 <h2 class="heading">${name}</h2>
-<a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+<a class="popup-link" target="_blank" href="${searchLink}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);

@@ -180,7 +180,6 @@
 
 <!-- Modal HTML -->
 <div id="myModal" class="modal">
-
   <span class="close material-symbols-rounded">close_small</span>
   <img class="modal-content" id="img01">
   <div id="caption"></div>
@@ -353,12 +352,22 @@ ${imgUrl ? `<div class="croppedDiv">
       markers.push(marker);
     });
     
-    function showMarker(index) {
+function showMarker(index) {
   if (index < 0) index = markers.length - 1;
   if (index >= markers.length) index = 0;
   currentIndex = index;
-  markers[index].openPopup();
-  map.panTo(markers[index].getLatLng(), { animate: true });
+
+  const marker = markers[index];
+  const location = locations[index];
+
+  marker.openPopup();
+
+  // Zoom logic based on city name
+  if (location.city.toLowerCase().includes("az") || location.city.toLowerCase().includes("ut")) {
+  map.setZoom(11, { duration: 1.2 });
+  } else {
+    map.setZoom(4, { duration: 1.2 });
+  }
 }
     
 

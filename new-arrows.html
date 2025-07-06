@@ -264,13 +264,13 @@
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-            <div><button id="backBtn" class="arrow-btn" aria-label="Previous location" tabindex="0">
-<button id="forwardBtn" class="arrow-btn" aria-label="Next location" tabindex="0"></div>
-      ${imgUrl ? `<div class="croppedDiv">
-  <img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name} | ${city}" onload="this.classList.add('loaded')">
-</div>` : ''}
-        <h2 class="heading">${name}</h2>
-        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+<div><button id="backBtn" class="arrow-btn" aria-label="Previous location" tabindex="0"></div>
+<div><button id="forwardBtn" class="arrow-btn" aria-label="Next location" tabindex="0"></div>
+${imgUrl ? `<div class="croppedDiv">
+<img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name} | ${city}" onload="this.classList.add('loaded')">
+  </div>` : ''}
+<h2 class="heading">${name}</h2>
+<a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
         
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);

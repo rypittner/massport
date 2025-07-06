@@ -99,6 +99,7 @@
       height: 100%;
       background-color: rgba(0,0,0,0.9);
       touch-action: manipulation;
+      z-index:1000000;
     }
 
     .modal-content {
@@ -170,6 +171,23 @@
       touch-action: manipulation; /* enable tap on mobile */
     }
  
+ #cornerPhoto {
+  position: absolute;
+  bottom: 5px;
+  left: 10px;
+  z-index: 10001; /* Above Leaflet elements */
+  background-color: #00000000;
+  border-radius: 8px;
+  max-width: 100px;
+  max-height: 100px;
+  overflow: hidden;
+}
+
+#cornerPhoto img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 
 
   </style>
@@ -177,6 +195,12 @@
 <body>
 
 <div id="map"></div>
+
+
+<div id="cornerPhoto">
+  <img src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/mass-port.png" alt="Corner Photo">
+</div>
+
 
 <!-- Modal HTML -->
 <div id="myModal" class="modal">

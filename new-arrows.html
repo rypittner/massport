@@ -324,6 +324,7 @@ ${imgUrl ? `<div class="croppedDiv">
       marker.bindPopup(popupHTML, { maxWidth: 250, minWidth:250, closeButton: false });
 
       marker.on('click', () => {
+      currentIndex = index;
 
         setTimeout(() => {
           const img = document.getElementById(uniqueImgId);

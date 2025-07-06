@@ -227,35 +227,9 @@
     map.flyTo([35, -100], 4);
     map.toggleFullscreen();
     map.on('popupopen', function(e) {
-  const popup = e.popup;
-  const popupEl = popup._container;
-
-  // Ensure the popup is fully rendered
-  setTimeout(() => {
-    const backBtn = document.getElementById('backBtn');
-    const forwardBtn = document.getElementById('forwardBtn');
-
-    // Ensure buttons exist and popup is visible
-    if (popupEl && backBtn && forwardBtn) {
-      const rect = popupEl.getBoundingClientRect();
-      const mapRect = document.getElementById('map').getBoundingClientRect();
-
-      // Position arrows to the left and right of the popup
-      backBtn.style.left = `${rect.left - 50}px`;
-      backBtn.style.top = `${rect.top + rect.height / 2 - 22}px`;
-
-      forwardBtn.style.left = `${rect.right + 10}px`;
-      forwardBtn.style.top = `${rect.top + rect.height / 2 - 22}px`;
-
-      backBtn.style.display = 'flex';
-      forwardBtn.style.display = 'flex';
-    }
-  }, 100);
-
-  // Center the map on the popup
-  const px = map.project(e.popup._latlng);
-  px.y -= popup._container.clientHeight / 2;
-  map.panTo(map.unproject(px), { animate: true });
+    var px = map.project(e.target._popup._latlng); // find the pixel location on the map where the popup anchor is
+    px.y -= e.target._popup._container.clientHeight/2; // find the height of the popup container, divide by 2, subtract from the Y axis of marker location
+    map.panTo(map.unproject(px),{animate: true}); // pan to new center
 });
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);

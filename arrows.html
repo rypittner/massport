@@ -5,220 +5,113 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ryan's MassPort</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-
-  <!-- Leaflet Fullscreen Plugin -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/leaflet.fullscreen.css" />
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet" />
-
-  <!-- Favicon -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
   <link rel="shortcut icon" type="image/png" href="https://i.postimg.cc/xT5k075d/icon-MARKER.png">
-
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.js"></script>
   <link href="https://cdn.jsdelivr.net/gh/StephanWagner/jBox@v1.3.3/dist/jBox.all.min.css" rel="stylesheet">
 
   <style>
-    html, body, #map {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
+    html, body, #map { height: 100%; margin: 0; padding: 0; }
     .leaflet-popup-content-wrapper, .leaflet-popup-content {
-      padding: 0 !important;
-      margin: 0 !important;
-      width: auto !important;
-      padding-bottom: 12px !important;
-      overflow-x: hidden !important;
+      padding: 0 !important; margin: 0 !important; width: auto !important;
+      padding-bottom: 12px !important; overflow-x: hidden !important;
     }
-
-    h2, p {
-      padding: 0 20px;
-      margin: 0 !important;
-    }
-
+    h2, p { padding: 0 20px; margin: 0 !important; }
     .heading {
-      font-family: 'Yrsa', serif;
-      font-size: 24px;
-      line-height: 1;
-      font-weight: 500;
-      padding-top: 20px;
-      width: 210px;
+      font-family: 'Yrsa', serif; font-size: 24px; line-height: 1;
+      font-weight: 500; padding-top: 20px; width: 210px;
     }
-
     .popup-link {
-      font-size: 12px;
-      font-family: 'Inter', sans-serif;
-      color: #757575;
-      background-color: #F5F5F5;
-      border-radius: 8px;
-      padding: 4px 8px;
-      margin-top: 12px;
-      margin-left: 20px;
-      margin-right: 20px;
-      display: inline-block;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-decoration: none;
+      font-size: 12px; font-family: 'Inter', sans-serif; color: #757575;
+      background-color: #F5F5F5; border-radius: 8px; padding: 4px 8px;
+      margin: 12px 20px 0; display: inline-block; font-weight: 600;
+      letter-spacing: 0.5px; text-transform: uppercase; text-decoration: none;
     }
-
     .description {
-      font-family: 'Inter', sans-serif;
-      color: #000;
-      font-weight: 400;
-      letter-spacing: 0.3px;
-      line-height: 1.4;
-      margin-top: 12px !important;
+      font-family: 'Inter', sans-serif; color: #000; font-weight: 400;
+      letter-spacing: 0.3px; line-height: 1.4; margin-top: 12px !important;
     }
-
-    .popup-image {
-      border-radius: 10px 10px 0px 0px;
-      cursor: pointer;
-      width: 100%;
-      max-width: 300px;
+    .croppedDiv {
+      width: 250px !important; height: 150px !important; overflow: hidden;
+      border-radius: 10px 10px 0 0; background-color: #6F603B;
     }
-
+    .croppedDiv img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center;
+      display: block; filter: blur(4px); transition: opacity 0.3s, filter 0.3s;
+      opacity: 0; cursor: pointer;
+    }
+    .croppedDiv img.loaded {
+      opacity: 1; filter: blur(0);
+    }
     .modal {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      padding-top: 100px;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.9);
+      display: none; position: fixed; z-index: 9999; padding-top: 100px;
+      left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9);
     }
-
     .modal-content {
-      margin: auto;
-      display: block;
-      height: 80%;
-      max-width: 700px;
+      margin: auto; display: block; height: 80%; max-width: 700px;
       border-radius: 10px;
     }
-
     #caption {
-      margin: auto;
-      display: block;
-      width: 80%;
-      max-width: 700px;
-      text-align: center;
-      color: #ccc;
-      padding: 10px 0;
-      font-family: 'Inter', sans-serif;
-      font-weight: 400;
-      line-height: 1.4;
+      margin: auto; display: block; width: 80%; max-width: 700px;
+      text-align: center; color: #ccc; padding: 10px 0;
+      font-family: 'Inter', sans-serif; font-weight: 400; line-height: 1.4;
     }
-
     .close {
-      position: absolute;
-      top: 15px;
-      right: 35px;
-      color: #f1f1f1;
+      position: absolute; top: 15px; right: 35px; cursor: pointer; z-index: 10001;
+    }
+    /* Updated close button style: white text, no background, no padding, no border-radius */
+    .close .material-icons-round {
       font-size: 40px;
-      font-weight: bold;
-      transition: 0.3s;
-      cursor: pointer;
+      background-color: transparent !important;
+      color: white !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      user-select: none;
     }
-
-    .close:hover {
-      color: #bbb;
+    .close:hover .material-icons-round {
+      background-color: transparent !important;
+      color: #ddd !important;
     }
-    
-    .croppedDiv{
-      width: 250px !important; 
-      height: 150px !important; 
-      overflow: hidden;
-      border-radius: 10px 10px 0px 0px;
-      background-color: #6F603B;
-    }
-    
-    .croppedDiv img{
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
-      display: block;
-      filter: blur(4px);
-      transition: opacity 0.3s ease, filter 0.3s ease;
-      opacity: 0;
-    }
-
-    .croppedDiv img.loaded {
-      opacity: 1;
-      filter: blur(0);
-    }
-
-    /* Arrow buttons styling */
     .arrow-btn {
-      position: fixed;
-      top: 50%;
-      transform: translateY(-50%);
-      background-color: rgba(255 255 255 / 0.85);
-      border: none;
-      border-radius: 14px;
-      width: 44px;
-      height: 44px;
-      cursor: pointer;
+      position: fixed; top: 50%; transform: translateY(-50%);
+      background-color: rgba(255,255,255,0.85); border: none;
+      border-radius: 14px; width: 44px; height: 44px; cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-      transition: background-color 0.3s ease;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10000; transition: background-color 0.3s ease;
     }
-
-    .arrow-btn:hover {
-      background-color: rgba(220 220 220 / 0.95);
-    }
-
-    #backBtn {
-      left: 10px;
-    }
-
-    #forwardBtn {
-      right: 10px;
-    }
+    .arrow-btn:hover { background-color: rgba(220,220,220,0.95); }
+    #backBtn { left: 10px; }
+    #forwardBtn { right: 10px; }
   </style>
 </head>
 <body>
+  <div id="map"></div>
+  <button id="backBtn" class="arrow-btn" aria-label="Previous location">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+  </button>
+  <button id="forwardBtn" class="arrow-btn" aria-label="Next location">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  </button>
 
-<div id="map"></div>
+  <div id="myModal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="caption">
+    <span class="close" role="button" tabindex="0" aria-label="Close modal">
+      <span class="material-icons-round">close</span>
+    </span>
+    <img class="modal-content" id="img01" alt="" />
+    <div id="caption"></div>
+  </div>
 
-<!-- Forward / Back Arrows -->
-<button id="backBtn" class="arrow-btn" aria-label="Previous location">
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="15 18 9 12 15 6"/>
-  </svg>
-</button>
-
-<button id="forwardBtn" class="arrow-btn" aria-label="Next location">
-  <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <polyline points="9 18 15 12 9 6"/>
-  </svg>
-</button>
-
-<!-- Modal HTML -->
-<div id="myModal" class="modal">
-  <span class="close">&times;</span>
-  <img class="modal-content" id="img01">
-  <div id="caption"></div>
-</div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-
-<!-- Fullscreen Plugin -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
-
 <script>
   class Location {
     constructor(name, address, city, lat, lng, note, imgUrl) {
@@ -235,142 +128,146 @@
   async function fetchAndParseLocations(tsvUrl) {
     const response = await fetch(tsvUrl);
     const tsvText = await response.text();
-
     const rows = tsvText.trim().split('\n');
-    return rows.slice(1).map((row) => {
+    return rows.slice(1).map(row => {
       const [name, address, city, lat, lng, note, imgUrl] = row.split('\t');
       return new Location(name, address, city, lat, lng, note, imgUrl);
     });
+  }
+
+  function centerMarker(loc, map) {
+    const offsetX = 0;
+    const offsetY = -100; // negative to move marker UP on screen
+    const targetPoint = map.project([loc.lat, loc.lng], map.getZoom()).subtract([offsetX, offsetY]);
+    const targetLatLng = map.unproject(targetPoint, map.getZoom());
+    map.panTo(targetLatLng);
+  }
+
+  function attachImageModalHandlers(uniqueImgId, modal, modalImg, captionText) {
+    const img = document.getElementById(uniqueImgId);
+    if (img) {
+      if (img.complete) {
+        img.classList.add('loaded');
+      } else {
+        img.onload = () => img.classList.add('loaded');
+      }
+      img.onclick = () => {
+        modal.style.display = "block";
+        modal.setAttribute("aria-hidden", "false");
+        modalImg.src = img.src;
+        modalImg.alt = img.alt || '';
+        captionText.innerText = img.alt || '';
+      };
+    }
   }
 
   async function initMap() {
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSk2GYqfDW1TbRU2iu-pCPx6LZ11onDUDbVJrHY9oy0DIQieGDwqRbPKdiu0Ba7AWp_itjiI9-MRkt_/pub?gid=575250179&single=true&output=tsv';
 
     const map = L.map('map', { attributionControl: false, zoomControl: false });
-    map.setView([35, -100], 3);
-    map.flyTo([35, -100], 4);
+    map.setView([35, -100], 4);
     map.toggleFullscreen();
-
     L.control.zoom({ position: 'bottomright' }).addTo(map);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
-      minZoom: 2
-    }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', { minZoom: 2 }).addTo(map);
 
     const icon = L.icon({
       iconUrl: 'https://i.postimg.cc/xT5k075d/icon-MARKER.png',
-      iconSize: [30, 30],
-      iconAnchor: [15, 30],
-      popupAnchor: [0, -20]
+      iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -20]
     });
-
     const tucsonIcon = L.icon({
       iconUrl: 'https://i.postimg.cc/BngHg85Q/tucson-ICON.png',
-      iconSize: [50, 50],
-      iconAnchor: [25, 50],
-      popupAnchor: [0, -20]
+      iconSize: [50, 50], iconAnchor: [25, 50], popupAnchor: [0, -20]
     });
 
     const locations = await fetchAndParseLocations(tsvUrl);
-
     const markers = [];
     let currentIndex = 0;
 
+    const modal = document.getElementById("myModal");
+    const modalImg = document.getElementById("img01");
+    const captionText = document.getElementById("caption");
+    const closeModal = () => {
+      modal.style.display = "none";
+      modal.setAttribute("aria-hidden", "true");
+      modalImg.src = "";
+      captionText.innerText = "";
+    };
+    document.querySelector(".close").onclick = closeModal;
+
+    const popupIds = [];
+
     locations.forEach((loc, index) => {
       const uniqueImgId = `popup-img-${index}`;
-      const name = loc.name;
-      const address = loc.address;
-      const city = loc.city;
-      const hasNote = loc.note && loc.note.trim();
-      const imgUrl = loc.imgUrl && loc.imgUrl.trim();
+      popupIds.push(uniqueImgId);
 
-      const popupHTML = `${imgUrl ? `<div class="croppedDiv">
-  <img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name} | ${city}" onload="this.classList.add('loaded')">
-</div>` : ''}
-        <h2 class="heading">${name}</h2>
-        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(address)}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;
+      // Correct raw GitHub URL (main branch)
+      const imageSrc = `https://raw.githubusercontent.com/rypittner/massport/main/${loc.imgUrl}`;
+
+      const popupHTML = `${loc.imgUrl && loc.imgUrl.trim() ? `
+        <div class="croppedDiv">
+          <img id="${uniqueImgId}" src="${imageSrc}" class="croppedImg" alt="${loc.name} | ${loc.city}" />
+        </div>` : ''}
+        <h2 class="heading">${loc.name}</h2>
+        <a class="popup-link" target="_blank" href="https://maps.google.com/?q=${encodeURIComponent(loc.name)},${encodeURIComponent(loc.address)}">${loc.city}</a>
+        ${loc.note ? `<p class="description">${loc.note}</p>` : ''}`;
 
       const marker = L.marker([loc.lat, loc.lng], { icon, zIndexOffset: index + 1 }).addTo(map);
       marker.bindPopup(popupHTML, { maxWidth: 250, minWidth: 250, closeButton: false });
 
       marker.on('click', () => {
         currentIndex = index;
-
-        map.panTo([marker.getLatLng().lat + (100 / (256 * 2 ** map.getZoom() / 360)), marker.getLatLng().lng]);
-
-        setTimeout(() => {
-          const img = document.getElementById(uniqueImgId);
-          const modal = document.getElementById("myModal");
-          const modalImg = document.getElementById("img01");
-          const captionText = document.getElementById("caption");
-          const span = document.getElementsByClassName("close")[0];
-
-          if (img) {
-            img.onclick = function () {
-              modal.style.display = "block";
-              modalImg.src = this.src;
-              captionText.innerHTML = this.alt;
-            };
-          }
-
-          if (span) {
-            span.onclick = function () {
-              modal.style.display = "none";
-            };
-          }
-        }, 100);
-
+        centerMarker(loc, map);
         marker.openPopup();
+        setTimeout(() => {
+          attachImageModalHandlers(uniqueImgId, modal, modalImg, captionText);
+        }, 200);
       });
-
       markers.push(marker);
     });
 
-    // Open first popup on load
-    if (markers.length > 0) {
-      markers[0].openPopup();
-      map.panTo(markers[0].getLatLng());
+    function showMarker(index) {
+      currentIndex = index;
+      const loc = locations[currentIndex];
+      const marker = markers[currentIndex];
+      centerMarker(loc, map);
+      marker.openPopup();
+      setTimeout(() => {
+        attachImageModalHandlers(popupIds[currentIndex], modal, modalImg, captionText);
+
+        // If modal is open and this location has an image, update modal
+        const img = document.getElementById(popupIds[currentIndex]);
+        if (modal.style.display === "block") {
+          if (img && img.complete) {
+            modalImg.src = img.src;
+            modalImg.alt = img.alt || '';
+            captionText.innerText = img.alt || '';
+          } else {
+            closeModal();
+          }
+        }
+      }, 200);
     }
 
-    // Arrows navigation logic
-    const backBtn = document.getElementById('backBtn');
-    const forwardBtn = document.getElementById('forwardBtn');
+    document.getElementById('backBtn').onclick = () => {
+      showMarker((currentIndex - 1 + markers.length) % markers.length);
+    };
 
-    backBtn.addEventListener('click', () => {
-      if (markers.length === 0) return;
-      currentIndex = (currentIndex - 1 + markers.length) % markers.length;
-      const marker = markers[currentIndex];
-      marker.openPopup();
-      map.panTo(marker.getLatLng());
-    });
+    document.getElementById('forwardBtn').onclick = () => {
+      showMarker((currentIndex + 1) % markers.length);
+    };
 
-    forwardBtn.addEventListener('click', () => {
-      if (markers.length === 0) return;
-      currentIndex = (currentIndex + 1) % markers.length;
-      const marker = markers[currentIndex];
-      marker.openPopup();
-      map.panTo(marker.getLatLng());
-    });
+    if (markers.length > 0) showMarker(0);
 
-    // Tucson Marker and zoom logic (unchanged)
     const Tucson1 = L.marker([32.1, -110.925721303205], { zIndexOffset: 10000, icon: tucsonIcon });
     Tucson1.on("click", () => map.flyTo([32.263504320851, -110.925721303205], 11, { duration: 1.5 }));
 
     const zoomCities = new L.FeatureGroup();
     zoomCities.addLayer(Tucson1);
     map.addLayer(zoomCities);
-
-    map.on('zoom', () => {
-      if (map.getZoom() > 6) {
-        map.removeLayer(zoomCities);
-      } else {
-        map.addLayer(zoomCities);
-      }
-    });
+    map.on('zoom', () => map.getZoom() > 6 ? map.removeLayer(zoomCities) : map.addLayer(zoomCities));
   }
 
   initMap();
 </script>
-
 </body>
 </html>

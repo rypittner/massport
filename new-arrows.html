@@ -287,8 +287,8 @@
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-<button class="arrow-btn" data-dir="back" style="position: absolute; left: -40px;"></button>
-<button class="arrow-btn" data-dir="forward" style="position: absolute; right: -40px;"></button>
+<button class="arrow-btn" data-dir="back" style="position: absolute; left: -20%;"></button>
+<button class="arrow-btn" data-dir="forward" style="position: absolute; right: -20%;"></button>
 ${imgUrl ? `<div class="croppedDiv">
 <img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name} | ${city}" onload="this.classList.add('loaded')">
   </div>` : ''}

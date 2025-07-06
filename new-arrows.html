@@ -363,7 +363,7 @@ function showMarker(index) {
   marker.openPopup();
 
   // Zoom logic based on city name
-  if (location.city.toLowerCase().includes("az") || location.city.toLowerCase().includes("ut")) {
+  if (location.city.toLowerCase().includes(", az") || location.city.toLowerCase().includes(", ut")) {
   map.setZoom(11, { duration: 1.2 });
   } else {
     map.setZoom(4, { duration: 1.2 });

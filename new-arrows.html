@@ -161,7 +161,6 @@
 }
 
 .arrow-btn {
-      position: fixed; top: 50%; transform: translateY(-50%);
       background-color: rgba(255,255,255,0.85); border: none;
       border-radius: 14px; width: 44px; height: 44px; cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
@@ -226,12 +225,34 @@
 	map.setView([35, -100], 3);
     map.flyTo([35, -100], 4);
     map.toggleFullscreen();
+    
     map.on('popupopen', function(e) {
-    var px = map.project(e.target._popup._latlng); // find the pixel location on the map where the popup anchor is
-    px.y -= e.target._popup._container.clientHeight/2; // find the height of the popup container, divide by 2, subtract from the Y axis of marker location
-    map.panTo(map.unproject(px),{animate: true}); // pan to new center
-});
+  const popup = e.popup._container;
+  const popupHeight = popup.offsetHeight;
 
+  // Wait until popup layout is complete
+  setTimeout(() => {
+    const backBtn = popup.querySelector('[data-dir="back"]');
+    const forwardBtn = popup.querySelector('[data-dir="forward"]');
+
+    const verticalOffset = popupHeight / 2;
+
+    if (backBtn) {
+      backBtn.style.top = `${verticalOffset}px`;
+      backBtn.style.transform = `translateY(-50%)`;
+    }
+    if (forwardBtn) {
+      forwardBtn.style.top = `${verticalOffset}px`;
+      forwardBtn.style.transform = `translateY(-50%)`;
+    }
+
+    // Optional: Pan to center map on popup
+    const px = map.project(e.popup._latlng);
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+
+  }, 10); // slight delay ensures DOM is fully laid out
+});
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
@@ -266,8 +287,8 @@
       const imgUrl = loc.imgUrl && loc.imgUrl.trim();
 
       const popupHTML = `
-<div><button id="backBtn" class="arrow-btn" aria-label="Previous location" tabindex="0"></div>
-<div><button id="forwardBtn" class="arrow-btn" aria-label="Next location" tabindex="0"></div>
+<button class="arrow-btn" data-dir="back" style="position: absolute; left: -40px;"></button>
+<button class="arrow-btn" data-dir="forward" style="position: absolute; right: -40px;"></button>
 ${imgUrl ? `<div class="croppedDiv">
 <img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name} | ${city}" onload="this.classList.add('loaded')">
   </div>` : ''}

@@ -205,6 +205,11 @@
 	map.setView([35, -100], 3);
     map.flyTo([35, -100], 4);
     map.toggleFullscreen();
+    map.on('popupopen', function(e) {
+    var px = map.project(e.target._popup._latlng); // find the pixel location on the map where the popup anchor is
+    px.y -= e.target._popup._container.clientHeight/2; // find the height of the popup container, divide by 2, subtract from the Y axis of marker location
+    map.panTo(map.unproject(px),{animate: true}); // pan to new center
+});
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
@@ -248,7 +253,6 @@
       marker.bindPopup(popupHTML, { maxWidth: 250, minWidth:250, closeButton: false });
 
       marker.on('click', () => {
-        map.panTo([marker.getLatLng().lat + (100 / (256 * 2 ** map.getZoom() / 360)), marker.getLatLng().lng]);
 
         setTimeout(() => {
           const img = document.getElementById(uniqueImgId);

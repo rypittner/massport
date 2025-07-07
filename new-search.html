@@ -3,89 +3,120 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Google Places Text Search - GitHub Pages</title>
+  <title>Google Places Text Search Example</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 1em; }
-    #results { margin-top: 1em; }
-    .place { cursor: pointer; padding: 5px; border-bottom: 1px solid #ccc; }
-    .place:hover { background: #efefef; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    #searchResults {
+      border: 1px solid #ccc;
+      max-width: 600px;
+      margin-top: 0.5rem;
+      padding: 0;
+      list-style: none;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    #searchResults li {
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+    }
+    #searchResults li:hover {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
-  <h1>Place Search (Client-side)</h1>
-  <input type="text" id="search" placeholder="Type a place name..." />
-  <button id="searchBtn">Search</button>
+  <h1>Google Places Text Search</h1>
+  <input
+    id="searchInput"
+    type="text"
+    placeholder="Enter place to search"
+    style="width: 600px; padding: 8px; font-size: 16px;"
+  />
+  <ul id="searchResults"></ul>
 
-  <div id="results"></div>
-
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places"
+    async
+    defer
+  ></script>
   <script>
-    const API_KEY = 'AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0'; // Replace with your API key here
+    let placesService;
+    let map; // dummy map because PlacesService requires a map or div container
 
-    const searchInput = document.getElementById('search');
-    const searchBtn = document.getElementById('searchBtn');
-    const resultsDiv = document.getElementById('results');
+    function init() {
+      // Create a dummy div for PlacesService (it needs a div or map instance)
+      const dummyDiv = document.createElement('div');
+      map = new google.maps.Map(dummyDiv);
 
-    searchBtn.addEventListener('click', async () => {
-      const query = searchInput.value.trim();
-      if (!query) {
-        alert('Please enter a search query.');
-        return;
-      }
+      placesService = new google.maps.places.PlacesService(map);
 
-      resultsDiv.innerHTML = 'Searching...';
+      const input = document.getElementById('searchInput');
+      const resultsList = document.getElementById('searchResults');
 
-      try {
-        // Construct URL for Places Text Search
-        const url = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
-        url.searchParams.set('query', query);
-        url.searchParams.set('key', API_KEY);
-
-        // **Important:** Google Places API Text Search endpoint (https://maps.googleapis.com/maps/api/place/textsearch/json)
-        // **DOES NOT support CORS from browser** (This will cause CORS errors if called directly from browser).
-
-        // Therefore, we must use Google Maps JavaScript Places Library instead for client side usage.
-
-        // --- Fallback: Use Places Library Text Search via Google Maps JavaScript API ---
-
-        resultsDiv.innerHTML = 'Please use the Google Maps JavaScript API for client-side text search.';
-
-      } catch (error) {
-        resultsDiv.innerHTML = 'Error: ' + error.message;
-      }
-    });
-
-    // The direct REST API call to textsearch/json DOES NOT work from client-side (CORS blocked),
-    // so below is how to use Google Maps JavaScript API Places Text Search in client-side:
-
-    function initMap() {
-      const service = new google.maps.places.PlacesService(document.createElement('div'));
-      searchBtn.addEventListener('click', () => {
-        const query = searchInput.value.trim();
-        if (!query) return alert('Please enter a search query.');
-
-        resultsDiv.innerHTML = 'Searching...';
-
-        service.textSearch({ query }, (results, status) => {
-          if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-            resultsDiv.innerHTML = 'No results found or error occurred.';
-            return;
-          }
-
-          resultsDiv.innerHTML = '';
-          results.forEach(place => {
-            const div = document.createElement('div');
-            div.className = 'place';
-            div.textContent = place.name + ' — ' + (place.formatted_address || place.vicinity || '');
-            div.addEventListener('click', () => {
-              alert(`You clicked: ${place.name}\nAddress: ${place.formatted_address || place.vicinity || 'N/A'}`);
-            });
-            resultsDiv.appendChild(div);
-          });
-        });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          performSearch(input.value);
+        }
       });
-    }
-  </script>
 
-  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places&callback=initMap" async defer></script>
+      function performSearch(query) {
+        if (!query.trim()) {
+          resultsList.innerHTML = '';
+          return;
+        }
+
+        const request = {
+          query: query,
+          fields: ['name', 'formatted_address', 'place_id'],
+        };
+
+        placesService.textSearch(request, (results, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+            resultsList.innerHTML = '';
+
+            results.forEach((place) => {
+              const li = document.createElement('li');
+              li.textContent = place.name + ' — ' + place.formatted_address;
+              li.dataset.placeId = place.place_id;
+
+              li.addEventListener('click', () => {
+                input.value = place.name;
+                resultsList.innerHTML = '';
+                getPlaceDetails(place.place_id);
+              });
+
+              resultsList.appendChild(li);
+            });
+          } else {
+            resultsList.innerHTML = '<li>No results found</li>';
+          }
+        });
+      }
+
+      function getPlaceDetails(placeId) {
+        const request = {
+          placeId: placeId,
+          fields: ['name', 'formatted_address', 'formatted_phone_number', 'website', 'opening_hours'],
+        };
+
+        placesService.getDetails(request, (place, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+            console.log('Place details:', place);
+            alert(`Details for ${place.name}:\nAddress: ${place.formatted_address}\nPhone: ${place.formatted_phone_number || 'N/A'}\nWebsite: ${place.website || 'N/A'}`);
+          } else {
+            alert('Failed to get place details.');
+          }
+        });
+      }
+    }
+
+    // Initialize when Google Maps JS loads
+    window.initMap = init;
+  </script>
 </body>
 </html>

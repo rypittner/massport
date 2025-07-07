@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Submit Info</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2em auto;
+    }
+    label {
+      display: block;
+      margin: 1em 0 0.5em;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5em;
+    }
+    button {
+      margin-top: 1em;
+      padding: 0.5em 1em;
+    }
+    #status {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Submit Your Info</h2>
+  <form id="myForm">
+    <label>Name:
+      <input type="text" name="Name" required>
+    </label>
+
+    <label>Address:
+      <input type="text" name="Address" required>
+    </label>
+
+    <label>Notes:
+      <textarea name="Notes" rows="4"></textarea>
+    </label>
+
+    <label>Image URL:
+      <input type="url" name="Image" placeholder="https://...">
+    </label>
+
+    <button type="submit">Submit</button>
+    <div id="status"></div>
+  </form>
+
+  <script>
+    const form = document.getElementById('myForm');
+    const status = document.getElementById('status');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {};
+
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
+
+      try {
+        const res = await fetch("https://sheetdb.io/api/v1/p5evgd6a7qrzv", {  // Replace with your real URL
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ data })
+        });
+
+        if (res.ok) {
+          status.textContent = "✅ Submitted successfully!";
+          form.reset();
+        } else {
+          status.textContent = "❌ Submission failed. Please try again.";
+        }
+      } catch (err) {
+        status.textContent = "❌ Network error: " + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

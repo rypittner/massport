@@ -2,50 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Google Maps Geocode Test</title>
+  <title>Geocode with Nominatim (OpenStreetMap)</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    #result { margin-top: 20px; font-weight: bold; }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #result { margin-top: 15px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <h2>THIS IS A NEW FILE THANKS</h2>
-  <input id="addressInput" type="text" placeholder="Enter address or place" style="width: 300px;">
-  <button id="btnGeocode">Get Coordinates</button>
+  <h2>Enter Place Name or Address</h2>
+
+  <form id="locationForm">
+    <input
+      type="text"
+      id="locationInput"
+      placeholder="Enter place name or address"
+      style="width: 300px;"
+      required
+    />
+    <button type="submit">Get Coordinates</button>
+  </form>
 
   <div id="result"></div>
 
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&callback=initMap"
-    async defer
-  ></script>
-
   <script>
-    let geocoder;
+    const form = document.getElementById('locationForm');
+    const input = document.getElementById('locationInput');
+    const resultDiv = document.getElementById('result');
 
-    function initMap() {
-      geocoder = new google.maps.Geocoder();
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
 
-      document.getElementById('btnGeocode').addEventListener('click', () => {
-        const address = document.getElementById('addressInput').value.trim();
-        const resultDiv = document.getElementById('result');
+      const query = input.value.trim();
+      if (!query) {
+        resultDiv.textContent = 'Please enter a place name or address.';
+        return;
+      }
 
-        if (!address) {
-          resultDiv.textContent = 'Please enter an address or place.';
-          return;
+      resultDiv.textContent = 'Looking up coordinates...';
+
+      // Nominatim API URL
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`;
+
+      fetch(url, {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'YourAppName/1.0 (your-email@example.com)'  // Required by Nominatim's usage policy
         }
-
-        geocoder.geocode({ address }, (results, status) => {
-          if (status === 'OK' && results[0]) {
-            const loc = results[0].geometry.location;
-            resultDiv.textContent = `Latitude: ${loc.lat()}, Longitude: ${loc.lng()}`;
-          } else {
-            resultDiv.textContent = `Geocode was not successful for the following reason: ${status}`;
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.length === 0) {
+            resultDiv.textContent = 'No results found for that location.';
+            return;
           }
+          const place = data[0];
+          resultDiv.textContent = `Latitude: ${place.lat}, Longitude: ${place.lon}`;
+        })
+        .catch(err => {
+          console.error(err);
+          resultDiv.textContent = 'Error occurred while fetching coordinates.';
         });
-      });
-    }
+    });
   </script>
 
 </body>

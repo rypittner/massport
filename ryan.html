@@ -230,13 +230,15 @@
  #cornerPhoto {
   position: absolute;
   bottom: 5px;
-  left: 10px;
+  right: 50px;
   z-index: 10001; /* Above Leaflet elements */
-  background-color: #00000000;
+  background-color: #FFFFFF;
   border-radius: 8px;
   max-width: 100px;
   max-height: 100px;
   overflow: hidden;
+  display: none; /*temorarily hide the button*/
+  
 }
 
 #cornerPhoto img {
@@ -245,6 +247,14 @@
   display: block;
 }
 
+@media (max-width: 768px) {
+  #centerPopupBtn {
+    display: flex !important;
+    position: absolute;
+    bottom: 85px;
+    right: 10px;
+    z-index: 1000;
+  }
 
   </style>
 </head>

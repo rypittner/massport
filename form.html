@@ -233,8 +233,10 @@ input[type="text"], textarea {
       Name: formData.get("Name"),
       Address: formData.get("Address"),
       Notes: formData.get("Notes"),
-      Image: imageUrl  // will be empty string if no image uploaded
+      Image: imageUrl,
+      Geocode: "Yes"
     };
+
 
     const res = await fetch(SHEETDB_URL, {
       method: "POST",

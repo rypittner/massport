@@ -2,59 +2,68 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Places Search (New API)</title>
+  <title>Google Places Search (New API) Example</title>
   <style>
-    #results { margin-top: 1em; }
-    .place { cursor: pointer; padding: 5px; border-bottom: 1px solid #ddd; }
-    .place:hover { background-color: #eef; }
+    #results {
+      margin-top: 1em;
+      max-width: 400px;
+      border: 1px solid #ddd;
+      padding: 0.5em;
+      font-family: Arial, sans-serif;
+    }
+    .place {
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .place:hover {
+      background-color: #f0f8ff;
+    }
   </style>
 </head>
 <body>
-  <h1>Place Search (New Places API)</h1>
-  <input id="search" type="text" placeholder="Search places..." autocomplete="off" />
+  <h2>Place Search with Google Maps Places API (New)</h2>
+  <input id="search" type="search" placeholder="Type place and press Enter" autocomplete="off" />
   <div id="results"></div>
 
   <script>
-    let map; // dummy map required for PlacesService
     let service;
 
     function initMap() {
-      // Dummy map just to initialize PlacesService
-      map = new google.maps.Map(document.createElement('div'));
-      service = new google.maps.places.PlacesService(map);
+      // Dummy map container - invisible, just to create the service
+      const dummyMap = document.createElement('div');
+      service = new google.maps.places.PlacesService(dummyMap);
 
       const input = document.getElementById('search');
-      const resultsDiv = document.getElementById('results');
+      const results = document.getElementById('results');
 
       input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           e.preventDefault();
           const query = input.value.trim();
           if (!query) {
-            resultsDiv.innerHTML = '';
+            results.innerHTML = '';
             return;
           }
-          resultsDiv.innerHTML = 'Searching...';
+          results.textContent = 'Searching...';
 
           const request = {
             query: query,
-            fields: ['name', 'formatted_address', 'place_id'],
+            fields: ['name', 'formatted_address', 'place_id']
           };
 
-          service.findPlaceFromQuery(request, (results, status) => {
-            if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
-              resultsDiv.innerHTML = 'No results found or error: ' + status;
+          service.findPlaceFromQuery(request, (places, status) => {
+            if (status !== google.maps.places.PlacesServiceStatus.OK || !places || places.length === 0) {
+              results.textContent = 'No results found or error: ' + status;
               return;
             }
-            resultsDiv.innerHTML = '';
-            results.forEach(place => {
+            results.innerHTML = '';
+            places.forEach(place => {
               const div = document.createElement('div');
               div.className = 'place';
               div.textContent = `${place.name} — ${place.formatted_address}`;
-              div.addEventListener('click', () => {
-                alert(`You selected:\n${place.name}\nPlace ID: ${place.place_id}`);
-              });
-              resultsDiv.appendChild(div);
+              div.onclick = () => alert(`You selected:\n${place.name}\nPlace ID: ${place.place_id}`);
+              results.appendChild(div);
             });
           });
         }

@@ -2,31 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Geocode with Google Maps JS API</title>
+  <title>Google Maps Geocode Test</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #result { margin-top: 15px; font-weight: bold; }
+    body { font-family: Arial; padding: 20px; }
+    #result { margin-top: 20px; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <h2>Enter Place Name or Address</h2>
-
-  <form id="locationForm">
-    <input
-      type="text"
-      id="locationInput"
-      placeholder="Enter place name or address"
-      style="width: 300px;"
-      required
-    />
-    <button type="submit">Get Coordinates</button>
-  </form>
+  <h2>THIS IS A NEW FILE THANKS</h2>
+  <input id="addressInput" type="text" placeholder="Enter address or place" style="width: 300px;">
+  <button id="btnGeocode">Get Coordinates</button>
 
   <div id="result"></div>
 
-  <!-- Load Google Maps JS API -->
   <script
     src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&callback=initMap"
     async defer
@@ -37,31 +26,26 @@
 
     function initMap() {
       geocoder = new google.maps.Geocoder();
-    }
 
-    const form = document.getElementById('locationForm');
-    const input = document.getElementById('locationInput');
-    const resultDiv = document.getElementById('result');
+      document.getElementById('btnGeocode').addEventListener('click', () => {
+        const address = document.getElementById('addressInput').value.trim();
+        const resultDiv = document.getElementById('result');
 
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      const address = input.value.trim();
-      if (!address) {
-        resultDiv.textContent = 'Please enter a place name or address.';
-        return;
-      }
-
-      resultDiv.textContent = 'Looking up coordinates...';
-
-      geocoder.geocode({ address: address }, (results, status) => {
-        if (status === 'OK' && results[0]) {
-          const location = results[0].geometry.location;
-          resultDiv.textContent = `Latitude: ${location.lat()}, Longitude: ${location.lng()}`;
-        } else {
-          resultDiv.textContent = 'No results found for that location.';
+        if (!address) {
+          resultDiv.textContent = 'Please enter an address or place.';
+          return;
         }
+
+        geocoder.geocode({ address }, (results, status) => {
+          if (status === 'OK' && results[0]) {
+            const loc = results[0].geometry.location;
+            resultDiv.textContent = `Latitude: ${loc.lat()}, Longitude: ${loc.lng()}`;
+          } else {
+            resultDiv.textContent = `Geocode was not successful for the following reason: ${status}`;
+          }
+        });
       });
-    });
+    }
   </script>
 
 </body>

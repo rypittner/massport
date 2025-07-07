@@ -262,7 +262,7 @@
     const rows = tsvText.trim().split('\n');
     return rows.slice(1).map((row) => {
       const [name, address, note, city, lat, lng,  imgUrl] = row.split('\t');
-      return new Location(name, address, note, city, lat, lng, , imgUrl);
+      return new Location(name, address, note, city, lat, lng, imgUrl);
     });
   }
 

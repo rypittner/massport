@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ryan's MassPort</title>
@@ -134,14 +135,15 @@
 
 #centerPopupBtn {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  bottom: 85px;  /* slightly above zoom buttons */
+  right: 10px;
   z-index: 1000;
   background-color: white;
   border: none;
   border-radius: 4px;
-  padding: 8px;
+  padding: 5px;
   cursor: pointer;
+  
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   font-size: 24px;
   line-height: 1;
@@ -153,6 +155,7 @@
 #centerPopupBtn:hover {
   background-color: #f0f0f0;
 }
+
 
 
 .modal-content {
@@ -461,15 +464,17 @@ function showMarker(index) {
   const location = locations[index];
 
   marker.openPopup();
-  map.on('zoomend', function () {
-  const popup = map._popup;
-  if (popup && popup._latlng) {
+map.on('zoomend', function () {
+  const popup = map._popup; // get currently open popup
+  if (popup && popup.isOpen() && popup._latlng) {
+    // recenter popup, optionally offsetting vertically as you did before
     const px = map.project(popup._latlng);
-    const popupHeight = popup._container?.offsetHeight || 200; // Fallback height
+    const popupHeight = popup._container?.offsetHeight || 200;
     px.y -= popupHeight / 2;
     map.panTo(map.unproject(px), { animate: true });
   }
 });
+
 
   // Zoom logic based on city name
   if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){

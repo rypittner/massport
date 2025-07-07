@@ -6,7 +6,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const API_KEY = 'YOUR_API_KEY_HERE';
+const API_KEY = 'AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0';
 
 app.post('/places/textsearch', async (req, res) => {
   const { query } = req.body;

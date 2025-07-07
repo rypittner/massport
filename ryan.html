@@ -128,6 +128,33 @@
   cursor: pointer;
 }
 
+#centerPopupBtn {
+  display: none;
+}
+
+#centerPopupBtn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 1000;
+  background-color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#centerPopupBtn:hover {
+  background-color: #f0f0f0;
+}
+
+
 .modal-content {
   max-width: 90vw;   /* max 90% of viewport width */
   max-height: 85vh;  /* max 90% of viewport height */
@@ -235,6 +262,10 @@
   <div id="caption"></div>
 </div>
 
+<button id="centerPopupBtn" class="leaflet-bar leaflet-control" title="Center popup">
+  <span class="material-symbols-rounded">center_focus_strong</span>
+</button>
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -320,6 +351,24 @@ map.on('popupopen', function(e) {
     px.y -= popupHeight / 2;
     map.panTo(map.unproject(px), { animate: true });
   }, 10);
+  
+  document.getElementById("centerPopupBtn").addEventListener("click", () => {
+  const popup = map._popup;
+  if (popup && popup._latlng) {
+    const px = map.project(popup._latlng);
+    const popupHeight = popup._container?.offsetHeight || 200;
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+  }
+});
+
+map.on('popupopen', () => {
+  document.getElementById("centerPopupBtn").style.display = "flex";
+});
+map.on('popupclose', () => {
+  document.getElementById("centerPopupBtn").style.display = "none";
+});
+
 });
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -412,6 +461,15 @@ function showMarker(index) {
   const location = locations[index];
 
   marker.openPopup();
+  map.on('zoomend', function () {
+  const popup = map._popup;
+  if (popup && popup._latlng) {
+    const px = map.project(popup._latlng);
+    const popupHeight = popup._container?.offsetHeight || 200; // Fallback height
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+  }
+});
 
   // Zoom logic based on city name
   if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){
@@ -421,6 +479,10 @@ function showMarker(index) {
     
     if (markers.length > 0) showMarker(0);
   }
+  
+  
+  
+  
 
   initMap();
 </script>

@@ -1,89 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Google Maps Location Search</title>
+  <title>Places Text Search</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-    }
-    #searchInput {
-      width: 300px;
-      padding: 8px;
-      font-size: 16px;
-    }
-    #searchBtn {
-      padding: 8px 12px;
-      font-size: 16px;
-      margin-left: 8px;
-      cursor: pointer;
-    }
-    #resultsList {
-      margin-top: 20px;
-      list-style: none;
-      padding-left: 0;
-      max-width: 400px;
-    }
-    #resultsList li {
-      background: #f0f0f0;
-      margin-bottom: 6px;
-      padding: 10px;
-      border-radius: 4px;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    input[type="text"] { width: 80%; padding: 8px; font-size: 16px; }
+    button { padding: 8px 12px; font-size: 16px; }
+    ul { list-style: none; padding-left: 0; margin-top: 20px; }
+    li { padding: 8px; border-bottom: 1px solid #ccc; cursor: pointer; }
+    li:hover { background: #f0f0f0; }
+    #details { margin-top: 20px; }
   </style>
 </head>
 <body>
-  <h2>Location Search</h2>
-  <input id="searchInput" type="text" placeholder="Enter a location" />
+  <h1>Place Search</h1>
+  <input id="searchInput" type="text" placeholder="Enter place or address" />
   <button id="searchBtn">Search</button>
 
-  <ul id="resultsList"></ul>
+  <ul id="results"></ul>
+
+  <div id="details"></div>
 
   <script>
+    let map;
+    let service;
+    const resultsList = document.getElementById('results');
+    const detailsDiv = document.getElementById('details');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+
     function initMap() {
-      const searchInput = document.getElementById('searchInput');
-      const searchBtn = document.getElementById('searchBtn');
-      const resultsList = document.getElementById('resultsList');
+      // Create a dummy map (required by PlacesService but we won't show it)
+      map = new google.maps.Map(document.createElement('div'));
+      service = new google.maps.places.PlacesService(map);
+    }
 
-      // Create a dummy div for PlacesService (no visible map needed)
-      const service = new google.maps.places.PlacesService(document.createElement('div'));
+    function clearResults() {
+      resultsList.innerHTML = '';
+      detailsDiv.innerHTML = '';
+    }
 
-      searchBtn.addEventListener('click', () => {
-        const query = searchInput.value.trim();
-        if (!query) {
-          alert('Please enter a location to search.');
+    searchBtn.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      if (!query) {
+        alert('Please enter a search term.');
+        return;
+      }
+      clearResults();
+
+      service.textSearch({ query: query }, (results, status) => {
+        if (status !== google.maps.places.PlacesServiceStatus.OK || !results) {
+          resultsList.innerHTML = '<li>No results found</li>';
           return;
         }
 
-        // Clear previous results
-        resultsList.innerHTML = '';
-
-        const request = {
-          query: query,
-          fields: ['name', 'formatted_address', 'geometry'],
-        };
-
-        service.textSearch(request, (results, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && results.length > 0) {
-            results.forEach((place) => {
-              const li = document.createElement('li');
-              li.textContent = `${place.name} — ${place.formatted_address}`;
-              resultsList.appendChild(li);
-            });
-          } else {
-            resultsList.innerHTML = `<li>No results found.</li>`;
-          }
+        results.forEach(place => {
+          const li = document.createElement('li');
+          li.textContent = place.name + (place.formatted_address ? ' — ' + place.formatted_address : '');
+          li.addEventListener('click', () => {
+            showPlaceDetails(place.place_id);
+          });
+          resultsList.appendChild(li);
         });
+      });
+    });
+
+    function showPlaceDetails(placeId) {
+      detailsDiv.innerHTML = 'Loading details...';
+      service.getDetails({ placeId: placeId }, (place, status) => {
+        if (status !== google.maps.places.PlacesServiceStatus.OK) {
+          detailsDiv.innerHTML = 'Details not found.';
+          return;
+        }
+        detailsDiv.innerHTML = `
+          <h2>${place.name}</h2>
+          <p><strong>Address:</strong> ${place.formatted_address || 'N/A'}</p>
+          <p><strong>Phone:</strong> ${place.formatted_phone_number || 'N/A'}</p>
+          <p><strong>Website:</strong> ${place.website ? `<a href="${place.website}" target="_blank">${place.website}</a>` : 'N/A'}</p>
+          <p><strong>Rating:</strong> ${place.rating || 'N/A'}</p>
+        `;
       });
     }
   </script>
 
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places&callback=initMap"
-    async
-    defer
-  ></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>

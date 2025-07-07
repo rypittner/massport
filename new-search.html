@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Places Text Search</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    input[type="text"] { width: 300px; padding: 0.5rem; font-size: 1rem; }
+    button { padding: 0.5rem 1rem; font-size: 1rem; }
+    ul { list-style-type: none; padding-left: 0; margin-top: 1rem; max-width: 400px; }
+    li { padding: 0.5rem; border: 1px solid #ddd; margin-bottom: 0.3rem; cursor: pointer; border-radius: 4px; }
+    li:hover { background-color: #f0f0f0; }
+    #details { margin-top: 2rem; max-width: 400px; }
+    #details h3 { margin-top: 0; }
+  </style>
+</head>
+<body>
+
+  <h1>Google Places Text Search</h1>
+
+  <input id="searchInput" type="text" placeholder="Search for places..." />
+  <button id="searchBtn">Search</button>
+
+  <ul id="resultsList"></ul>
+
+  <div id="details"></div>
+
+  <script>
+    const backendUrl = 'https://rypittner.github.io/massport'; // <-- REPLACE THIS
+
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const resultsList = document.getElementById('resultsList');
+    const detailsDiv = document.getElementById('details');
+
+    async function searchPlaces(query) {
+      resultsList.innerHTML = 'Loading...';
+      detailsDiv.innerHTML = '';
+      try {
+        const res = await fetch(`${backendUrl}/places/textsearch`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query })
+        });
+        if (!res.ok) throw new Error('Network response was not ok');
+        const data = await res.json();
+
+        if (!data.places || data.places.length === 0) {
+          resultsList.innerHTML = '<li>No results found.</li>';
+          return;
+        }
+
+        resultsList.innerHTML = '';
+        data.places.forEach(place => {
+          const li = document.createElement('li');
+          li.textContent = place.displayName?.text || 'No Name';
+          li.title = place.formattedAddress || '';
+          li.addEventListener('click', () => showPlaceDetails(place));
+          resultsList.appendChild(li);
+        });
+      } catch (error) {
+        resultsList.innerHTML = `<li>Error: ${error.message}</li>`;
+      }
+    }
+
+    function showPlaceDetails(place) {
+      detailsDiv.innerHTML = `
+        <h3>${place.displayName?.text || 'No Name'}</h3>
+        <p><strong>Address:</strong> ${place.formattedAddress || 'N/A'}</p>
+        ${place.websiteUri ? `<p><a href="${place.websiteUri}" target="_blank" rel="noopener">Website</a></p>` : ''}
+        ${place.types ? `<p><strong>Types:</strong> ${place.types.join(', ')}</p>` : ''}
+      `;
+    }
+
+    searchBtn.addEventListener('click', () => {
+      const query = searchInput.value.trim();
+      if (query.length === 0) {
+        alert('Please enter a search query.');
+        return;
+      }
+      searchPlaces(query);
+    });
+
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        searchBtn.click();
+      }
+    });
+  </script>
+
+</body>
+</html>

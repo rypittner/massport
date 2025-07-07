@@ -2,79 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Google Places Search (New API) Example</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Geocode Place or Address</title>
   <style>
-    #results {
-      margin-top: 1em;
-      max-width: 400px;
-      border: 1px solid #ddd;
-      padding: 0.5em;
-      font-family: Arial, sans-serif;
-    }
-    .place {
-      padding: 8px;
-      border-bottom: 1px solid #eee;
-      cursor: pointer;
-    }
-    .place:hover {
-      background-color: #f0f8ff;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #result { margin-top: 15px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h2>Place Search with Google Maps Places API (New)</h2>
-  <input id="search" type="search" placeholder="Type place and press Enter" autocomplete="off" />
-  <div id="results"></div>
+
+  <h2>Enter Place Name or Address</h2>
+
+  <form id="locationForm">
+    <input
+      type="text"
+      id="locationInput"
+      placeholder="Enter place name or address"
+      style="width: 300px;"
+      required
+    />
+    <button type="submit">Get Coordinates</button>
+  </form>
+
+  <div id="result"></div>
 
   <script>
-    let service;
+    const form = document.getElementById('locationForm');
+    const input = document.getElementById('locationInput');
+    const resultDiv = document.getElementById('result');
 
-    function initMap() {
-      // Dummy map container - invisible, just to create the service
-      const dummyMap = document.createElement('div');
-      service = new google.maps.places.PlacesService(dummyMap);
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const address = input.value.trim();
+      if (!address) {
+        resultDiv.textContent = 'Please enter a place name or address.';
+        return;
+      }
 
-      const input = document.getElementById('search');
-      const results = document.getElementById('results');
+      // Clear previous result
+      resultDiv.textContent = 'Looking up coordinates...';
 
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const query = input.value.trim();
-          if (!query) {
-            results.innerHTML = '';
-            return;
+      // Google Maps Geocoding API URL
+      const apiKey = 'AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0';  // <-- Replace with your Google Maps API key
+      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+
+      // Fetch the geocode data
+      fetch(geocodeUrl)
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'OK' && data.results.length > 0) {
+            const location = data.results[0].geometry.location;
+            resultDiv.textContent = `Latitude: ${location.lat}, Longitude: ${location.lng}`;
+          } else {
+            resultDiv.textContent = 'No results found for that location.';
           }
-          results.textContent = 'Searching...';
-
-          const request = {
-            query: query,
-            fields: ['name', 'formatted_address', 'place_id']
-          };
-
-          service.findPlaceFromQuery(request, (places, status) => {
-            if (status !== google.maps.places.PlacesServiceStatus.OK || !places || places.length === 0) {
-              results.textContent = 'No results found or error: ' + status;
-              return;
-            }
-            results.innerHTML = '';
-            places.forEach(place => {
-              const div = document.createElement('div');
-              div.className = 'place';
-              div.textContent = `${place.name} — ${place.formatted_address}`;
-              div.onclick = () => alert(`You selected:\n${place.name}\nPlace ID: ${place.place_id}`);
-              results.appendChild(div);
-            });
-          });
-        }
-      });
-    }
+        })
+        .catch(err => {
+          console.error(err);
+          resultDiv.textContent = 'Error occurred while fetching coordinates.';
+        });
+    });
   </script>
 
-  <script
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places&callback=initMap"
-    async
-    defer
-  ></script>
 </body>
 </html>

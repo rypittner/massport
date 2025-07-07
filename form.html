@@ -3,29 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Submit Info</title>
+  <title>Upload and Submit</title>
   <style>
-    body {
-      font-family: sans-serif;
-      max-width: 600px;
-      margin: 2em auto;
-    }
-    label {
-      display: block;
-      margin: 1em 0 0.5em;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 0.5em;
-    }
-    button {
-      margin-top: 1em;
-      padding: 0.5em 1em;
-    }
-    #status {
-      margin-top: 1em;
-      font-weight: bold;
-    }
+    body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
+    label { display: block; margin: 1em 0 0.5em; }
+    input, textarea { width: 100%; padding: 0.5em; }
+    button { margin-top: 1em; padding: 0.5em 1em; }
+    #status { margin-top: 1em; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -34,54 +18,87 @@
     <label>Name:
       <input type="text" name="Name" required>
     </label>
-
     <label>Address:
       <input type="text" name="Address" required>
     </label>
-
     <label>Notes:
       <textarea name="Notes" rows="4"></textarea>
     </label>
-
-    <label>Image URL:
-      <input type="url" name="Image" placeholder="https://...">
+    <label>Image Upload:
+      <input type="file" id="imageFile" accept="image/*" required>
     </label>
-
     <button type="submit">Submit</button>
     <div id="status"></div>
   </form>
 
   <script>
     const form = document.getElementById('myForm');
+    const imageInput = document.getElementById('imageFile');
     const status = document.getElementById('status');
+
+    const IMAGEBB_API_KEY = '7dd3553ba2a58dca14721122d652e484';  // ← Replace this
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/p5evgd6a7qrzv'; // ← Replace this
+
+    async function uploadImageToImageBB(file) {
+      const base64 = await toBase64(file);
+      const formData = new FormData();
+      formData.append('image', base64.split(',')[1]);
+
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMAGEBB_API_KEY}`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!data.success) throw new Error('ImageBB upload failed');
+      return data.data.url;
+    }
+
+    function toBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      status.textContent = "Uploading image...";
 
-      const formData = new FormData(form);
-      const data = {};
-
-      formData.forEach((value, key) => {
-        data[key] = value;
-      });
+      const file = imageInput.files[0];
+      if (!file) {
+        status.textContent = "Please select an image.";
+        return;
+      }
 
       try {
-        const res = await fetch("https://sheetdb.io/api/v1/p5evgd6a7qrzv", {  // Replace with your real URL
+        const imageUrl = await uploadImageToImageBB(file);
+        status.textContent = "Image uploaded. Submitting form...";
+
+        const formData = new FormData(form);
+        const payload = {
+          Name: formData.get("Name"),
+          Address: formData.get("Address"),
+          Notes: formData.get("Notes"),
+          Image: imageUrl
+        };
+
+        const res = await fetch(SHEETDB_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ data })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: payload })
         });
 
         if (res.ok) {
           status.textContent = "✅ Submitted successfully!";
           form.reset();
         } else {
-          status.textContent = "❌ Submission failed. Please try again.";
+          status.textContent = "❌ SheetDB submission failed.";
         }
       } catch (err) {
-        status.textContent = "❌ Network error: " + err.message;
+        status.textContent = "❌ Error: " + err.message;
       }
     });
   </script>

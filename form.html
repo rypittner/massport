@@ -3,102 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Submit Info with Address Search</title>
+  <title>Upload and Submit</title>
   <style>
     body { font-family: sans-serif; max-width: 600px; margin: 2em auto; }
     label { display: block; margin: 1em 0 0.5em; }
     input, textarea { width: 100%; padding: 0.5em; }
     button { margin-top: 1em; padding: 0.5em 1em; }
     #status { margin-top: 1em; font-weight: bold; }
-    #suggestions {
-      border: 1px solid #ccc;
-      max-height: 150px;
-      overflow-y: auto;
-      position: absolute;
-      background: white;
-      z-index: 9999;
-      width: 100%;
-    }
-    #suggestions div {
-      padding: 8px;
-      cursor: pointer;
-    }
-    #suggestions div:hover {
-      background-color: #f0f0f0;
-    }
-    .field-wrapper {
-      position: relative;
-    }
   </style>
 </head>
 <body>
-  <h2>Add a Church</h2>
+  <h2>Submit Your Info</h2>
   <form id="myForm">
-    <label>Church Display Name:
+    <label>Name:
       <input type="text" name="Name" required>
     </label>
-
-    <div class="field-wrapper">
-      <label>Address:
-        <input type="text" name="Address" id="addressInput" autocomplete="off" required>
-        <div id="suggestions"></div>
-      </label>
-    </div>
-
+    <label>Address:
+      <input type="text" name="Address" required>
+    </label>
     <label>Notes:
       <textarea name="Notes" rows="4"></textarea>
     </label>
-
-    <label>Image Upload (optional):
-      <input type="file" id="imageFile" accept="image/*">
+    <label>Image Upload:
+      <input type="file" id="imageFile" accept="image/*" >
     </label>
-
     <button type="submit">Submit</button>
     <div id="status"></div>
   </form>
 
   <script>
     const form = document.getElementById('myForm');
-    const addressInput = document.getElementById('addressInput');
-    const suggestions = document.getElementById('suggestions');
     const imageInput = document.getElementById('imageFile');
     const status = document.getElementById('status');
 
-    const IMAGEBB_API_KEY = '7dd3553ba2a58dca14721122d652e484'; // ← Replace this
+    const IMAGEBB_API_KEY = '7dd3553ba2a58dca14721122d652e484';  // ← Replace this
     const SHEETDB_URL = 'https://sheetdb.io/api/v1/p5evgd6a7qrzv'; // ← Replace this
 
-    // 📍 Address search autocomplete (OpenStreetMap via Nominatim)
-addressInput.addEventListener('input', async () => {
-  const query = addressInput.value;
-  if (query.length < 3) {
-    suggestions.innerHTML = '';
-    return;
-  }
-
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5&email=massport.app@gmail.com`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Nominatim fetch error");
-    const data = await res.json();
-
-    suggestions.innerHTML = '';
-    data.forEach(place => {
-      const div = document.createElement('div');
-      div.textContent = place.display_name;
-      div.addEventListener('click', () => {
-        addressInput.value = place.display_name;
-        suggestions.innerHTML = '';
-      });
-      suggestions.appendChild(div);
-    });
-  } catch (err) {
-    console.error("Search error:", err);
-    suggestions.innerHTML = '';
-  }
-});
-
-
-    // ⛅ Image upload to ImageBB
     async function uploadImageToImageBB(file) {
       const base64 = await toBase64(file);
       const formData = new FormData();
@@ -123,19 +63,19 @@ addressInput.addEventListener('input', async () => {
       });
     }
 
-    // 📤 Form submit handler
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      status.textContent = "Processing...";
+      status.textContent = "Uploading image...";
 
       const file = imageInput.files[0];
-      let imageUrl = "";
+      if (!file) {
+        status.textContent = "Please select an image.";
+        return;
+      }
 
       try {
-        if (file) {
-          status.textContent = "Uploading image...";
-          imageUrl = await uploadImageToImageBB(file);
-        }
+        const imageUrl = await uploadImageToImageBB(file);
+        status.textContent = "Image uploaded. Submitting form...";
 
         const formData = new FormData(form);
         const payload = {

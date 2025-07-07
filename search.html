@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Location Search with Autocomplete</title>
+  <style>
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+  </style>
+
+  <!-- Google Places API -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&libraries=places"></script>
+
+  <script>
+    function initAutocomplete() {
+      const input = document.getElementById('location');
+      const autocomplete = new google.maps.places.Autocomplete(input, {
+        types: ['geocode'], // suggest addresses/places
+        componentRestrictions: { country: 'us' } // optional: restrict suggestions
+      });
+
+      autocomplete.addListener('place_changed', function () {
+        const place = autocomplete.getPlace();
+        console.log('Selected address:', place.formatted_address);
+        if (place.geometry) {
+          console.log('Lat:', place.geometry.location.lat());
+          console.log('Lng:', place.geometry.location.lng());
+        }
+      });
+    }
+
+    window.addEventListener('load', initAutocomplete);
+  </script>
+</head>
+<body>
+  <h2>Search for a Location</h2>
+  <form>
+    <label for="location">Location Name or Address:</label><br>
+    <input id="location" type="text" placeholder="Type a location..." />
+  </form>
+</body>
+</html>

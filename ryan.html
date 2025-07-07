@@ -244,7 +244,7 @@
 
 <script>
   class Location {
-    constructor(name, address, city, lat, lng, note, imgUrl) {
+    constructor(name, address, note, imgUrl, city, lat, lng) {
       this.name = name;
       this.address = address;
       this.city = city;
@@ -261,8 +261,8 @@
 
     const rows = tsvText.trim().split('\n');
     return rows.slice(1).map((row) => {
-      const [name, address, city, lat, lng, note, imgUrl] = row.split('\t');
-      return new Location(name, address, city, lat, lng, note, imgUrl);
+      const [name, address, note, imgUrl, city, lat, lng] = row.split('\t');
+      return new Location(name, address, note, imgUrl, city, lat, lng);
     });
   }
 

@@ -212,43 +212,46 @@ input[type="text"], textarea {
     }
 
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      status.textContent = "Uploading image...";
+  e.preventDefault();
+  status.textContent = "Uploading image...";
 
-      const file = imageInput.files[0];
-      if (!file) {
-        status.textContent = "Please select an image.";
-        return;
-      }
+  const file = imageInput.files[0];
 
-      try {
-        const imageUrl = await uploadImageToImageBB(file);
-        status.textContent = "Image uploaded. Submitting form...";
+  try {
+    let imageUrl = "";
 
-        const formData = new FormData(form);
-        const payload = {
-          Name: formData.get("Name"),
-          Address: formData.get("Address"),
-          Notes: formData.get("Notes"),
-          Image: imageUrl
-        };
+    if (file) {
+      // Only upload if a file is selected
+      imageUrl = await uploadImageToImageBB(file);
+      status.textContent = "Image uploaded. Submitting form...";
+    } else {
+      status.textContent = "No image selected, submitting form without image...";
+    }
 
-        const res = await fetch(SHEETDB_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ data: payload })
-        });
+    const formData = new FormData(form);
+    const payload = {
+      Name: formData.get("Name"),
+      Address: formData.get("Address"),
+      Notes: formData.get("Notes"),
+      Image: imageUrl  // will be empty string if no image uploaded
+    };
 
-        if (res.ok) {
-          status.textContent = "✅ Submitted successfully!";
-          form.reset();
-        } else {
-          status.textContent = "❌ SheetDB submission failed.";
-        }
-      } catch (err) {
-        status.textContent = "❌ Error: " + err.message;
-      }
+    const res = await fetch(SHEETDB_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data: payload })
     });
+
+    if (res.ok) {
+      status.textContent = "✅ Submitted successfully!";
+      form.reset();
+    } else {
+      status.textContent = "❌ SheetDB submission failed.";
+    }
+  } catch (err) {
+    status.textContent = "❌ Error: " + err.message;
+  }
+});
   </script>
 </body>
 </html>

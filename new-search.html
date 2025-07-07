@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Geocode Place or Address</title>
+  <title>Geocode with Google Maps JS API</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     #result { margin-top: 15px; font-weight: bold; }
@@ -26,7 +26,19 @@
 
   <div id="result"></div>
 
+  <!-- Load Google Maps JS API -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0&callback=initMap"
+    async defer
+  ></script>
+
   <script>
+    let geocoder;
+
+    function initMap() {
+      geocoder = new google.maps.Geocoder();
+    }
+
     const form = document.getElementById('locationForm');
     const input = document.getElementById('locationInput');
     const resultDiv = document.getElementById('result');
@@ -39,28 +51,16 @@
         return;
       }
 
-      // Clear previous result
       resultDiv.textContent = 'Looking up coordinates...';
 
-      // Google Maps Geocoding API URL
-      const apiKey = 'AIzaSyCmOEfuSho8iQNLWykqxkjvg-I2A1yxFK0';  // <-- Replace with your Google Maps API key
-      const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
-
-      // Fetch the geocode data
-      fetch(geocodeUrl)
-        .then(response => response.json())
-        .then(data => {
-          if (data.status === 'OK' && data.results.length > 0) {
-            const location = data.results[0].geometry.location;
-            resultDiv.textContent = `Latitude: ${location.lat}, Longitude: ${location.lng}`;
-          } else {
-            resultDiv.textContent = 'No results found for that location.';
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          resultDiv.textContent = 'Error occurred while fetching coordinates.';
-        });
+      geocoder.geocode({ address: address }, (results, status) => {
+        if (status === 'OK' && results[0]) {
+          const location = results[0].geometry.location;
+          resultDiv.textContent = `Latitude: ${location.lat()}, Longitude: ${location.lng()}`;
+        } else {
+          resultDiv.textContent = 'No results found for that location.';
+        }
+      });
     });
   </script>
 

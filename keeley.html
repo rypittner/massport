@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+
   <title>Keeley's MassPort</title>
 
   <!-- Leaflet CSS -->
@@ -128,6 +129,35 @@
   cursor: pointer;
 }
 
+#centerPopupBtn {
+  display: none;
+}
+
+#centerPopupBtn {
+  position: absolute;
+  bottom: 85px;  /* slightly above zoom buttons */
+  right: 10px;
+  z-index: 1000;
+  background-color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
+  cursor: pointer;
+  
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  font-size: 24px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#centerPopupBtn:hover {
+  background-color: #f0f0f0;
+}
+
+
+
 .modal-content {
   max-width: 90vw;   /* max 90% of viewport width */
   max-height: 85vh;  /* max 90% of viewport height */
@@ -200,13 +230,15 @@
  #cornerPhoto {
   position: absolute;
   bottom: 5px;
-  left: 10px;
+  right: 50px;
   z-index: 10001; /* Above Leaflet elements */
-  background-color: #00000000;
+  background-color: #FFFFFF;
   border-radius: 8px;
   max-width: 100px;
   max-height: 100px;
   overflow: hidden;
+  display: none; /*temorarily hide the button*/
+  
 }
 
 #cornerPhoto img {
@@ -215,6 +247,14 @@
   display: block;
 }
 
+@media (max-width: 768px) {
+  #centerPopupBtn {
+    display: flex !important;
+    position: absolute;
+    bottom: 85px;
+    right: 10px;
+    z-index: 1000;
+  }
 
   </style>
 </head>
@@ -235,6 +275,10 @@
   <div id="caption"></div>
 </div>
 
+<button id="centerPopupBtn" class="leaflet-bar leaflet-control" title="Center popup">
+  <span class="material-symbols-rounded">center_focus_strong</span>
+</button>
+
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -244,7 +288,7 @@
 
 <script>
   class Location {
-    constructor(name, address, note, city, lat, lng, imgUrl) {
+    constructor(name, address, note, imgUrl, city, lat, lng) {
       this.name = name;
       this.address = address;
       this.city = city;
@@ -261,8 +305,8 @@
 
     const rows = tsvText.trim().split('\n');
     return rows.slice(1).map((row) => {
-      const [name, address, note, city, lat, lng,  imgUrl] = row.split('\t');
-      return new Location(name, address, note, city, lat, lng, imgUrl);
+      const [name, address, note, imgUrl, city, lat, lng] = row.split('\t');
+      return new Location(name, address, note, imgUrl, city, lat, lng);
     });
   }
 
@@ -320,6 +364,24 @@ map.on('popupopen', function(e) {
     px.y -= popupHeight / 2;
     map.panTo(map.unproject(px), { animate: true });
   }, 10);
+  
+  document.getElementById("centerPopupBtn").addEventListener("click", () => {
+  const popup = map._popup;
+  if (popup && popup._latlng) {
+    const px = map.project(popup._latlng);
+    const popupHeight = popup._container?.offsetHeight || 200;
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+  }
+});
+
+map.on('popupopen', () => {
+  document.getElementById("centerPopupBtn").style.display = "flex";
+});
+map.on('popupclose', () => {
+  document.getElementById("centerPopupBtn").style.display = "none";
+});
+
 });
 
     L.control.zoom({ position: 'bottomright' }).addTo(map);
@@ -412,9 +474,20 @@ function showMarker(index) {
   const location = locations[index];
 
   marker.openPopup();
+map.on('zoomend', function () {
+  const popup = map._popup; // get currently open popup
+  if (popup && popup.isOpen() && popup._latlng) {
+    // recenter popup, optionally offsetting vertically as you did before
+    const px = map.project(popup._latlng);
+    const popupHeight = popup._container?.offsetHeight || 200;
+    px.y -= popupHeight / 2;
+    map.panTo(map.unproject(px), { animate: true });
+  }
+});
+
 
   // Zoom logic based on city name
- /* if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){
+  /*if (map.getZoom() < 8 && (location.city.toLowerCase().includes("tucson") || location.city.toLowerCase().includes("salt lake city"))){
   map.setZoom(11, { duration: 1.2 });
   }*/
 }

@@ -261,15 +261,6 @@
       background-color: #f0f0f0;
     }
 
-    @media (max-width: 768px) {
-      #centerPopupBtn {
-        display: flex !important;
-        position: absolute;
-        bottom: 85px;
-        right: 10px;
-        z-index: 1000;
-      }
-    }
 
     #centerPopupBtn:disabled {
       opacity: 0.4; /* or lower if needed */
@@ -277,6 +268,14 @@
       font-size: 0;            /* prevents text size from influencing cursor */
       line-height: 0;          /* reduces vertical hitbox */
     }
+    
+      .material-symbols-rounded {
+    visibility: hidden;
+  }
+
+  .font-loaded .material-symbols-rounded {
+    visibility: visible;
+  }
 
   </style>
 </head>
@@ -315,6 +314,11 @@
 <script>
 const EDIT_URL = "https://docs.google.com/spreadsheets/d/15E6bqbPzd3Y5in7WCFmM2YnGXFb6ra4p6JTVK-UILtA/edit?gid=0#gid=0";
     const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
+    
+      document.fonts.ready.then(() => {
+    document.documentElement.classList.add('font-loaded');
+  });
+  
   class Location {
     constructor(name, address, note, imgUrl, city, lat, lng) {
       this.name = name;

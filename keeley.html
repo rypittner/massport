@@ -287,6 +287,7 @@
 <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-fullscreen/v1.0.1/Leaflet.fullscreen.min.js"></script>
 
 <script>
+const LINK_TO_PARSE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTI6LQ9QOhxicN_9FPXdsl3N7fBQkaFsH0jmDa17QpX7-4pYJiQ293Qf40xbIUaRJ5WW2Gt-IHOjO6p/pub?gid=0&single=true&output=tsv"
   class Location {
     constructor(name, address, note, imgUrl, city, lat, lng) {
       this.name = name;
@@ -311,7 +312,7 @@
   }
 
   async function initMap() {
-    const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTI6LQ9QOhxicN_9FPXdsl3N7fBQkaFsH0jmDa17QpX7-4pYJiQ293Qf40xbIUaRJ5WW2Gt-IHOjO6p/pub?gid=0&single=true&output=tsv';
+    const tsvUrl = 'LINK_TO_PARSE';
 
     const map = L.map('map', { attributionControl: false, zoomControl: false });
 	map.setView([35, -100], 3);
@@ -426,7 +427,7 @@ left: -20%;">
 right: -20%;">
 <span class="material-symbols-rounded">chevron_forward</span></button>
 ${imgUrl ? `<div class="croppedDiv">
-<img id="${uniqueImgId}" src="https://raw.githubusercontent.com/rypittner/massport/refs/heads/main/${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
+<img id="${uniqueImgId}" src="${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
   </div>` : ''}
 <h2 class="heading">${name}</h2>
 <a class="popup-link" target="_blank" href="${searchLink}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;

@@ -457,7 +457,7 @@ map.on('popupclose', () => {
         right: -20%;">
         <span class="material-symbols-rounded">chevron_forward</span></button>
         ${imgUrl ? `<div class="croppedDiv">
-        <img id="${uniqueImgId}" src="${imgUrl}" class="croppedImg" loading="lazy" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
+        <img id="${uniqueImgId}" src="${imgUrl}" class="croppedImg" alt="${name}&#8199;<span class='modal-city'>${city}</span>" onload="this.classList.add('loaded')">
           </div>` : ''}
         <h2 class="heading">${name}</h2>
         <a class="popup-link" target="_blank" href="${searchLink}">${city}</a>${hasNote ? `<p class="description">${loc.note}</p>` : ''}`;

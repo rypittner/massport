@@ -236,19 +236,28 @@ body {
 
 /* ---------- NOTE ---------- */
 .stamp-note {
-  display: none;
   position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--paper);
+  top: 0px; /* start slightly above */
+  left: -0.5px;
+  width: 101%;
+  background: var(--theme-color);
   padding: 8px 12px;
   font-size: 13px;
-  width: 75%;
-  border-radius: 4px;
+  color: white;
+  border-radius: 0px 0px 4px 4px;
+  z-index: 10;
+  text-align: center;
+
+  opacity: 0;
+  transform: translateY(-10px); /* slide down from above */
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
-.stamp:hover .stamp-note { display: block; }
+/* on hover, slide down and fade in */
+.stamp:hover .stamp-note {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ---------- MODAL ---------- */
 .modal {
@@ -410,12 +419,13 @@ d.onclick = function () {
   img.append(locTag, title);
   stamp.appendChild(img);
 
-  if (loc.note) {
-    const note = document.createElement('div');
-    note.className = 'stamp-note';
-    note.textContent = loc.note;
-    stamp.appendChild(note);
-  }
+if (loc.note) {
+  const note = document.createElement('div');
+  note.className = 'stamp-note';
+  note.textContent = loc.note;
+  // append note inside stamp-image instead of stamp
+  img.appendChild(note);
+}
 
   return stamp;
 }

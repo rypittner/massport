@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MassPort — Stamp Grid</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Yrsa:wght@500&display=swap" rel="stylesheet" />
+
+<style>
+:root {
+  --bg: #FCF1E7;
+  --paper: #FCF1E7;
+  --muted: #6b6b6b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  color: #111;
+  background-color: var(--bg); /* or #f2f2f2 */
+  background-image: url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg");
+  background-repeat: repeat;
+}
+
+
+/* ---------- HEADER ---------- */
+.header {
+  padding: 28px 32px 8px;
+}
+
+.header h1 {
+  font-family: 'Yrsa', serif;
+  font-size: 34px;
+  margin: 0;
+}
+
+/* ---------- STATE HEADER ---------- */
+.state-header {
+  font-family: 'Yrsa', serif;
+  font-size: 26px;
+  padding: 16px 32px 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.state-header span {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+/* ---------- GRID WRAPPER ---------- */
+.state-group {
+  overflow: hidden;
+  transition: max-height 0.5s ease, opacity 0.4s ease;
+  opacity: 1;
+}
+
+.state-group.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* ---------- GRID ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  padding: 32px;
+  max-width: calc(220px * 5);
+  margin: 0 auto;
+}
+
+/* ---------- STAMP ---------- */
+.stamp {
+  background:
+    url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center / cover no-repeat,
+    var(--bg);
+      background-color: transparent;
+  padding: 13%;
+  aspect-ratio: 151 / 195;
+  position: relative;
+  display: flex;
+  cursor: pointer;
+  --theme-color: #0d72e5;
+  transition: transform 0.3s ease;
+}
+
+.stamp:hover {
+  transform: scale(1.05);
+}
+
+/* ---------- IMAGE / COLOR RECT ---------- */
+.stamp-image {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  border: 4pt solid var(--theme-color);
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ---------- NO IMAGE BASE ---------- */
+.stamp-image.no-image {
+  background: white;
+}
+
+/* ---------- STRIPE PATTERNS (1 & 3) ---------- */
+.stamp-image.no-image.stripe {
+  background-image: repeating-linear-gradient(
+    var(--stripe-angle),
+    var(--theme-color),
+    var(--theme-color) 14px,
+    rgba(255,255,255,0.4) 14px,
+    rgba(255,255,255,0.4) 18px
+  );
+}
+
+.stamp-image.no-image.stripe:hover {
+  background-image: repeating-linear-gradient(
+    var(--stripe-angle),
+    rgba(255,255,255,0.4),
+    rgba(255,255,255,0.4) 14px,
+    var(--theme-color) 14px,
+    var(--theme-color) 18px
+  );
+}
+
+/* ---------- SOLID WHITE → THEME (2) ---------- */
+.stamp-image.no-image.white {
+  background: white;
+}
+
+.stamp-image.no-image.white:hover {
+  background: var(--theme-color);
+}
+
+/* ---------- SOLID THEME → WHITE (4) ---------- */
+.stamp-image.no-image.theme {
+  background: var(--theme-color);
+}
+
+.stamp-image.no-image.theme:hover {
+  background: white;
+}
+
+/* ---------- IMAGE HOVER ---------- */
+.stamp-image img {
+  width: 100%;
+  height: 70%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stamp-image img.normal { opacity: 0; }
+.stamp-image:hover img.duotone { opacity: 0; }
+.stamp-image:hover img.normal { opacity: 1; }
+
+/* ---------- LOCATION TAG ---------- */
+.stamp-location {
+  position: absolute;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  top: 8px;
+  right: 0;
+  background: var(--theme-color);
+  color: white;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px 0 0 10px;
+  z-index: 2;
+}
+
+/* ---------- TITLE ---------- */
+.stamp-title-overlay {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  padding: 15px;
+  font-family: 'Yrsa', serif;
+  font-size: 1.3em;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  line-height: 0.9;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* default image behavior */
+.stamp-image .stamp-title-overlay {
+  background: var(--theme-color);
+  color: white;
+}
+
+.stamp-image:hover .stamp-title-overlay {
+  background: white;
+  color: var(--theme-color);
+}
+
+/* pattern (2): white → theme */
+.stamp-image.no-image.white .stamp-title-overlay {
+  background: var(--theme-color);
+  color: white;
+}
+
+.stamp-image.no-image.white:hover .stamp-title-overlay {
+  background: white;
+  color: var(--theme-color);
+}
+
+/* pattern (4): theme → white */
+.stamp-image.no-image.theme .stamp-title-overlay {
+  background: white;
+  color: var(--theme-color);
+}
+
+.stamp-image.no-image.theme:hover .stamp-title-overlay {
+  background: var(--theme-color);
+  color: white;
+}
+
+/* ---------- NOTE ---------- */
+.stamp-note {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--paper);
+  padding: 8px 12px;
+  font-size: 13px;
+  width: 75%;
+  border-radius: 4px;
+}
+
+.stamp:hover .stamp-note { display: block; }
+</style>
+</head>
+
+<body>
+<div class="header"><h1>MassPort</h1></div>
+<div id="content"></div>
+
+<script>
+const tsvUrl =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
+
+const themes = [
+  { filter: 'duotone1', color: '#4478A2' },
+  { filter: 'duotone2', color: '#C65265' },
+  { filter: 'duotone3', color: '#D78143' },
+  { filter: 'duotone4', color: '#297381' },
+  { filter: 'duotone5', color: '#89974F' },
+  { filter: 'duotone6', color: '#DAAD60' },
+  { filter: 'duotone7', color: '#757498' },
+  { filter: 'duotone8', color: '#AA7876' },
+  { filter: 'duotone9', color: '#D7A995' },
+  { filter: 'duotone10', color: '#6E917A' }
+];
+
+let themeIndex = 0;
+let patternIndex = 0;
+
+async function fetchLocations() {
+  const res = await fetch(tsvUrl);
+  const text = await res.text();
+  return text.trim().split('\n').slice(1).map(r => {
+    const [name, address, note, imgUrl, city] = r.split('\t');
+    const state = city.split(',').pop().trim();
+    return { name, address, note, imgUrl, city, state };
+  });
+}
+
+function createStamp(loc) {
+  const theme = themes[themeIndex++ % themes.length];
+  const stamp = document.createElement('div');
+  stamp.className = 'stamp';
+  stamp.style.setProperty('--theme-color', theme.color);
+  stamp.style.transform = `rotate(${Math.random() * 8 - 4}deg)`;
+
+  const img = document.createElement('div');
+  img.className = 'stamp-image';
+
+  if (!loc.imgUrl) {
+    const mode = patternIndex++ % 4;
+    img.classList.add('no-image');
+
+    if (mode === 0) {
+      img.classList.add('stripe');
+      img.style.setProperty('--stripe-angle', '45deg');
+    }
+    if (mode === 1) {
+      img.classList.add('white');
+    }
+    if (mode === 2) {
+      img.classList.add('stripe');
+      img.style.setProperty('--stripe-angle', '135deg');
+    }
+    if (mode === 3) {
+      img.classList.add('theme');
+    }
+  }
+
+  if (loc.imgUrl) {
+    const d = document.createElement('img');
+    d.src = loc.imgUrl;
+    d.className = 'duotone';
+    d.style.filter = `url(#${theme.filter})`;
+
+    const n = document.createElement('img');
+    n.src = loc.imgUrl;
+    n.className = 'normal';
+
+    img.append(d, n);
+  }
+
+  const locTag = document.createElement('div');
+  locTag.className = 'stamp-location';
+  locTag.textContent = loc.city;
+
+  const title = document.createElement('div');
+  title.className = 'stamp-title-overlay';
+  title.textContent = loc.name;
+
+  img.append(locTag, title);
+  stamp.appendChild(img);
+
+  if (loc.note) {
+    const note = document.createElement('div');
+    note.className = 'stamp-note';
+    note.textContent = loc.note;
+    stamp.appendChild(note);
+  }
+
+  return stamp;
+}
+
+(async function init() {
+  const content = document.getElementById('content');
+  const locations = await fetchLocations();
+
+  const byState = {};
+  locations.forEach(l => (byState[l.state] ||= []).push(l));
+
+  Object.entries(byState)
+    .sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
+    .forEach(([state, locs]) => {
+      const header = document.createElement('div');
+      header.className = 'state-header';
+      header.innerHTML = `${state} <span>(${locs.length})</span>`;
+
+      const group = document.createElement('div');
+      group.className = 'state-group';
+      group.style.maxHeight = '2000px';
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+
+      locs.forEach(l => grid.appendChild(createStamp(l)));
+      group.appendChild(grid);
+
+      header.onclick = () => {
+        group.classList.toggle('collapsed');
+        group.style.maxHeight = group.classList.contains('collapsed') ? '0' : group.scrollHeight + 'px';
+      };
+
+      content.append(header, group);
+    });
+})();
+</script>
+</body>
+</html>

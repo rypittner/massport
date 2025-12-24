@@ -14,6 +14,22 @@
   --muted: #6b6b6b;
 }
 
+.modal-city {
+      font-size: 12px;
+      font-family: 'Inter', sans-serif;
+      color: #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      margin-top: 10px;
+      padding: 4px 8px;
+      display: inline-block;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+
 * { box-sizing: border-box; }
 
 body {
@@ -208,6 +224,7 @@ body {
 .stamp-image .stamp-title-overlay {
   background: color-mix(in srgb, var(--theme-color) 80%, transparent);
   color: white;
+  
 }
 .stamp-image:hover .stamp-title-overlay {
   background: white;
@@ -229,12 +246,66 @@ body {
 }
 
 .stamp:hover .stamp-note { display: block; }
+
+/* ---------- MODAL ---------- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.9);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  max-width: 90vw;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+#caption {
+  position: fixed;
+  bottom: 0;
+  width: 100vw;
+  color: white;
+  font-size: 1rem;
+  text-align: center;
+  z-index: 10001;
+  padding: 20px 8px 24px 8px;
+  background: rgba(0,0,0,0.9);
+  font-family: 'Inter', sans-serif;
+}
+
+.close {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
+  z-index: 10001;
+}
+.close:hover {
+  color: #bbb;
+}
 </style>
 </head>
 
 <body>
 <div class="header"><h1>MassPort</h1></div>
 <div id="content"></div>
+
+<!-- Modal HTML -->
+<div id="myModal" class="modal">
+  <span class="close">&times;</span>
+  <img class="modal-content" id="img01">
+  <div id="caption"></div>
+</div>
 
 <script>
 const tsvUrl =
@@ -298,6 +369,31 @@ function createStamp(loc) {
     n.className = 'normal';
 
     img.append(d, n);
+
+    // --- CLICK TO OPEN MODAL ---
+    const modal = document.getElementById("myModal");
+    const modalImg = document.getElementById("img01");
+    const captionText = document.getElementById("caption");
+    const span = document.getElementsByClassName("close")[0];
+
+n.onclick = function () {
+  modal.style.display = "flex";
+  modalImg.src = this.src;
+  captionText.innerHTML = `${loc.name} <span class="modal-city">${loc.city}</span>`;
+};
+
+d.onclick = function () {
+  modal.style.display = "flex";
+  modalImg.src = this.src;
+  captionText.innerHTML = `${loc.name} <span class="modal-city">${loc.city}</span>`;
+};
+
+    span.onclick = function () {
+      modal.style.display = "none";
+    };
+    modal.onclick = function (e) {
+      if (e.target === modal) modal.style.display = "none";
+    };
   }
 
   const locTag = document.createElement('div');
@@ -350,7 +446,6 @@ function setGroupHeight(group) {
       locs.forEach(l => grid.appendChild(createStamp(l)));
       group.appendChild(grid);
 
-      // Initial height
       requestAnimationFrame(() => setGroupHeight(group));
 
       header.onclick = () => {

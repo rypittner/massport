@@ -150,6 +150,8 @@ body {
     rgba(255,255,255,0.4) 14px,
     rgba(255,255,255,0.4) 18px
   );
+    backface-visibility: hidden;
+  display: block;  
 }
 
 .stamp-image.no-image.stripe:hover {
@@ -160,6 +162,8 @@ body {
     var(--theme-color) 14px,
     var(--theme-color) 18px
   );
+    backface-visibility: hidden;
+  display: block;  
 }
 
 .stamp-image.no-image.white {
@@ -187,7 +191,9 @@ body {
   top: 0;
   left: 0;
   transition: opacity 0.3s ease;
-  opacity: 0.5;
+  opacity: 0.7;
+  backface-visibility: hidden;
+  display: block;  
 }
 
 .stamp-image img.normal { opacity: 0; }
@@ -238,7 +244,7 @@ body {
 .stamp-note {
   position: absolute;
   top: 0px; /* start slightly above */
-  left: -0.5px;
+  left: -0.px;
   width: 101%;
   background: var(--theme-color);
   padding: 8px 12px;

@@ -48,7 +48,7 @@ body {
   align-items: center;
 }
 .state-header span {
-padding-left:5px;
+  padding-left:5px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--muted);
@@ -114,7 +114,6 @@ padding-left:5px;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /*transition: opacity 0.3s ease;*/
 }
 img.normal { opacity: 0; }
 .stamp-image:hover img.duotone { opacity: 0; }
@@ -214,7 +213,7 @@ img.normal { opacity: 0; }
   background: rgba(255,255,255,0.2);
   padding: 4px 8px;
   border-radius: 8px;
-    text-transform:uppercase;
+  text-transform:uppercase;
   letter-spacing:0.6px;
 }
 </style>
@@ -297,16 +296,42 @@ function createStamp(loc) {
   return stamp;
 }
 
+// ---------- COLUMN-FIRST CHECKERBOARD GRID ----------
 function mixStamps(locs) {
   const images = locs.filter(l => l.imgUrl);
   const placeholders = locs.filter(l => !l.imgUrl);
-  const mixed = [];
-  const maxLength = Math.max(images.length, placeholders.length);
-  for (let i = 0; i < maxLength; i++) {
-    if (images[i]) mixed.push(images[i]);
-    if (placeholders[i]) mixed.push(placeholders[i]);
+
+  const total = locs.length;
+  const cols = getGridColumns();
+  const rows = Math.ceil(total / cols);
+
+  const result = Array(total);
+  let imgIndex = 0, phIndex = 0;
+
+  for (let c = 0; c < cols; c++) {
+    for (let r = 0; r < rows; r++) {
+      const idx = r * cols + c;
+      if (idx >= total) continue;
+
+      let useImage = (r + c) % 2 === 0;
+
+      if (useImage) {
+        if (imgIndex < images.length) result[idx] = images[imgIndex++];
+        else if (phIndex < placeholders.length) result[idx] = placeholders[phIndex++];
+      } else {
+        if (phIndex < placeholders.length) result[idx] = placeholders[phIndex++];
+        else if (imgIndex < images.length) result[idx] = images[imgIndex++];
+      }
+    }
   }
-  return mixed;
+  return result;
+}
+
+function getGridColumns() {
+  const w = window.innerWidth;
+  if (w <= 640) return 2;
+  if (w <= 768) return 3;
+  return 4;
 }
 
 (async function init() {
@@ -348,7 +373,7 @@ function mixStamps(locs) {
 
     const wrap = document.createElement('div');
     wrap.className = 'grid-wrapper';
-    wrap.style.maxHeight = `${locs.length * 250}px`; // initial height
+    wrap.style.maxHeight = `${locs.length * 250}px`;
 
     const g = document.createElement('div');
     g.className = 'grid';

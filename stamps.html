@@ -10,42 +10,25 @@
 <style>
 :root {
   --bg: #FCF1E7;
-  --paper: #FCF1E7;
   --muted: #6b6b6b;
+  --grid-max: calc(220px * 5);
+  --grid-pad: 32px;
 }
-
-.modal-city {
-      font-size: 12px;
-      font-family: 'Inter', sans-serif;
-      color: #FFFFFF;
-      background-color: rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      margin-top: 10px;
-      padding: 4px 8px;
-      display: inline-block;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      text-decoration: none;
-    }
-
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  color: #111;
-  background-color: var(--bg);
-  background-image: url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg");
-  background-repeat: repeat;
+  background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
 }
 
 /* ---------- HEADER ---------- */
 .header {
-  padding: 28px 32px 8px;
+  max-width: var(--grid-max);
+  margin: 0 auto;
+  padding: 28px var(--grid-pad) 8px;
 }
-
 .header h1 {
   font-family: 'Yrsa', serif;
   font-size: 34px;
@@ -54,165 +37,105 @@ body {
 
 /* ---------- STATE HEADER ---------- */
 .state-header {
+  max-width: var(--grid-max);
+  margin: 0 auto;
+  padding: 16px var(--grid-pad) 8px;
   font-family: 'Yrsa', serif;
   font-size: 26px;
-  padding: 16px 32px 8px;
   cursor: pointer;
   user-select: none;
+  display: flex;
+  align-items: center;
 }
-
 .state-header span {
+padding-left:5px;
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: var(--muted);
-  margin-left: 6px;
-}
-
-/* ---------- GRID WRAPPER ---------- */
-.state-group {
-  overflow: hidden;
-  transition: max-height 0.45s ease, opacity 0.35s ease;
-  opacity: 1;
-}
-
-.state-group.collapsed {
-  max-height: 0 !important;
-  opacity: 0;
 }
 
 /* ---------- GRID ---------- */
+.grid-wrapper {
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+.grid-wrapper.collapsed {
+  max-height: 0 !important;
+}
+
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  padding: 32px;
-  max-width: calc(220px * 5);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0px;
+  padding: var(--grid-pad);
+  max-width: var(--grid-max);
   margin: 0 auto;
 }
 
-/* ---------- MOBILE: FORCE 2 COLUMNS ---------- */
-@media (max-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    padding: 20px;
-  }
-
-  .state-header {
-    padding: 16px 20px 6px;
-    font-size: 24px;
-  }
-}
+/* Responsive breakpoints */
+@media (max-width: 768px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .grid { grid-template-columns: repeat(2, 1fr); } }
 
 /* ---------- STAMP ---------- */
 .stamp {
-  background:
-    url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center / cover no-repeat,
-    var(--bg);
-    background-color:transparent;
-   
+  background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
   padding: 13%;
   aspect-ratio: 151 / 195;
-  position: relative;
   display: flex;
   cursor: pointer;
   --theme-color: #0d72e5;
   transition: transform 0.3s ease;
 }
-
 .stamp:hover {
-  transform: scale(1.05);
+  transform: scale(1.05) rotate(var(--rot));
 }
 
-/* ---------- IMAGE / COLOR RECT ---------- */
+/* ---------- IMAGE ---------- */
 .stamp-image {
   flex: 1;
   position: relative;
   overflow: hidden;
   border: 4pt solid var(--theme-color);
-  border-radius: 2px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background:var(--theme-color);
-  
-}
-
-/* ---------- NO IMAGE BASE ---------- */
-.stamp-image.no-image {
-  background: white;
-}
-
-/* ---------- STRIPE PATTERNS ---------- */
-.stamp-image.no-image.stripe {
-  background-image: repeating-linear-gradient(
-    var(--stripe-angle),
-    var(--theme-color),
-    var(--theme-color) 14px,
-    rgba(255,255,255,0.4) 14px,
-    rgba(255,255,255,0.4) 18px
-  );
-    backface-visibility: hidden;
-  display: block;  
-}
-
-.stamp-image.no-image.stripe:hover {
-  background-image: repeating-linear-gradient(
-    var(--stripe-angle),
-    rgba(255,255,255,0.4),
-    rgba(255,255,255,0.4) 14px,
-    var(--theme-color) 14px,
-    var(--theme-color) 18px
-  );
-    backface-visibility: hidden;
-  display: block;  
-}
-
-.stamp-image.no-image.white {
-  background: white;
-}
-
-.stamp-image.no-image.white:hover {
   background: var(--theme-color);
 }
 
-.stamp-image.no-image.theme {
-  background: var(--theme-color);
-}
-
-.stamp-image.no-image.theme:hover {
-  background: white;
-}
-
-/* ---------- IMAGE HOVER ---------- */
+/* real images */
 .stamp-image img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  position: absolute;
-  top: 0;
-  left: 0;
-  transition: opacity 0.3s ease;
-  opacity: 0.7;
-  backface-visibility: hidden;
-  display: block;  
+  /*transition: opacity 0.3s ease;*/
 }
-
-.stamp-image img.normal { opacity: 0; }
+img.normal { opacity: 0; }
 .stamp-image:hover img.duotone { opacity: 0; }
 .stamp-image:hover img.normal { opacity: 1; }
 
-/* ---------- LOCATION TAG ---------- */
-.stamp-location {
+/* ---------- PLACEHOLDERS ---------- */
+.placeholder {
   position: absolute;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  top: 8px;
-  right: 0;
-  background: var(--theme-color);
-  color: white;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 10px 0 0 10px;
-  z-index: 2;
+  inset: 0;
+  --light: rgba(255,255,255,0.4);
+  --dark: var(--theme-color);
+  background-image: repeating-linear-gradient(
+    var(--stripe-angle),
+    var(--stripe-light),
+    var(--stripe-light) 14px,
+    var(--stripe-dark) 14px,
+    var(--stripe-dark) 18px
+  );
+  transition: background-image 0.3s ease, --stripe-light 0.3s ease, --stripe-dark 0.3s ease;
+}
+
+.pattern-1 { --stripe-angle: 45deg;  --stripe-light: var(--light); --stripe-dark: var(--dark); }
+.pattern-2 { --stripe-angle: 135deg; --stripe-light: var(--dark); --stripe-dark: var(--light); }
+.pattern-3 { --stripe-angle: 135deg; --stripe-light: var(--light); --stripe-dark: var(--dark); }
+.pattern-4 { --stripe-angle: 45deg;  --stripe-light: var(--dark); --stripe-dark: var(--light); }
+
+.stamp-image:hover .placeholder {
+  --stripe-light: var(--dark);
+  --stripe-dark: var(--light);
 }
 
 /* ---------- TITLE ---------- */
@@ -223,93 +146,68 @@ body {
   padding: 15px;
   font-family: 'Yrsa', serif;
   font-size: 125%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  line-height: 0.9;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.stamp-image .stamp-title-overlay {
-  background: color-mix(in srgb, var(--theme-color) 80%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 90%, transparent);
   color: white;
-  
+  line-height:0.9;
 }
 .stamp-image:hover .stamp-title-overlay {
   background: white;
   color: var(--theme-color);
 }
 
-/* ---------- NOTE ---------- */
-.stamp-note {
+/* ---------- LOCATION ---------- */
+.stamp-location {
   position: absolute;
-  top: 0px; /* start slightly above */
-  left: -0.px;
-  width: 101%;
+  top: 8px;
+  right: 0;
   background: var(--theme-color);
-  padding: 8px 12px;
-  font-size: 13px;
   color: white;
-  border-radius: 0px 0px 4px 4px;
-  z-index: 10;
-  text-align: center;
-
-  opacity: 0;
-  transform: translateY(-10px); /* slide down from above */
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* on hover, slide down and fade in */
-.stamp:hover .stamp-note {
-  opacity: 1;
-  transform: translateY(0);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 10px 0 0 10px;
+  text-transform:uppercase;
+  letter-spacing:0.6px;
 }
 
 /* ---------- MODAL ---------- */
 .modal {
   display: none;
   position: fixed;
-  z-index: 10000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.9);
+  inset: 0;
+  background: rgba(0,0,0,0.9);
   justify-content: center;
   align-items: center;
+  z-index: 10000;
 }
-
-.modal-content {
+.modal img {
   max-width: 90vw;
   max-height: 85vh;
-  object-fit: contain;
-  border-radius: 10px;
 }
-
 #caption {
   position: fixed;
   bottom: 0;
-  width: 100vw;
-  color: white;
-  font-size: 1rem;
-  text-align: center;
-  z-index: 10001;
-  padding: 20px 8px 24px 8px;
+  width: 100%;
   background: rgba(0,0,0,0.9);
-  font-family: 'Inter', sans-serif;
+  color: white;
+  text-align: center;
+  padding: 20px;
 }
-
 .close {
   position: fixed;
   top: 10px;
   right: 10px;
-  color: white;
   font-size: 40px;
+  color: white;
   cursor: pointer;
-  z-index: 10001;
 }
-.close:hover {
-  color: #bbb;
+.modal-city {
+  font-size: 12px;
+  margin-left: 8px;
+  background: rgba(255,255,255,0.2);
+  padding: 4px 8px;
+  border-radius: 8px;
+    text-transform:uppercase;
+  letter-spacing:0.6px;
 }
 </style>
 </head>
@@ -318,167 +216,161 @@ body {
 <div class="header"><h1>MassPort</h1></div>
 <div id="content"></div>
 
-<!-- Modal HTML -->
 <div id="myModal" class="modal">
   <span class="close">&times;</span>
-  <img class="modal-content" id="img01">
+  <img id="img01">
   <div id="caption"></div>
 </div>
 
 <script>
 const tsvUrl =
-  'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
+'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
+
+const stateNames = {
+  AZ:'Arizona', CA:'California', NM:'New Mexico', NV:'Nevada',
+  UT:'Utah', NE:'Nebraska', MI:'Michigan', MT:'Montana',
+  GA:'Georgia', NJ:'New Jersey', TX:'Texas', IL:'Illinois'
+};
 
 const themes = [
-  { filter: 'duotone1', color: '#4478A2' },
-  { filter: 'duotone2', color: '#C65265' },
-  { filter: 'duotone3', color: '#D78143' },
-  { filter: 'duotone4', color: '#297381' },
-  { filter: 'duotone5', color: '#89974F' },
-  { filter: 'duotone6', color: '#DAAD60' },
-  { filter: 'duotone7', color: '#757498' },
-  { filter: 'duotone8', color: '#AA7876' },
-  { filter: 'duotone9', color: '#D7A995' },
-  { filter: 'duotone10', color: '#6E917A' }
+  '#4478A2','#C65265','#D78143','#297381','#89974F',
+  '#DAAD60','#757498','#AA7876','#D7A995','#6E917A'
 ];
 
 let themeIndex = 0;
-let patternIndex = 0;
-
-async function fetchLocations() {
-  const res = await fetch(tsvUrl);
-  const text = await res.text();
-  return text.trim().split('\n').slice(1).map(r => {
-    const [name, address, note, imgUrl, city] = r.split('\t');
-    const state = city.split(',').pop().trim();
-    return { name, address, note, imgUrl, city, state };
-  });
-}
+let placeholderIndex = 0;
 
 function createStamp(loc) {
-  const theme = themes[themeIndex++ % themes.length];
+  const color = themes[themeIndex++ % themes.length];
   const stamp = document.createElement('div');
   stamp.className = 'stamp';
-  stamp.style.setProperty('--theme-color', theme.color);
-  stamp.style.transform = `rotate(${Math.random() * 8 - 4}deg)`;
+  stamp.style.setProperty('--theme-color', color);
+
+  const rot = (Math.random() * 6 - 3).toFixed(2) + 'deg';
+  stamp.style.setProperty('--rot', rot);
 
   const img = document.createElement('div');
   img.className = 'stamp-image';
-
-  if (!loc.imgUrl) {
-    const mode = patternIndex++ % 4;
-    img.classList.add('no-image');
-    if (mode === 0 || mode === 2) {
-      img.classList.add('stripe');
-      img.style.setProperty('--stripe-angle', mode === 0 ? '45deg' : '135deg');
-    }
-    if (mode === 1) img.classList.add('white');
-    if (mode === 3) img.classList.add('theme');
-  }
 
   if (loc.imgUrl) {
     const d = document.createElement('img');
     d.src = loc.imgUrl;
     d.className = 'duotone';
-    d.style.filter = `url(#${theme.filter})`;
 
     const n = document.createElement('img');
     n.src = loc.imgUrl;
     n.className = 'normal';
 
     img.append(d, n);
-
-    // --- CLICK TO OPEN MODAL ---
-    const modal = document.getElementById("myModal");
-    const modalImg = document.getElementById("img01");
-    const captionText = document.getElementById("caption");
-    const span = document.getElementsByClassName("close")[0];
-
-n.onclick = function () {
-  modal.style.display = "flex";
-  modalImg.src = this.src;
-  captionText.innerHTML = `${loc.name} <span class="modal-city">${loc.city}</span>`;
-};
-
-d.onclick = function () {
-  modal.style.display = "flex";
-  modalImg.src = this.src;
-  captionText.innerHTML = `${loc.name} <span class="modal-city">${loc.city}</span>`;
-};
-
-    span.onclick = function () {
-      modal.style.display = "none";
-    };
-    modal.onclick = function (e) {
-      if (e.target === modal) modal.style.display = "none";
-    };
+  } else {
+    const ph = document.createElement('div');
+    ph.className = `placeholder pattern-${(placeholderIndex++ % 4) + 1}`;
+    img.appendChild(ph);
   }
-
-  const locTag = document.createElement('div');
-  locTag.className = 'stamp-location';
-  locTag.textContent = loc.city;
 
   const title = document.createElement('div');
   title.className = 'stamp-title-overlay';
   title.textContent = loc.name;
 
+  const locTag = document.createElement('div');
+  locTag.className = 'stamp-location';
+  locTag.textContent = loc.city;
+
   img.append(locTag, title);
   stamp.appendChild(img);
 
-if (loc.note) {
-  const note = document.createElement('div');
-  note.className = 'stamp-note';
-  note.textContent = loc.note;
-  // append note inside stamp-image instead of stamp
-  img.appendChild(note);
-}
+  stamp.onclick = () => {
+    if (!loc.imgUrl) return;
+    myModal.style.display = 'flex';
+    img01.src = loc.imgUrl;
+    caption.innerHTML = `${loc.name}<span class="modal-city">${loc.city}</span>`;
+  };
 
   return stamp;
 }
 
-function setGroupHeight(group) {
-  if (!group.classList.contains('collapsed')) {
-    group.style.maxHeight = group.scrollHeight + 'px';
+function mixStamps(locs) {
+  const images = locs.filter(l => l.imgUrl);
+  const placeholders = locs.filter(l => !l.imgUrl);
+  const mixed = [];
+  const maxLength = Math.max(images.length, placeholders.length);
+  for (let i = 0; i < maxLength; i++) {
+    if (images[i]) mixed.push(images[i]);
+    if (placeholders[i]) mixed.push(placeholders[i]);
   }
+  return mixed;
 }
 
 (async function init() {
+  const rows = (await (await fetch(tsvUrl)).text()).trim().split('\n').slice(1);
+
+  const locations = rows.map(r => {
+    const [name,, , imgUrl, city] = r.split('\t');
+    return { name, imgUrl: imgUrl || '', city, raw: city.split(',').pop().trim() };
+  });
+
+  const groups = {};
+  locations.forEach(l => {
+    const key = ['Italy','Vatican City'].includes(l.raw)
+      ? 'Europe'
+      : stateNames[l.raw] || l.raw;
+    (groups[key] ||= []).push(l);
+  });
+
+  const finalGroups = { Europe: groups.Europe || [], Other: [] };
+  Object.entries(groups).forEach(([state, locs]) => {
+    if (state === 'Europe') return;
+    locs.length === 1
+      ? finalGroups.Other.push(...locs)
+      : finalGroups[state] = locs;
+  });
+
+  const entries = Object.entries(finalGroups)
+    .filter(([k]) => k !== 'Other')
+    .sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+
+  if (finalGroups.Other.length) entries.push(['Other', finalGroups.Other]);
+
   const content = document.getElementById('content');
-  const locations = await fetchLocations();
 
-  const byState = {};
-  locations.forEach(l => (byState[l.state] ||= []).push(l));
+  entries.forEach(([state, locs]) => {
+    const h = document.createElement('div');
+    h.className = 'state-header';
+    h.innerHTML = `${state} <span>(${locs.length})</span>`;
 
-  Object.entries(byState)
-    .sort((a,b) => b[1].length - a[1].length || a[0].localeCompare(b[0]))
-    .forEach(([state, locs]) => {
-      const header = document.createElement('div');
-      header.className = 'state-header';
-      header.innerHTML = `${state} <span>(${locs.length})</span>`;
+    const wrap = document.createElement('div');
+    wrap.className = 'grid-wrapper';
+    wrap.style.maxHeight = `${locs.length * 250}px`; // initial height
 
-      const group = document.createElement('div');
-      group.className = 'state-group';
+    const g = document.createElement('div');
+    g.className = 'grid';
 
-      const grid = document.createElement('div');
-      grid.className = 'grid';
+    const mixed = mixStamps(locs);
+    mixed.forEach(l => g.appendChild(createStamp(l)));
 
-      locs.forEach(l => grid.appendChild(createStamp(l)));
-      group.appendChild(grid);
-
-      requestAnimationFrame(() => setGroupHeight(group));
-
-      header.onclick = () => {
-        group.classList.toggle('collapsed');
-        if (!group.classList.contains('collapsed')) {
-          setGroupHeight(group);
-        }
-      };
-
-      window.addEventListener('resize', () => setGroupHeight(group));
-
-      content.append(header, group);
+    h.addEventListener('click', () => {
+      if (wrap.classList.contains('collapsed')) {
+        wrap.classList.remove('collapsed');
+        wrap.style.maxHeight = `${wrap.scrollHeight}px`;
+      } else {
+        wrap.style.maxHeight = '0';
+        wrap.classList.add('collapsed');
+      }
     });
+
+    wrap.appendChild(g);
+    content.append(h, wrap);
+  });
 })();
+
+/* MODAL CONTROLS */
+const myModal = document.getElementById('myModal');
+const img01 = document.getElementById('img01');
+const caption = document.getElementById('caption');
+const closeBtn = document.querySelector('.close');
+
+closeBtn.onclick = () => myModal.style.display = 'none';
+myModal.onclick = e => e.target === myModal && (myModal.style.display = 'none');
 </script>
 </body>
 </html>

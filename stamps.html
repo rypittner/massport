@@ -54,6 +54,14 @@ padding-left:5px;
   color: var(--muted);
 }
 
+/* Hide stamp title on mobile for stamps with images */
+@media (max-width: 640px) {
+  .stamp-image img + .stamp-title-overlay,
+  .stamp-image img ~ .stamp-title-overlay {
+    display: none;
+  }
+}
+
 /* ---------- GRID ---------- */
 .grid-wrapper {
   overflow: hidden;
@@ -146,7 +154,7 @@ img.normal { opacity: 0; }
   padding: 15px;
   font-family: 'Yrsa', serif;
   font-size: 125%;
-  background: color-mix(in srgb, var(--theme-color) 90%, transparent);
+  background: color-mix(in srgb, var(--theme-color) 100%, transparent);
   color: white;
   line-height:0.9;
 }

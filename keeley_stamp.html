@@ -1,1 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>MassPort — Digital Philately & Map</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Yrsa:wght@500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+    <style>
+        :root {
+            --bg: #FCF1E7;
+            --grid-max: 1100px;
+            --grid-pad: 24px;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
+            color: #333;
+            overflow-x: hidden;
+            padding-bottom: 120px;
+            height: 100vh;
+        }
+
+        .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 10px; text-align: center; position: relative; z-index: 10; }
+        .header h1 { font-family: 'Yrsa', serif; font-size: 42px; margin: 0; }
+        body.map-active .header { display: none; }
+
+        /* ---------- NAVIGATION ---------- */
+        .collector-nav-container {
+            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
+            padding: 6px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: flex; align-items: center; z-index: 10000;
+            max-width: 95vw; width: max-content;
+        }
+
+        .collector-nav {
+            display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+            padding: 4px 10px;
+            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+            mask-image: linear-gradient(to right, black 85%, transparent 100%);
+        }
+        .collector-nav::-webkit-scrollbar { display: none; }
+
+        .nav-tag {
+            font-family: 'Inter', monospace; font-size: 11px; color: #444;
+            cursor: pointer; 
+            padding: 8px 14px;
+            border-radius: 20px;
+            white-space: nowrap; transition: 0.2s; background: rgba(0,0,0,0.04);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .nav-tag.active { background: #4478A2; color: #fff; }
+        
+        .map-btn-wrapper {
+            padding: 0 4px 0 10px;
+            border-left: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .nav-tag[data-type="Map"] {
+            border: 2px solid #4478A2;
+            color: #4478A2;
+            font-weight: 600;
+        }
+        .nav-tag[data-type="Map"].active {
+            background: #4478A2;
+            color: white;
+        }
+
+        /* ---------- GRID & MAP VISIBILITY ---------- */
+        #main-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            max-width: var(--grid-max); 
+            margin: 0 auto; 
+            padding: var(--grid-pad);
+            transition: opacity 0.3s ease;
+        }
+
+        .grid-fade-out { opacity: 0; }
+
+        #map-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
+        #map { height: 100%; width: 100%; }
+
+        @media (max-width: 850px) { #main-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 600px) { #main-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* ---------- STAMP CORE STYLING ---------- */
+        .stamp-wrapper { 
+            opacity: 0; 
+            transform: translateY(30px) rotate(var(--r, 0deg)); 
+            transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); 
+        }
+        
+        /* New Animation Reveal Class */
+        .stamp-wrapper.revealed { 
+            opacity: 1; 
+            transform: translateY(0) rotate(var(--r, 0deg)); 
+        }
+
+        .stamp-wrapper.no-rotate { --r: 0deg !important; transform: translateY(0) rotate(0deg) !important; width: 250px; margin: 0 auto; opacity: 1; }
+        
+        .stamp {
+            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
+            padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        filter 0.4s ease;
+        }
+        
+        /* Enhanced Hover "Pick up" effect */
+        .stamp:hover { 
+            transform: scale(1.06) translateY(-5px) rotate(0deg) !important; 
+            z-index: 100;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
+        }
+        .no-rotate .stamp:hover { transform: scale(1) translateY(0) !important; }
+
+        .stamp-image {
+            width: 100%; height: 100%; position: relative; overflow: hidden;
+            border: 4pt solid var(--theme-color); background: var(--theme-color);
+            display: flex; flex-direction: column; justify-content: flex-end;
+        }
+        
+        .no-rotate .stamp-name { font-size: 22px; line-height:1; }
+        .no-rotate .stamp-note { font-size: 13px; line-height:1.25; opacity: 1; }
+
+        .stamp-image img {
+            position: absolute; top: 50%; left: 50%; width: 102%; height: 102%;
+            object-fit: cover; transform: translate(-50%, -50%) scale(1);
+            transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .stamp:hover .stamp-image img { transform: translate(-50%, -50%) scale(1.1); }
+        img.normal { opacity: 0; transition: opacity 0.4s ease; }
+        .stamp:hover img.normal { opacity: 1; }
+
+        .placeholder { position: absolute; inset: -1px; --light: rgba(255,255,255,0.4); --dark: var(--theme-color); }
+        .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
+        .pattern-2 { background-image: repeating-linear-gradient(135deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
+        .pattern-3 { background-image: repeating-linear-gradient(135deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
+        .pattern-4 { background-image: repeating-linear-gradient(45deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
+
+        .stamp-title-overlay {
+            position: relative; width: calc(100% + 2px); margin-left: -1px; margin-bottom: -1px;
+            padding: 10px; background: var(--theme-color); color: white; z-index: 5;
+            display: grid; grid-template-rows: auto 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .stamp:hover .stamp-title-overlay { grid-template-rows: auto 1fr; }
+        .stamp-name { font-family: 'Yrsa', serif; font-size: 16px; line-height: 1.1; font-weight: 600; }
+        .note-container { overflow: hidden; }
+        .stamp-note { font-family: 'Inter', sans-serif; font-size: 10px; line-height: 1.4; padding-top: 8px; opacity: 0; transition: opacity 0.3s ease; font-weight: 400; }
+        .stamp:hover .stamp-note { opacity: 1; }
+
+        .postmark-seal {
+            position: absolute; top: -12px; right: -12px; width: 70px; height: 70px;
+            border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Special Elite'; font-size: 10px; text-align: center;
+            transform: rotate(15deg) scale(1); background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px); z-index: 60; color: rgba(0,0,0,0.5); padding: 4px;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: pointer;
+        }
+        .stamp:hover .postmark-seal { transform: rotate(0deg) scale(1.15); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
+
+        /* ---------- MODAL ---------- */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
+        .modal-frame { position: relative; display: flex; flex-direction: column; align-items: center; max-width: 85vw; animation: stampExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes stampExpand { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal img { max-height: 65vh; max-width: 100%; border: 12px solid white; box-shadow: 0 30px 60px rgba(0,0,0,0.4); transition: transform 0.5s ease-out; }
+        #caption { margin-top: 25px; color: white; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; }
+        #caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0 0 8px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        #caption p { font-family: 'Inter', sans-serif; font-size: 16px; color: #fff; margin: 0; opacity: 0.95; font-weight: 400; max-width: 600px; }
+        .city-pill { display: inline-block; background: #f0f0f0; color: #666; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 16px; border-radius: 50px; margin-top: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none; }
+        .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* ---------- LEAFLET OVERRIDES & CARROT ---------- */
+        .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
+        .leaflet-popup-tip-container { display: block; width: 50px; height: 25px; position: absolute; left: 50%; margin-left: -25px; bottom: 0px; z-index: -1; }
+        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+        
+        .arrow-btn {
+            background-color: rgba(255,255,255,0.95); border: none; border-radius: 50%; 
+            width: 40px; height: 40px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 5 !important; /* PLACED BEHIND STAMP CONTENT */
+            transition: all 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
+        }
+        .arrow-btn:hover { background: #fff; transform: translateY(-50%) scale(1.1); z-index: 100 !important;}
+        .arrow-btn.back { left: -20px; }
+        .arrow-btn.forward { right: -20px; }
+        .arrow-btn .material-symbols-rounded { font-size: 24px; color: #333; }
+        
+        /* Ensure stamp in popup is above arrows by default */
+        .leaflet-popup-content .stamp-wrapper { z-index: 10; position: relative; }
+    </style>
+</head>
+
+<body>
+    <div class="header"><h1>MassPort</h1></div>
+    
+    <div class="collector-nav-container">
+        <div class="collector-nav" id="filter-nav"></div>
+        <div class="map-btn-wrapper" id="map-btn-anchor"></div>
+    </div>
+    
+    <div id="main-grid"></div>
+    
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+
+    <div id="myModal" class="modal">
+        <span class="close">×</span>
+        <div class="modal-frame">
+            <img id="img01">
+            <div id="caption"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
+        const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
+        
+        let globalLocations = [];
+        let placeholderCounter = 0;
+        let map, markers = [];
+        let currentMarkerIndex = 0;
+
+        async function init() {
+            const response = await fetch(tsvUrl);
+            const data = await response.text();
+            const rows = data.trim().split('\n').slice(1);
+
+            globalLocations = rows.map(r => {
+                const cols = r.split('\t');
+                const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
+                const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
+                return { 
+                    name: cols[0], address: cols[1], note: cols[2], 
+                    imgUrl: cols[3] || '', city: cols[4] || '', 
+                    lat: parseFloat(cols[5]), lng: parseFloat(cols[6]),
+                    stateName 
+                };
+            });
+
+            setupNavigation();
+            renderGrid(applyCheckerboard(globalLocations));
+            initMap();
+        }
+
+        function setupNavigation() {
+            const counts = {};
+            globalLocations.forEach(l => { counts[l.stateName] = (counts[l.stateName] || 0) + 1; });
+            const top4States = Object.entries(counts).filter(([k]) => k !== 'Europe' && k !== 'Other').sort((a,b) => b[1] - a[1]).slice(0,4).map(e => e[0]);
+            
+            globalLocations.forEach(l => { 
+                l.isOther = !top4States.includes(l.stateName) && l.stateName !== 'Europe'; 
+            });
+
+            const navOrder = ['All', ...top4States, 'Europe', 'Other', 'Map'];
+            const nav = document.getElementById('filter-nav');
+            const mapAnchor = document.getElementById('map-btn-anchor');
+            
+            navOrder.forEach(s => {
+                const btn = document.createElement('div');
+                btn.className = 'nav-tag' + (s === 'All' ? ' active' : '');
+                btn.setAttribute('data-type', s);
+                const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
+                
+                btn.innerText = s === 'Map' ? 'Map View' : `${s} (${count})`;
+                btn.onclick = (e) => handleNavClick(s, e.currentTarget);
+                if(s === 'Other') btn.setAttribute('data-isother', 'true');
+                
+                if (s === 'Map') {
+                    mapAnchor.appendChild(btn);
+                } else {
+                    nav.appendChild(btn);
+                }
+            });
+        }
+
+        function handleNavClick(state, el) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const grid = document.getElementById('main-grid');
+
+            if (state === 'Map') {
+                document.body.classList.add('map-active');
+                grid.style.display = 'none';
+                document.getElementById('map-container').style.display = 'block';
+                map.invalidateSize();
+            } else {
+                document.body.classList.remove('map-active');
+                document.getElementById('map-container').style.display = 'none';
+                grid.classList.add('grid-fade-out');
+                
+                setTimeout(() => {
+                    grid.style.display = 'grid';
+                    const isOtherRequested = el.getAttribute('data-isother') === 'true';
+                    const filtered = globalLocations.filter(l => 
+                        state === 'All' || 
+                        (isOtherRequested ? l.isOther : l.stateName === state)
+                    );
+                    renderGrid(applyCheckerboard(filtered));
+                    grid.classList.remove('grid-fade-out');
+                }, 200);
+            }
+        }
+
+        function generateStampHTML(loc, index, isMapMode = false) {
+            const color = themes[index % themes.length];
+            const parts = loc.city.split(',');
+            const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.name + ', ' + loc.city)}`;
+            
+            const rotation = isMapMode ? '0deg' : (Math.random() * 4 - 2).toFixed(2) + 'deg';
+            const hidePostmark = isMapMode ? 'display:none' : '';
+
+            return `
+                <div class="stamp-wrapper ${isMapMode ? 'no-rotate' : ''}" style="--r: ${rotation}">
+                    <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
+                        <div class="postmark-seal" style="${hidePostmark}" onclick="window.open('${mapsUrl}', '_blank'); event.stopPropagation();">
+                            ${citySt}
+                        </div>
+                        <div class="stamp-image">
+                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
+                            `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
+                            <div class="stamp-title-overlay">
+                                <div class="stamp-name">${loc.name}</div>
+                                <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderGrid(locs) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            locs.forEach((loc, i) => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = generateStampHTML(loc, i);
+                grid.appendChild(tempDiv.firstElementChild);
+            });
+            
+            // Trigger staggered animation
+            requestAnimationFrame(() => revealStamps());
+        }
+
+        function revealStamps() {
+            const stamps = document.querySelectorAll('#main-grid .stamp-wrapper');
+            stamps.forEach((stamp, i) => {
+                // Stagger by 40ms per stamp
+                stamp.style.transitionDelay = `${i * 40}ms`;
+                stamp.classList.add('revealed');
+            });
+        }
+
+        function createColoredMarkerIcon(color) {
+            const svgTemplate = `
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="15" cy="15" r="13" fill="white" stroke="${color}" stroke-width="2"/>
+                    <circle cx="15" cy="15" r="9" fill="${color}"/>
+                </svg>`;
+            return L.divIcon({
+                html: svgTemplate,
+                className: 'custom-theme-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -28]
+            });
+        }
+
+        function initMap() {
+            map = L.map('map', { attributionControl: false, zoomControl: false });
+            map.setView([39.8283, -98.5795], 4);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
+
+            globalLocations.forEach((loc, i) => {
+                if(!loc.lat || !loc.lng) return;
+                const themeColor = themes[i % themes.length];
+                const marker = L.marker([loc.lat, loc.lng], { icon: createColoredMarkerIcon(themeColor) }).addTo(map);
+                
+                const popupContent = `
+                    <div style="position:relative">
+                        <button class="arrow-btn back" onclick="navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
+                        <button class="arrow-btn forward" onclick="navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>
+                        ${generateStampHTML(loc, i, true)}
+                    </div>
+                `;
+                
+                marker.bindPopup(popupContent, { 
+                    maxWidth: 280, 
+                    closeButton: false, 
+                    autoPan: false,
+                    offset: [0, 24]
+                });
+
+                marker.on('click', () => { 
+                    currentMarkerIndex = i; 
+                    centerMarkerAndStamp(marker);
+                });
+                markers.push(marker);
+            });
+        }
+
+        function centerMarkerAndStamp(marker) {
+            const targetPoint = map.project(marker.getLatLng(), map.getZoom());
+            targetPoint.y -= 130; 
+            const targetLatLng = map.unproject(targetPoint, map.getZoom());
+            map.panTo(targetLatLng, { animate: true });
+            marker.openPopup();
+        }
+
+        function navigateMap(dir) {
+            currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length;
+            const marker = markers[currentMarkerIndex];
+            centerMarkerAndStamp(marker);
+        }
+
+        function openModalByIndex(index) {
+            const loc = globalLocations[index];
+            if (!loc.imgUrl) return;
+            
+            const modal = document.getElementById('myModal');
+            const img01 = document.getElementById('img01');
+            const caption = document.getElementById('caption');
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.name + ', ' + loc.city)}`;
+
+            img01.src = loc.imgUrl;
+            img01.style.transform = `rotate(${(Math.random() * 3 - 1.5).toFixed(2)}deg)`;
+            caption.innerHTML = `
+                <h2>${loc.name}</h2>
+                <p>${loc.note || ''}</p>
+                <div class="city-pill" onclick="window.open('${mapsUrl}', '_blank')">${loc.city}</div>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function applyCheckerboard(locs) {
+            const cols = window.innerWidth <= 600 ? 2 : (window.innerWidth <= 850 ? 3 : 4);
+            const withImg = locs.filter(x => x.imgUrl);
+            const noImg = locs.filter(x => !x.imgUrl);
+            const result = [];
+            let imgIdx = 0, noImgIdx = 0;
+            for (let i = 0; i < locs.length; i++) {
+                const row = Math.floor(i / cols), col = i % cols;
+                if ((row + col) % 2 === 0) result.push(imgIdx < withImg.length ? withImg[imgIdx++] : noImg[noImgIdx++]);
+                else result.push(noImgIdx < noImg.length ? noImg[noImgIdx++] : withImg[imgIdx++]);
+            }
+            return result.filter(x => x);
+        }
+
+        const myModal = document.getElementById('myModal');
+        document.querySelector('.close').onclick = () => myModal.style.display = 'none';
+        myModal.onclick = (e) => { if(e.target === myModal) myModal.style.display = 'none'; };
+
+        init();
+    </script>
+</body>
+</html>

@@ -52,13 +52,12 @@
         }
         .collector-nav::-webkit-scrollbar { display: none; }
         
-        /* Prevent nav scrolling when map is active */
-        body.map-active .collector-nav { overflow: hidden; }
+        body.map-active .collector-nav { overflow: hidden; pointer-events: auto; }
 
         .nav-pill-bg {
             position: absolute; top: 4px; left: 10px; height: calc(100% - 8px);
             background: var(--accent); border-radius: 20px;
-            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.1); z-index: 1;
+            transition: all 0.3s ease; z-index: 1;
             pointer-events: none;
         }
         body.map-active .nav-pill-bg { opacity: 0; }
@@ -107,9 +106,10 @@
         .map-stamp { --r: 0deg !important; width: 250px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
-            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") no-repeat;
-            background-size: 100% 100%; /* Force ruffled edge image to fill without cropping */
-            padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
+            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/contain no-repeat;
+            padding: 13%; 
+            aspect-ratio: 151 / 195; /* Correct original aspect ratio to prevent stretching */
+            cursor: pointer; position: relative;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.5s ease;
         }
         .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 35px rgba(0,0,0,0.3)); }
@@ -307,9 +307,10 @@
         }
 
         function handleNavClick(state, el) {
-            updatePill(el);
+            // Instant color switch for better feedback
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
+            updatePill(el);
 
             if (state === 'Map') {
                 document.body.classList.add('map-active');
@@ -387,7 +388,7 @@
                 className: 'custom-logo-marker',
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
-                popupAnchor: [0, -10] /* Neutralized anchor for better centering */
+                popupAnchor: [0, -10]
             });
         }
 
@@ -406,17 +407,21 @@
                         ${generateStampHTML(loc, i, true)}
                     </div>
                 `;
-                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: true });
+                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: false });
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
             });
         }
 
         function centerMarker(marker) {
+            // NEW MATH: Centers the entire popup/stamp visually in the center of the available screen space
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
-            // Adjusted for vertical centering
-            targetPoint.y -= (window.innerWidth < 600 ? 50 : 130); 
-            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true });
+            const halfHeight = map.getSize().y / 2;
+            const popupHeightOffset = 40; // Fine-tuning for the stamp height
+            
+            targetPoint.y -= (halfHeight - popupHeightOffset);
+            
+            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.6 });
             marker.openPopup();
         }
 

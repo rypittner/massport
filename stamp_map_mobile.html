@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --stamp-frame: 22px; /* Fixed pixel margin for consistent containment */
+            --stamp-border: 24px; /* Fixed pixel border for containment */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -56,7 +56,7 @@
         .nav-pill-bg {
             position: absolute; top: 4px; left: 10px; height: calc(100% - 8px);
             background: var(--accent); border-radius: 20px;
-            transition: all 0.2s ease-out; z-index: 1;
+            transition: all 0.3s ease; z-index: 1;
             pointer-events: none;
         }
 
@@ -72,7 +72,7 @@
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
         .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
-        /* ---------- GRID & MOBILE SCROLL ---------- */
+        /* ---------- GRID & MOBILE ---------- */
         #main-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
             max-width: var(--grid-max); margin: 0 auto; 
@@ -85,23 +85,18 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
-                padding: 60px 0 100px; /* Increased bottom padding to prevent shadow clipping */
-                scrollbar-width: none;
+                padding: 40px 0 80px; /* Padding for shadows */
+                -webkit-overflow-scrolling: touch;
             } 
-            #main-grid::-webkit-scrollbar { display: none; }
-
             #main-grid .stamp-wrapper {
-                flex: 0 0 75vw; /* Tighter spacing to see more of next stamp */
+                flex: 0 0 80vw;
                 scroll-snap-align: center;
-                padding: 0 10px;
+                padding: 0 15px;
             }
-
-            /* Edge Click Navigation Zones */
-            .scroll-zone {
-                position: fixed; top: 0; bottom: 0; width: 15%; z-index: 9999;
-            }
-            .scroll-zone.left { left: 0; }
-            .scroll-zone.right { right: 0; }
+            /* Edge click navigation */
+            .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; }
+            .scroll-edge.left { left: 0; }
+            .scroll-edge.right { right: 0; }
         }
 
         body.map-active #main-grid { opacity: 0; transform: scale(0.95); pointer-events: none; }
@@ -114,13 +109,14 @@
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
 
-        /* ---------- STAMP STYLING ---------- */
+        /* ---------- STAMP CORE STYLING ---------- */
         .stamp-wrapper { 
             opacity: 0; transform: translateY(30px) rotate(var(--r, 0deg)); 
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.15)); 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); 
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
+        .map-stamp { --r: 0deg !important; width: 260px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
             background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/contain no-repeat;
@@ -128,21 +124,21 @@
             cursor: pointer; position: relative;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.5s ease;
         }
-
-        /* Auto-hover triggers for desktop and mobile */
-        @media (min-width: 601px) {
-            .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 25px 40px rgba(0,0,0,0.3)); }
-        }
-        .stamp.mobile-hover { transform: scale(1.06) translateY(-15px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 25px 40px rgba(0,0,0,0.3)); }
-
+        
+        /* Consistent Border logic */
         .stamp-image {
             position: absolute;
-            inset: var(--stamp-frame); /* Perfectly contains image inside stamp border */
+            inset: var(--stamp-border);
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
-        
+
+        @media (min-width: 601px) {
+            .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 35px rgba(0,0,0,0.3)); }
+        }
+        .stamp.mobile-hover { transform: scale(1.06) translateY(-12px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 35px rgba(0,0,0,0.3)); }
+
         .stamp-image img {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover; object-position: center 25%;
@@ -170,18 +166,18 @@
         .stamp:hover:not(.no-hover) .stamp-note, .stamp.mobile-hover .stamp-note, .map-mode .stamp-note { opacity: 1; padding-top: 6px; }
 
         .postmark-seal {
-            position: absolute; top: -5px; right: -5px; width: 65px; height: 65px;
+            position: absolute; top: -10px; right: -10px; width: 65px; height: 65px;
             border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite'; font-size: 9px; text-align: center;
-            transform: rotate(15deg) scale(0);
-            background: rgba(255,255,255,0.7); backdrop-filter: blur(2px); z-index: 60;
-            color: rgba(0,0,0,0.5); padding: 4px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: rotate(15deg) scale(0); /* City marker scales from 0 */
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(2px); z-index: 60; color: rgba(0,0,0,0.5); padding: 4px;
+            transition: all 0.4s ease; cursor: pointer;
         }
         .stamp:hover:not(.no-hover) .postmark-seal, .stamp.mobile-hover .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
-        /* ---------- MODAL & UI ---------- */
+        /* ---------- REVERTED MAP & MODAL ---------- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .modal-frame { position: relative; max-width: 85vw; animation: stampExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes stampExpand { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -190,11 +186,28 @@
         #caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0; }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-        .arrow-btn { background: var(--btn-bg); border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; position: absolute; top: 50%; transform: translateY(-50%); z-index: 100; }
+        .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
+        .leaflet-popup-tip-container { display: none; }
+        .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
+        
+        .arrow-btn {
+            background-color: var(--btn-bg); border: none; border-radius: 50%; 
+            width: 44px; height: 44px; cursor: pointer; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+            display: flex; align-items: center; justify-content: center; z-index: 100 !important;
+            transition: transform 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
+        }
         .arrow-btn.back { left: -22px; }
         .arrow-btn.forward { right: -22px; }
-
-        .marker-blob { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--stroke); background: var(--fill); box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .arrow-btn .material-symbols-rounded { font-size: 24px; color: #333; }
+        
+        .custom-logo-marker { background: none; border: none; }
+        .marker-blob {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--stroke);
+            background: var(--fill); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex; align-items: center; justify-content: center; overflow: hidden;
+            transition: transform 0.3s ease;
+        }
         .marker-blob img { width: 55%; height: 55%; object-fit: contain; }
     </style>
 </head>
@@ -202,8 +215,8 @@
 <body>
     <div class="header"><h1>MassPort</h1></div>
     
-    <div class="scroll-zone left" onclick="scrollGrid(-1)"></div>
-    <div class="scroll-zone right" onclick="scrollGrid(1)"></div>
+    <div class="scroll-edge left" onclick="scrollGrid(-1)"></div>
+    <div class="scroll-edge right" onclick="scrollGrid(1)"></div>
 
     <div class="collector-nav-container">
         <div class="collector-nav" id="filter-nav">
@@ -276,7 +289,6 @@
                 const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
                 btn.innerText = s === 'Map' ? 'Map' : `${s} (${count})`;
                 btn.onmousedown = (e) => handleNavClick(s, e.currentTarget);
-                if(s === 'Other') btn.setAttribute('data-isother', 'true');
                 if (s === 'Map') mapAnchor.appendChild(btn); else nav.appendChild(btn);
             });
         }
@@ -287,13 +299,12 @@
             updatePill(el);
             if (state === 'Map') {
                 document.body.classList.add('map-active');
-                setTimeout(() => { map.invalidateSize(); if (markers.length > 0) centerMarker(markers[currentMarkerIndex]); }, 100);
+                setTimeout(() => { map.invalidateSize(); if (markers.length > 0) centerMarker(markers[currentMarkerIndex]); }, 200);
             } else {
                 document.body.classList.remove('map-active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 themeOffset = Math.floor(Math.random() * themes.length);
-                const isOther = el.getAttribute('data-isother') === 'true';
-                const filtered = globalLocations.filter(l => state === 'All' || (isOther ? l.isOther : l.stateName === state));
+                const filtered = globalLocations.filter(l => state === 'All' || (el.innerText.includes('Other') ? l.isOther : l.stateName === state));
                 renderGrid(applyCheckerboard(filtered));
             }
         }
@@ -328,7 +339,10 @@
                 tempDiv.innerHTML = generateStampHTML(loc, i);
                 grid.appendChild(tempDiv.firstElementChild);
             });
-            requestAnimationFrame(() => { revealStamps(); setupMobileObserver(); });
+            requestAnimationFrame(() => { 
+                revealStamps(); 
+                setupMobileObserver();
+            });
             if(window.innerWidth <= 600) grid.scrollLeft = 0;
         }
 
@@ -353,8 +367,15 @@
 
         function scrollGrid(dir) {
             const grid = document.getElementById('main-grid');
-            const itemWidth = grid.firstElementChild.offsetWidth;
+            const itemWidth = grid.querySelector('.stamp-wrapper').offsetWidth;
             grid.scrollBy({ left: itemWidth * dir, behavior: 'smooth' });
+        }
+
+        // Original Map Logic
+        function darkenColor(hex, percent) {
+            let num = parseInt(hex.replace("#",""),16), amt = Math.round(2.55 * percent),
+                R = (num >> 16) - amt, G = (num >> 8 & 0x00FF) - amt, B = (num & 0x0000FF) - amt;
+            return "#" + (0x1000000 + (R<255?R<0?0:R:255)*0x10000 + (G<255?G<0?0:G:255)*0x100 + (B<255?B<0?0:B:255)).toString(16).slice(1);
         }
 
         function initMap() {
@@ -362,7 +383,12 @@
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
             globalLocations.forEach((loc, i) => {
                 if(!loc.lat || !loc.lng) return;
-                const marker = L.marker([loc.lat, loc.lng], { icon: L.divIcon({ html: `<div class="marker-blob" style="--fill:${themes[i % themes.length]}; --stroke:${themes[i % themes.length]}"><img src="${logoUrl}"></div>`, className: 'custom-logo-marker', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -10] }) }).addTo(map);
+                const marker = L.marker([loc.lat, loc.lng], { 
+                    icon: L.divIcon({ 
+                        html: `<div class="marker-blob" style="--fill:${themes[i % themes.length]}; --stroke:${darkenColor(themes[i % themes.length], 25)}"><img src="${logoUrl}"></div>`, 
+                        className: 'custom-logo-marker', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -10] 
+                    }) 
+                }).addTo(map);
                 marker.bindPopup(`<div style="position:relative"><button class="arrow-btn back" onclick="navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button><button class="arrow-btn forward" onclick="navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>${generateStampHTML(loc, i, true)}</div>`, { maxWidth: 280, closeButton: false, autoPan: false });
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
@@ -370,9 +396,10 @@
         }
 
         function centerMarker(marker) {
-            const offsetPx = (map.getContainer().offsetHeight / 2) - 180;
-            const targetPoint = map.project(marker.getLatLng(), map.getZoom()).subtract([0, offsetPx]);
-            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.4 });
+            const targetPoint = map.project(marker.getLatLng(), map.getZoom());
+            const offset = 220; 
+            targetPoint.y -= (map.getSize().y / 2 - offset);
+            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.3 });
             marker.openPopup();
         }
 

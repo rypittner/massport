@@ -51,6 +51,9 @@
             overflow-x: auto; scrollbar-width: none;
         }
         .collector-nav::-webkit-scrollbar { display: none; }
+        
+        /* Prevent nav scrolling when map is active */
+        body.map-active .collector-nav { overflow: hidden; }
 
         .nav-pill-bg {
             position: absolute; top: 4px; left: 10px; height: calc(100% - 8px);
@@ -66,17 +69,17 @@
             white-space: nowrap; transition: color 0.3s ease; position: relative;
             z-index: 2; display: flex; align-items: center; justify-content: center;
         }
-        .nav-tag.active { color: #fff; }
+        .nav-tag.active { color: #fff !important; }
         
         .map-btn-wrapper { padding: 0 4px 0 10px; border-left: 1px solid rgba(0,0,0,0.05); }
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
-        .nav-tag[data-type="Map"].active { border-color: transparent; color: #fff; }
+        .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
         /* ---------- GRID & MAP TRANSITIONS ---------- */
         #main-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
             max-width: var(--grid-max); margin: 0 auto; 
-            padding: 20px 30px; /* Increased side padding to prevent shadow clipping */
+            padding: 20px 30px; 
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
         body.map-active #main-grid { opacity: 0; transform: scale(0.95); pointer-events: none; }
@@ -104,7 +107,8 @@
         .map-stamp { --r: 0deg !important; width: 250px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
-            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
+            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") no-repeat;
+            background-size: 100% 100%; /* Force ruffled edge image to fill without cropping */
             padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
             transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.5s ease;
         }
@@ -116,11 +120,10 @@
             display: flex; flex-direction: column; justify-content: flex-end;
         }
         
-        /* UPDATED FRAMING: Uses object-position to anchor the center-top of the image */
         .stamp-image img {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover; 
-            object-position: center 25%; /* Anchors framing to the top-middle area */
+            object-position: center 25%;
             transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .stamp:hover:not(.no-hover) .stamp-image img { transform: scale(1.1); }
@@ -329,7 +332,7 @@
             const parts = loc.city.split(',');
             const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
             const searchStr = encodeURIComponent(`${loc.name}, ${loc.city}`);
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${searchStr}`;
+            const mapsUrl = `https://www.google.com/maps/search/${searchStr}`;
             const rotation = isMapMode ? '0deg' : (Math.random() * 4 - 2).toFixed(2) + 'deg';
             const extraClass = isMapMode ? 'no-hover map-mode' : '';
 
@@ -384,7 +387,7 @@
                 className: 'custom-logo-marker',
                 iconSize: [32, 32],
                 iconAnchor: [16, 32],
-                popupAnchor: [0, -32]
+                popupAnchor: [0, -10] /* Neutralized anchor for better centering */
             });
         }
 
@@ -403,7 +406,7 @@
                         ${generateStampHTML(loc, i, true)}
                     </div>
                 `;
-                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: false });
+                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: true });
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
             });
@@ -411,7 +414,8 @@
 
         function centerMarker(marker) {
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
-            targetPoint.y -= 130; 
+            // Adjusted for vertical centering
+            targetPoint.y -= (window.innerWidth < 600 ? 50 : 130); 
             map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true });
             marker.openPopup();
         }
@@ -429,7 +433,7 @@
             document.getElementById('caption').innerHTML = `
                 <h2>${loc.name}</h2>
                 <p>${loc.note || ''}</p>
-                <div class="city-pill" onclick="window.open('https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.name + ' ' + loc.city)}', '_blank')">${loc.city}</div>
+                <div class="city-pill" onclick="window.open('https://www.google.com/maps/search/${encodeURIComponent(loc.name + ' ' + loc.city)}', '_blank')">${loc.city}</div>
             `;
             modal.style.display = 'flex';
         }

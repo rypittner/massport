@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --radius: 8px; /* Perforation size */
+            --radius: 8px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,6 +29,8 @@
             overflow-x: hidden;
             padding-bottom: 120px;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         body.map-active { overflow: hidden; height: 100vh; }
@@ -72,12 +74,13 @@
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
         .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
-        /* ---------- GRID & MOBILE ---------- */
+        /* ---------- GRID & MOBILE VERTICAL CENTERING ---------- */
         #main-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
             max-width: var(--grid-max); margin: 0 auto; 
             padding: 20px 30px; 
             transition: opacity 0.5s ease, transform 0.5s ease;
+            flex-grow: 1;
         }
         
         @media (max-width: 600px) { 
@@ -85,8 +88,10 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
-                padding: 40px 0 100px;
+                padding: 0; /* Clear padding to assist vertical center */
                 -webkit-overflow-scrolling: touch;
+                align-items: center; /* Vertical centering */
+                min-height: calc(100vh - 100px); 
             } 
             #main-grid .stamp-wrapper {
                 flex: 0 0 78vw;
@@ -116,10 +121,15 @@
             will-change: transform;
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
-        .map-stamp { --r: 0deg !important; width: 260px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
+        
+        /* Deeper shadow for map stamp */
+        .map-stamp { 
+            --r: 0deg !important; width: 240px; margin: 0 auto; opacity: 1; 
+            transform: translateY(0) !important;
+            filter: drop-shadow(0 15px 40px rgba(0,0,0,0.4)) !important; 
+        }
 
         .stamp {
-            /* Perforation Color matched to --btn-bg */
             background-image: 
                 radial-gradient(var(--radius), transparent 98%, var(--btn-bg)),
                 linear-gradient(var(--btn-bg) 0 0);
@@ -127,7 +137,7 @@
             background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
             background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
             
-            aspect-ratio: 1 / 1.2;
+            aspect-ratio: 5 / 9; /* Updated Ratio */
             cursor: pointer; position: relative;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
             backface-visibility: hidden;
@@ -135,7 +145,7 @@
         
         .stamp-image {
             position: absolute;
-            inset: calc(var(--radius) * 2.2); /* Inset scale for containment */
+            inset: calc(var(--radius) * 2.2);
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;

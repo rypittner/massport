@@ -16,7 +16,8 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --stamp-border: 15px; /* Reduced for more image visibility */
+            /* Stamp Perforation Variable */
+            --radius: 8px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -85,11 +86,11 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
-                padding: 40px 0 100px; /* Space for shadow lifts */
+                padding: 40px 0 100px;
                 -webkit-overflow-scrolling: touch;
             } 
             #main-grid .stamp-wrapper {
-                flex: 0 0 78vw; /* Tight spacing to see edges of next stamp */
+                flex: 0 0 78vw;
                 scroll-snap-align: center;
                 padding: 0 12px;
             }
@@ -113,13 +114,20 @@
             opacity: 0; transform: translateY(30px) rotate(var(--r, 0deg)); 
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15)); 
-            will-change: transform; /* Performance fix */
+            will-change: transform;
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
         .map-stamp { --r: 0deg !important; width: 260px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
-            background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/contain no-repeat;
+            /* NEW DYNAMIC BORDER IMPLEMENTATION */
+            background-image: 
+                radial-gradient(var(--radius), transparent 98%, white),
+                linear-gradient(white 0 0);
+            background-repeat: round, no-repeat;
+            background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
+            background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
+            
             aspect-ratio: 1 / 1.2;
             cursor: pointer; position: relative;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
@@ -128,7 +136,8 @@
         
         .stamp-image {
             position: absolute;
-            inset: var(--stamp-border);
+            /* Inset scales based on perforation radius */
+            inset: calc(var(--radius) * 2);
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
@@ -177,7 +186,7 @@
         }
         .stamp:hover:not(.no-hover) .postmark-seal, .stamp.mobile-hover .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
-        /* ---------- MODAL & UI ---------- */
+        /* ---------- MODAL & MAP POPUP ---------- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .modal-frame { position: relative; max-width: 85vw; animation: stampExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes stampExpand { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -186,7 +195,6 @@
         #caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0; }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-        /* ---------- MAP OVERRIDES ---------- */
         .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
         .leaflet-popup-tip-container { display: none; }
         .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
@@ -392,8 +400,8 @@
                 const popupDiv = document.createElement('div');
                 popupDiv.innerHTML = `
                     <div style="position:relative">
-                        <button class="arrow-btn back" onclick="navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
-                        <button class="arrow-btn forward" onclick="navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>
+                        <button class="arrow-btn back" onclick="window.navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
+                        <button class="arrow-btn forward" onclick="window.navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>
                         ${generateStampHTML(loc, i, true)}
                     </div>`;
                 

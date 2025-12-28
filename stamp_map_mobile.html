@@ -16,8 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            /* Stamp Perforation Variable */
-            --radius: 8px;
+            --radius: 8px; /* Perforation size */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -120,10 +119,10 @@
         .map-stamp { --r: 0deg !important; width: 260px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
-            /* NEW DYNAMIC BORDER IMPLEMENTATION */
+            /* Perforation Color matched to --btn-bg */
             background-image: 
-                radial-gradient(var(--radius), transparent 98%, white),
-                linear-gradient(white 0 0);
+                radial-gradient(var(--radius), transparent 98%, var(--btn-bg)),
+                linear-gradient(var(--btn-bg) 0 0);
             background-repeat: round, no-repeat;
             background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
             background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
@@ -136,8 +135,7 @@
         
         .stamp-image {
             position: absolute;
-            /* Inset scales based on perforation radius */
-            inset: calc(var(--radius) * 2);
+            inset: calc(var(--radius) * 2.2); /* Inset scale for containment */
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
@@ -186,7 +184,7 @@
         }
         .stamp:hover:not(.no-hover) .postmark-seal, .stamp.mobile-hover .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
-        /* ---------- MODAL & MAP POPUP ---------- */
+        /* ---------- MODAL & POPUP ---------- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .modal-frame { position: relative; max-width: 85vw; animation: stampExpand 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes stampExpand { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -346,10 +344,7 @@
                 tempDiv.innerHTML = generateStampHTML(loc, i);
                 grid.appendChild(tempDiv.firstElementChild);
             });
-            requestAnimationFrame(() => { 
-                revealStamps(); 
-                setupMobileObserver();
-            });
+            requestAnimationFrame(() => { revealStamps(); setupMobileObserver(); });
             if(window.innerWidth <= 600) grid.scrollLeft = 0;
         }
 
@@ -397,15 +392,14 @@
                     }) 
                 }).addTo(map);
                 
-                const popupDiv = document.createElement('div');
-                popupDiv.innerHTML = `
+                const popupContent = `
                     <div style="position:relative">
                         <button class="arrow-btn back" onclick="window.navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
                         <button class="arrow-btn forward" onclick="window.navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>
                         ${generateStampHTML(loc, i, true)}
                     </div>`;
                 
-                marker.bindPopup(popupDiv, { maxWidth: 280, closeButton: false, autoPan: false });
+                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: false });
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
             });

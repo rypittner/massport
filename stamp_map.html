@@ -238,7 +238,7 @@
                 btn.setAttribute('data-type', s);
                 const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
                 
-                btn.innerText = s === 'Map' ? '🗺️ Map View' : `${s} (${count})`;
+                btn.innerText = s === 'Map' ? 'Map View' : `${s} (${count})`;
                 btn.onclick = (e) => handleNavClick(s, e.currentTarget);
                 if(s === 'Other') btn.setAttribute('data-isother', 'true');
                 nav.appendChild(btn);

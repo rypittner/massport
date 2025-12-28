@@ -36,14 +36,15 @@ body {
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   display: flex; gap: 6px; z-index: 10000;
   max-width: 95vw; overflow-x: auto; scrollbar-width: none;
+
 }
 .collector-nav::-webkit-scrollbar { display: none; }
 .nav-tag {
-  font-family: 'Special Elite', monospace; font-size: 11px; color: #444;
+  font-family: 'Inter', monospace; font-size: 11px; color: #444;
   cursor: pointer; padding: 8px 14px; border-radius: 20px;
   white-space: nowrap; transition: 0.2s; background: rgba(0,0,0,0.04);
 }
-.nav-tag.active { background: #0d72e5; color: #fff; }
+.nav-tag.active { background: #4478A2; color: #fff; }
 
 /* ---------- GRID ---------- */
 .main-desk {
@@ -53,16 +54,28 @@ body {
 @media (max-width: 850px) { .main-desk { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 600px) { .main-desk { grid-template-columns: repeat(2, 1fr); } }
 
-/* ---------- STAMP ---------- */
-.stamp-wrapper { opacity: 0; transform: translateY(20px); transition: 0.6s ease-out; }
-.stamp-wrapper.visible { opacity: 1; transform: translateY(0) rotate(var(--r)); }
-
-.stamp {
-  background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
-  padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+/* ---------- STAMP WRAPPER (Shadows & Rotation) ---------- */
+.stamp-wrapper { 
+  opacity: 0; transform: translateY(20px); transition: 0.6s ease-out; 
+  /* Drop shadow applied here so it follows the scalloped shape of the child */
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
+.stamp-wrapper.visible { opacity: 1; transform: translateY(0) rotate(var(--r)); }
+.stamp-wrapper:hover { z-index: 100; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.25)); }
+
+/* ---------- STAMP (The Scalloped Edge) ---------- */
+.stamp {
+
+  background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
+
+  padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
+
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+}
+
 .stamp:hover { transform: scale(1.04) rotate(0deg) !important; z-index: 100; }
+.stamp:hover { transform: scale(1.04) rotate(0deg) !important; }
 
 .stamp-image {
   width: 100%; height: 100%; position: relative; overflow: hidden;
@@ -72,7 +85,7 @@ body {
 
 /* SUBTLE ZOOM & GAP FIX */
 .stamp-image img {
-  position: absolute; top: 50%; left: 50%; width: 102%; height: 102%; /* Over-scale to hide cracks */
+  position: absolute; top: 50%; left: 50%; width: 102%; height: 102%;
   object-fit: cover; transform: translate(-50%, -50%) scale(1);
   transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -84,7 +97,7 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 .stamp:hover img.normal { opacity: 1; }
 
 .placeholder {
-  position: absolute; inset: -1px; /* Overlap to hide cracks */
+  position: absolute; inset: -1px;
   --light: rgba(255,255,255,0.4); --dark: var(--theme-color);
 }
 .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
@@ -94,7 +107,7 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 
 /* ---------- TITLES & SMOOTH NOTES ---------- */
 .stamp-title-overlay {
-  position: relative; width: calc(100% + 2px); margin-left: -1px; margin-bottom: -1px; /* Gap fix */
+  position: relative; width: calc(100% + 2px); margin-left: -1px; margin-bottom: -1px;
   padding: 10px;
   background: var(--theme-color); color: white; z-index: 5;
   display: grid; grid-template-rows: auto 0fr;
@@ -104,7 +117,6 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 .stamp-name { font-family: 'Yrsa', serif; font-size: 16px; line-height: 1.1; font-weight: 600; }
 .note-container { overflow: hidden; }
 
-/* Switched to Inter for Notes */
 .stamp-note {
   font-family: 'Inter', sans-serif; font-size: 10px; line-height: 1.4;
   padding-top: 8px; opacity: 0; transition: opacity 0.3s ease;
@@ -112,23 +124,26 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 }
 .stamp:hover .stamp-note { opacity: 1; }
 
-/* Circle Growth on Hover */
+/* Grid Postmark (Clickable for Maps) */
 .postmark-seal {
   position: absolute; top: -12px; right: -12px; width: 70px; height: 70px;
   border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Special Elite'; font-size: 8px; text-align: center;
+  font-family: 'Special Elite'; font-size: 10px; text-align: center;
   transform: rotate(15deg) scale(1); background: rgba(255,255,255,0.7);
   backdrop-filter: blur(2px); z-index: 60; color: rgba(0,0,0,0.5); padding: 4px;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer; /* Indicates it's clickable separate from stamp */
+  
 }
-.stamp:hover .postmark-seal { transform: rotate(0deg) scale(1.15); color: rgba(0,0,0,0.8); background: rgba(255,255,255,0.9); }
+.stamp:hover .postmark-seal { transform: rotate(0deg) scale(1.15); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
 /* ---------- DYNAMIC MODAL ---------- */
 .modal {
   display: none; position: fixed; inset: 0;
-  background: rgba(40, 40, 40, 0.85); /* Transparent Grey */
-  backdrop-filter: blur(15px);
+  /* Updated: Lighter transparency and less blur */
+  background: rgba(40, 40, 40, 0.6); 
+  backdrop-filter: blur(5px);
   flex-direction: column; justify-content: center; align-items: center; z-index: 20000;
 }
 
@@ -138,35 +153,53 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 }
 
 .modal-frame { 
-    position: relative; display: flex; flex-direction: column; align-items: center; 
-    max-width: 85vw; animation: stampExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative; display: flex; flex-direction: column; align-items: center; 
+  max-width: 85vw; animation: stampExpand 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-postmark {
-  position: absolute; top: -40px; right: -40px; 
-  width: 90px; height: 90px;
-  background: rgba(255,255,255,0.95); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Special Elite'; font-size: 10px; text-align: center;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2); transform: rotate(12deg);
-  z-index: 20005; color: #333; padding: 10px;
-  border: 1px solid rgba(0,0,0,0.1);
+/* Modal Image styling - Rotation added via JS */
+.modal img { 
+  max-height: 65vh; max-width: 100%; 
+  border: 12px solid white; 
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4); 
+  transition: transform 0.5s ease-out;
 }
 
-.modal img { max-height: 65vh; max-width: 100%; border: 12px solid white; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+#caption { margin-top: 25px; color: white; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; }
+#caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0 0 8px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+#caption p { font-family: 'Inter', sans-serif; font-size: 16px; color: #fff; margin: 0; opacity: 0.95; font-weight: 400; max-width: 600px; }
 
-#caption { margin-top: 25px; color: white; text-align: center; width: 100%; }
-#caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0 0 8px 0; }
+/* New City Pill Style */
+.city-pill {
+  display: inline-block;
+  background: #f0f0f0;
+  color: #666;
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 6px 16px;
+  border-radius: 50px;
+  margin-top: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  text-decoration: none;
+}
+.city-pill:hover {
+  background: #fff;
+  color: #4478A2;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
 
-/* Modal Notes in Inter */
-#caption p { font-family: 'Inter', sans-serif; font-size: 16px; color: #fff; margin: 0; opacity: 0.95; font-weight: 400; }
-
-/* Fixed Top-Left Close Button */
+/* Updated Close Button: Top Right */
 .close { 
-    position: fixed; top: 30px; left: 30px;
-    color: white; font-size: 35px; cursor: pointer; z-index: 20010; font-weight: 300;
-    background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; transition: background 0.3s;
+  position: fixed; top: 30px; right: 30px; /* Moved from left to right */
+  color: white; font-size: 35px; cursor: pointer; z-index: 20010; font-weight: 300;
+  background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; transition: background 0.3s;
 }
 .close:hover { background: rgba(255,255,255,0.2); }
 
@@ -179,9 +212,8 @@ img.normal { opacity: 0; transition: opacity 0.4s ease; }
 <div class="main-desk" id="main-grid"></div>
 
 <div id="myModal" class="modal">
-  <span class="close">&times;</span>
+  <span class="close">×</span>
   <div class="modal-frame">
-    <div id="modalSeal" class="modal-postmark"></div>
     <img id="img01">
     <div id="caption"></div>
   </div>
@@ -196,74 +228,93 @@ let globalLocations = [];
 let placeholderCounter = 0;
 
 function getColumns() {
-    const w = window.innerWidth;
-    return w <= 600 ? 2 : (w <= 850 ? 3 : 4);
+  const w = window.innerWidth;
+  return w <= 600 ? 2 : (w <= 850 ? 3 : 4);
 }
 
 function applyCheckerboard(locs) {
-    const cols = getColumns();
-    const withImg = locs.filter(x => x.imgUrl);
-    const noImg = locs.filter(x => !x.imgUrl);
-    const result = [];
-    let imgIdx = 0, noImgIdx = 0;
-    
-    for (let i = 0; i < locs.length; i++) {
-        const row = Math.floor(i / cols), col = i % cols;
-        const isImageSlot = (row + col) % 2 === 0;
-        if (isImageSlot) result.push(imgIdx < withImg.length ? withImg[imgIdx++] : noImg[noImgIdx++]);
-        else result.push(noImgIdx < noImg.length ? noImg[noImgIdx++] : withImg[imgIdx++]);
-    }
-    return result.filter(x => x);
+  const cols = getColumns();
+  const withImg = locs.filter(x => x.imgUrl);
+  const noImg = locs.filter(x => !x.imgUrl);
+  const result = [];
+  let imgIdx = 0, noImgIdx = 0;
+   
+  for (let i = 0; i < locs.length; i++) {
+    const row = Math.floor(i / cols), col = i % cols;
+    const isImageSlot = (row + col) % 2 === 0;
+    if (isImageSlot) result.push(imgIdx < withImg.length ? withImg[imgIdx++] : noImg[noImgIdx++]);
+    else result.push(noImgIdx < noImg.length ? noImg[noImgIdx++] : withImg[imgIdx++]);
+  }
+  return result.filter(x => x);
 }
 
 function filterState(state, el) {
-    document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
-    const isOther = el.getAttribute('data-isother') === 'true';
-    const filtered = globalLocations.filter(l => state === 'All' || (isOther ? l.isOther : l.stateName === state));
-    renderGrid(applyCheckerboard(filtered));
+  document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const isOther = el.getAttribute('data-isother') === 'true';
+  const filtered = globalLocations.filter(l => state === 'All' || (isOther ? l.isOther : l.stateName === state));
+  renderGrid(applyCheckerboard(filtered));
+}
+
+// Function to generate Google Maps Search URL
+function getMapsLink(name, city) {
+  const query = encodeURIComponent(`${name}, ${city}`);
+  return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }
 
 function renderGrid(locs) {
-    const grid = document.getElementById('main-grid');
-    grid.innerHTML = '';
-    locs.forEach((loc, i) => {
-        const color = themes[i % themes.length];
-        const wrapper = document.createElement('div');
-        wrapper.className = 'stamp-wrapper visible';
-        wrapper.style.setProperty('--r', (Math.random() * 4 - 2).toFixed(2) + 'deg');
+  const grid = document.getElementById('main-grid');
+  grid.innerHTML = '';
+  locs.forEach((loc, i) => {
+    const color = themes[i % themes.length];
+    const wrapper = document.createElement('div');
+    wrapper.className = 'stamp-wrapper visible';
+    // Random rotation for the wrapper in grid view
+    wrapper.style.setProperty('--r', (Math.random() * 4 - 2).toFixed(2) + 'deg');
 
-        const parts = loc.city.split(',');
-        const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
+    const parts = loc.city.split(',');
+    const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
+    const mapsUrl = getMapsLink(loc.name, loc.city);
 
-        wrapper.innerHTML = `
-          <div class="stamp" style="--theme-color: ${color}">
-            <div class="postmark-seal">${citySt}</div>
-            <div class="stamp-image">
-              ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
-              `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
-              <div class="stamp-title-overlay">
-                <div class="stamp-name">${loc.name}</div>
-                <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
-              </div>
-            </div>
+    wrapper.innerHTML = `
+      <div class="stamp" style="--theme-color: ${color}">
+        <div class="postmark-seal" title="View on Maps" onclick="window.open('${mapsUrl}', '_blank'); event.stopPropagation();">
+          ${citySt}
+        </div>
+        <div class="stamp-image">
+          ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
+          `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
+          <div class="stamp-title-overlay">
+            <div class="stamp-name">${loc.name}</div>
+            <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
           </div>
-        `;
+        </div>
+      </div>
+    `;
 
-        wrapper.onclick = () => {
-          if (!loc.imgUrl) return;
-          const modal = document.getElementById('myModal');
-          const img01 = document.getElementById('img01');
-          const caption = document.getElementById('caption');
-          const seal = document.getElementById('modalSeal');
+    // Wrapper click opens modal
+    wrapper.onclick = () => {
+      if (!loc.imgUrl) return;
+      const modal = document.getElementById('myModal');
+      const img01 = document.getElementById('img01');
+      const caption = document.getElementById('caption');
 
-          img01.src = loc.imgUrl;
-          seal.innerText = citySt;
-          caption.innerHTML = `<h2>${loc.name}</h2><p>${loc.note || loc.city}</p>`;
-          modal.style.display = 'flex';
-        };
-        grid.appendChild(wrapper);
-    });
+      img01.src = loc.imgUrl;
+      // Random tilt for the Modal Image
+      const tilt = (Math.random() * 3 - 1.5).toFixed(2); // Between -1.5 and 1.5 deg
+      img01.style.transform = `rotate(${tilt}deg)`;
+
+      // Updated Caption with City Pill
+      caption.innerHTML = `
+        <h2>${loc.name}</h2>
+        <p>${loc.note || ''}</p>
+        <div class="city-pill" onclick="window.open('${mapsUrl}', '_blank')">${citySt}</div>
+      `;
+      
+      modal.style.display = 'flex';
+    };
+    grid.appendChild(wrapper);
+  });
 }
 
 async function init() {
@@ -271,12 +322,15 @@ async function init() {
   const data = await response.text();
   const rows = data.trim().split('\n').slice(1);
 
-  globalLocations = rows.map(r => {
-    const cols = r.split('\t');
-    const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
-    const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : (stateNames[rawState] || rawState);
-    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', stateName };
-  });
+globalLocations = rows.map(r => {
+  const cols = r.split('\t');
+  const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
+  
+  // Keep Europe logic, otherwise use the raw abbreviation (e.g., AZ, CA)
+  const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
+  
+  return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', stateName };
+});
 
   const counts = {};
   globalLocations.forEach(l => { counts[l.stateName] = (counts[l.stateName] || 0) + 1; });

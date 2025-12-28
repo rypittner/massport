@@ -13,8 +13,9 @@
         :root {
             --bg: #FCF1E7;
             --grid-max: 1100px;
-            --grid-pad: 24px;
+            --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
+            --accent: #4478A2;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -29,6 +30,8 @@
             min-height: 100vh;
         }
 
+        body.map-active { overflow: hidden; height: 100vh; }
+
         .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 10px; text-align: center; position: relative; z-index: 10; transition: opacity 0.4s ease; }
         .header h1 { font-family: 'Yrsa', serif; font-size: 42px; margin: 0; }
         body.map-active .header { opacity: 0; pointer-events: none; }
@@ -40,37 +43,43 @@
             padding: 6px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1);
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             display: flex; align-items: center; z-index: 10000;
-            max-width: 95vw; width: max-content;
+            max-width: 92vw; width: max-content;
         }
 
         .collector-nav {
-            display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
-            padding: 4px 10px;
-            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-            mask-image: linear-gradient(to right, black 85%, transparent 100%);
+            display: flex; gap: 6px; position: relative; padding: 4px 10px;
+            overflow-x: auto; scrollbar-width: none;
         }
         .collector-nav::-webkit-scrollbar { display: none; }
+
+        .nav-pill-bg {
+            position: absolute; top: 4px; left: 10px; height: calc(100% - 8px);
+            background: var(--accent); border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.1); z-index: 1;
+            pointer-events: none;
+        }
+        body.map-active .nav-pill-bg { opacity: 0; }
 
         .nav-tag {
             font-family: 'Inter', monospace; font-size: 11px; color: #444;
             cursor: pointer; padding: 8px 14px; border-radius: 20px;
-            white-space: nowrap; transition: 0.2s; background: rgba(0,0,0,0.04);
-            display: flex; align-items: center; justify-content: center;
+            white-space: nowrap; transition: color 0.3s ease; position: relative;
+            z-index: 2; display: flex; align-items: center; justify-content: center;
         }
-        .nav-tag.active { background: #4478A2; color: #fff; }
+        .nav-tag.active { color: #fff; }
         
         .map-btn-wrapper { padding: 0 4px 0 10px; border-left: 1px solid rgba(0,0,0,0.05); }
-
-        .nav-tag[data-type="Map"] { border: 2px solid #4478A2; color: #4478A2; font-weight: 600; }
-        .nav-tag[data-type="Map"].active { background: #4478A2; color: white; }
+        .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
+        .nav-tag[data-type="Map"].active { border-color: transparent; color: #fff; }
 
         /* ---------- GRID & MAP TRANSITIONS ---------- */
         #main-grid { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; 
-            max-width: var(--grid-max); margin: 0 auto; padding: var(--grid-pad);
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
+            max-width: var(--grid-max); margin: 0 auto; 
+            padding: 20px 30px; /* Increased side padding to prevent shadow clipping */
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
-        body.map-active #main-grid { opacity: 0; transform: translateY(10px); pointer-events: none; }
+        body.map-active #main-grid { opacity: 0; transform: scale(0.95); pointer-events: none; }
 
         #map-container { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5;
@@ -81,17 +90,17 @@
         #map { height: 100%; width: 100%; }
 
         @media (max-width: 850px) { #main-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 600px) { #main-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) { 
+            #main-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; padding: 15px 25px; } 
+        }
 
         /* ---------- STAMP CORE STYLING ---------- */
         .stamp-wrapper { 
             opacity: 0; transform: translateY(30px) rotate(var(--r, 0deg)); 
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18)); 
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
-        
-        /* Map specific wrapper sizing */
         .map-stamp { --r: 0deg !important; width: 250px; margin: 0 auto; opacity: 1; transform: translateY(0) !important; }
 
         .stamp {
@@ -107,12 +116,14 @@
             display: flex; flex-direction: column; justify-content: flex-end;
         }
         
+        /* UPDATED FRAMING: Uses object-position to anchor the center-top of the image */
         .stamp-image img {
-            position: absolute; top: 50%; left: 50%; width: 102%; height: 102%;
-            object-fit: cover; transform: translate(-50%, -50%) scale(1);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; 
+            object-position: center 25%; /* Anchors framing to the top-middle area */
             transition: transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .stamp:hover:not(.no-hover) .stamp-image img { transform: translate(-50%, -50%) scale(1.1); }
+        .stamp:hover:not(.no-hover) .stamp-image img { transform: scale(1.1); }
         
         img.normal { opacity: 0; transition: opacity 0.5s ease; }
         .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
@@ -136,7 +147,6 @@
             overflow: hidden; display: grid; grid-template-rows: 0fr;
             transition: grid-template-rows 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        /* Static view for map mode */
         .stamp:hover:not(.no-hover) .note-container, .map-mode .note-container { grid-template-rows: 1fr; }
 
         .stamp-note { 
@@ -167,30 +177,31 @@
         .city-pill { display: inline-block; background: #f0f0f0; color: #666; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 16px; border-radius: 50px; margin-top: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none; }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-        /* ---------- LEAFLET CUSTOM MARKERS & POPUP ---------- */
+        /* ---------- LEAFLET CUSTOM MARKERS ---------- */
         .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
         .leaflet-popup-tip-container { display: none; }
         .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
         
         .arrow-btn {
             background-color: var(--btn-bg); border: none; border-radius: 50%; 
-            width: 44px; height: 44px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            width: 44px; height: 44px; cursor: pointer; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
             display: flex; align-items: center; justify-content: center; z-index: 100 !important;
-            transition: all 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
+            transition: transform 0.2s ease, box-shadow 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
         }
-        .arrow-btn:hover { background: #fff; transform: translateY(-50%) scale(1.1); }
+        .arrow-btn:hover { background-color: var(--btn-bg); transform: translateY(-50%) scale(1.1); }
         .arrow-btn.back { left: -22px; }
         .arrow-btn.forward { right: -22px; }
         .arrow-btn .material-symbols-rounded { font-size: 24px; color: #333; }
         
         .custom-logo-marker { background: none; border: none; }
         .marker-blob {
-            width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--stroke);
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--stroke);
             background: var(--fill); box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             display: flex; align-items: center; justify-content: center; overflow: hidden;
             transition: transform 0.3s ease;
         }
-        .marker-blob img { width: 70%; height: 70%; object-fit: contain; filter: brightness(1.1); }
+        .marker-blob img { width: 55%; height: 55%; object-fit: contain; opacity: 0.85; }
         .leaflet-marker-icon:hover .marker-blob { transform: scale(1.15); }
     </style>
 </head>
@@ -199,7 +210,9 @@
     <div class="header"><h1>MassPort</h1></div>
     
     <div class="collector-nav-container">
-        <div class="collector-nav" id="filter-nav"></div>
+        <div class="collector-nav" id="filter-nav">
+            <div class="nav-pill-bg" id="nav-pill"></div>
+        </div>
         <div class="map-btn-wrapper" id="map-btn-anchor"></div>
     </div>
     
@@ -221,12 +234,13 @@
     <script>
         const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
-        const logoUrl = 'https://i.ibb.co/v65MJVK3/8da78232f5bd.png';
+        const logoUrl = 'https://i.ibb.co/QFwQ7f83/8ba712cc8372.png';
         
         let globalLocations = [];
         let placeholderCounter = 0;
         let map, markers = [];
         let currentMarkerIndex = 0;
+        let themeOffset = 0;
 
         async function init() {
             try {
@@ -249,7 +263,16 @@
                 setupNavigation();
                 renderGrid(applyCheckerboard(globalLocations));
                 initMap();
+                
+                setTimeout(() => updatePill(document.querySelector('.nav-tag.active')), 100);
             } catch (e) { console.error("Data load failed", e); }
+        }
+
+        function updatePill(el) {
+            const pill = document.getElementById('nav-pill');
+            if (!el || !pill) return;
+            pill.style.width = el.offsetWidth + 'px';
+            pill.style.left = el.offsetLeft + 'px';
         }
 
         function setupNavigation() {
@@ -271,7 +294,7 @@
                 btn.setAttribute('data-type', s);
                 const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
                 
-                btn.innerText = s === 'Map' ? 'Map View' : `${s} (${count})`;
+                btn.innerText = s === 'Map' ? 'Map' : `${s} (${count})`;
                 btn.onclick = (e) => handleNavClick(s, e.currentTarget);
                 if(s === 'Other') btn.setAttribute('data-isother', 'true');
                 
@@ -281,7 +304,7 @@
         }
 
         function handleNavClick(state, el) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            updatePill(el);
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
 
@@ -290,6 +313,9 @@
                 setTimeout(() => map.invalidateSize(), 400);
             } else {
                 document.body.classList.remove('map-active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                themeOffset = Math.floor(Math.random() * themes.length);
                 const isOtherRequested = el.getAttribute('data-isother') === 'true';
                 const filtered = globalLocations.filter(l => 
                     state === 'All' || (isOtherRequested ? l.isOther : l.stateName === state)
@@ -299,7 +325,7 @@
         }
 
         function generateStampHTML(loc, index, isMapMode = false) {
-            const color = themes[index % themes.length];
+            const color = themes[(index + themeOffset) % themes.length];
             const parts = loc.city.split(',');
             const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
             const searchStr = encodeURIComponent(`${loc.name}, ${loc.city}`);
@@ -356,9 +382,9 @@
             return L.divIcon({
                 html: `<div class="marker-blob" style="--fill:${color}; --stroke:${darker}"><img src="${logoUrl}"></div>`,
                 className: 'custom-logo-marker',
-                iconSize: [36, 36],
-                iconAnchor: [18, 36],
-                popupAnchor: [0, -36]
+                iconSize: [32, 32],
+                iconAnchor: [16, 32],
+                popupAnchor: [0, -32]
             });
         }
 

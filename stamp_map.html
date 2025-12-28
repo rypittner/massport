@@ -40,14 +40,30 @@
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             display: flex; gap: 6px; z-index: 10000;
             max-width: 95vw; overflow-x: auto; scrollbar-width: none;
+            align-items: center; /* Ensures vertical alignment in the container */
         }
         .collector-nav::-webkit-scrollbar { display: none; }
         .nav-tag {
             font-family: 'Inter', monospace; font-size: 11px; color: #444;
-            cursor: pointer; padding: 8px 14px; border-radius: 20px;
+            cursor: pointer; 
+            padding: 7px 14px 7px; /* Adjusted padding for vertical centering */
+            border-radius: 20px;
             white-space: nowrap; transition: 0.2s; background: rgba(0,0,0,0.04);
+            display: flex; align-items: center; justify-content: center;
         }
         .nav-tag.active { background: #4478A2; color: #fff; }
+        
+        /* Highlight for Map View Button */
+        .nav-tag[data-type="Map"] {
+            border: 2px solid #4478A2;
+            color: #4478A2; /* Blue text */
+            font-weight: 600;
+        }
+                .nav-tag[data-type="Map"].active {
+            border: 2px solid #4478A2;
+            color: white; /* Blue text */
+            font-weight: 600;
+        }
 
         /* ---------- GRID & MAP VISIBILITY ---------- */
         #main-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: var(--grid-max); margin: 0 auto; padding: var(--grid-pad); }
@@ -124,9 +140,20 @@
         .city-pill { display: inline-block; background: #f0f0f0; color: #666; font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; padding: 6px 16px; border-radius: 50px; margin-top: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none; }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 
-        /* ---------- LEAFLET OVERRIDES ---------- */
+        /* ---------- LEAFLET OVERRIDES & CARROT ---------- */
         .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
-        .leaflet-popup-tip-container { display: none; }
+        
+        .leaflet-popup-tip-container { 
+            display: block; 
+            width: 50px; /* Slightly bigger */
+            height: 25px; 
+            position: absolute; 
+            left: 50%; 
+            margin-left: -25px; 
+            bottom: 0px; /* Move down slightly */
+            z-index: -1;
+        }
+
         .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
         
         .arrow-btn {
@@ -171,7 +198,6 @@
         let map, markers = [];
         let currentMarkerIndex = 0;
 
-        // Initialize App
         async function init() {
             const response = await fetch(tsvUrl);
             const data = await response.text();
@@ -199,7 +225,6 @@
             globalLocations.forEach(l => { counts[l.stateName] = (counts[l.stateName] || 0) + 1; });
             const top4States = Object.entries(counts).filter(([k]) => k !== 'Europe' && k !== 'Other').sort((a,b) => b[1] - a[1]).slice(0,4).map(e => e[0]);
             
-            // Fix: Explicitly flag what falls into 'Other'
             globalLocations.forEach(l => { 
                 l.isOther = !top4States.includes(l.stateName) && l.stateName !== 'Europe'; 
             });
@@ -210,11 +235,11 @@
             navOrder.forEach(s => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag' + (s === 'All' ? ' active' : '');
+                btn.setAttribute('data-type', s);
                 const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
                 
                 btn.innerText = s === 'Map' ? '🗺️ Map View' : `${s} (${count})`;
-                btn.onclick = (e) => handleNavClick(s, e.target);
-                // Attach a helper to identify "Other" during filtering
+                btn.onclick = (e) => handleNavClick(s, e.currentTarget);
                 if(s === 'Other') btn.setAttribute('data-isother', 'true');
                 nav.appendChild(btn);
             });
@@ -270,6 +295,21 @@
             `;
         }
 
+        function createColoredMarkerIcon(color) {
+            const svgTemplate = `
+                <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="15" cy="15" r="13" fill="white" stroke="${color}" stroke-width="2"/>
+                    <circle cx="15" cy="15" r="9" fill="${color}"/>
+                </svg>`;
+            return L.divIcon({
+                html: svgTemplate,
+                className: 'custom-theme-marker',
+                iconSize: [30, 30],
+                iconAnchor: [15, 30],
+                popupAnchor: [0, -28] // Adjusted so the carrot meets the stamp base
+            });
+        }
+
         function renderGrid(locs) {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = '';
@@ -285,14 +325,10 @@
             map.setView([39.8283, -98.5795], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
 
-            const icon = L.icon({
-                iconUrl: 'https://i.postimg.cc/xT5k075d/icon-MARKER.png',
-                iconSize: [30, 30], iconAnchor: [15, 30], popupAnchor: [0, -25]
-            });
-
             globalLocations.forEach((loc, i) => {
                 if(!loc.lat || !loc.lng) return;
-                const marker = L.marker([loc.lat, loc.lng], { icon }).addTo(map);
+                const themeColor = themes[i % themes.length];
+                const marker = L.marker([loc.lat, loc.lng], { icon: createColoredMarkerIcon(themeColor) }).addTo(map);
                 
                 const popupContent = `
                     <div style="position:relative">
@@ -302,7 +338,13 @@
                     </div>
                 `;
                 
-                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: false });
+                marker.bindPopup(popupContent, { 
+                    maxWidth: 280, 
+                    closeButton: false, 
+                    autoPan: false,
+                    offset: [0, 24] // Fine-tuned vertical alignment for the carrot
+                });
+
                 marker.on('click', () => { 
                     currentMarkerIndex = i; 
                     centerMarkerAndStamp(marker);
@@ -311,10 +353,8 @@
             });
         }
 
-        // Helper to center the marker horizontally and the stamp vertically
         function centerMarkerAndStamp(marker) {
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
-            // Offset vertically so the popup (approx 260px high) is centered
             targetPoint.y -= 130; 
             const targetLatLng = map.unproject(targetPoint, map.getZoom());
             map.panTo(targetLatLng, { animate: true });
@@ -346,7 +386,6 @@
             modal.style.display = 'flex';
         }
 
-        // Logic Helpers
         function applyCheckerboard(locs) {
             const cols = window.innerWidth <= 600 ? 2 : (window.innerWidth <= 850 ? 3 : 4);
             const withImg = locs.filter(x => x.imgUrl);
@@ -361,7 +400,6 @@
             return result.filter(x => x);
         }
 
-        // Modal Close
         const myModal = document.getElementById('myModal');
         document.querySelector('.close').onclick = () => myModal.style.display = 'none';
         myModal.onclick = (e) => { if(e.target === myModal) myModal.style.display = 'none'; };

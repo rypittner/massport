@@ -33,40 +33,65 @@
         body.map-active .header { display: none; }
 
         /* ---------- NAVIGATION ---------- */
-        .collector-nav {
+        .collector-nav-container {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
-            padding: 10px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1);
+            padding: 6px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1);
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            display: flex; gap: 6px; z-index: 10000;
-            max-width: 95vw; overflow-x: auto; scrollbar-width: none;
-            align-items: center; /* Ensures vertical alignment in the container */
+            display: flex; align-items: center; z-index: 10000;
+            max-width: 95vw; width: max-content;
+        }
+
+        .collector-nav {
+            display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+            padding: 4px 10px;
+            /* Mask creates the fade out effect where map button starts */
+            -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+            mask-image: linear-gradient(to right, black 85%, transparent 100%);
         }
         .collector-nav::-webkit-scrollbar { display: none; }
+
         .nav-tag {
             font-family: 'Inter', monospace; font-size: 11px; color: #444;
             cursor: pointer; 
-            padding: 7px 14px 7px; /* Adjusted padding for vertical centering */
+            padding: 8px 14px;
             border-radius: 20px;
             white-space: nowrap; transition: 0.2s; background: rgba(0,0,0,0.04);
             display: flex; align-items: center; justify-content: center;
         }
         .nav-tag.active { background: #4478A2; color: #fff; }
         
-        /* Highlight for Map View Button */
+        /* Sticky Map View Button Styling */
+        .map-btn-wrapper {
+            padding: 0 4px 0 10px;
+            border-left: 1px solid rgba(0,0,0,0.05);
+        }
+
         .nav-tag[data-type="Map"] {
             border: 2px solid #4478A2;
-            color: #4478A2; /* Blue text */
+            color: #4478A2;
             font-weight: 600;
         }
-                .nav-tag[data-type="Map"].active {
-            border: 2px solid #4478A2;
-            color: white; /* Blue text */
-            font-weight: 600;
+        .nav-tag[data-type="Map"].active {
+            background: #4478A2;
+            color: white;
         }
 
         /* ---------- GRID & MAP VISIBILITY ---------- */
-        #main-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: var(--grid-max); margin: 0 auto; padding: var(--grid-pad); }
+        #main-grid { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 20px; 
+            max-width: var(--grid-max); 
+            margin: 0 auto; 
+            padding: var(--grid-pad);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Fade Animation for Grid switching */
+        .grid-fade-out { opacity: 0; transform: translateY(10px); }
+        .grid-fade-in { opacity: 1; transform: translateY(0); }
+
         #map-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         #map { height: 100%; width: 100%; }
 
@@ -92,16 +117,8 @@
             display: flex; flex-direction: column; justify-content: flex-end;
         }
         
-        /* Only applies to stamps inside the Map View popups */
-.no-rotate .stamp-name {
-    font-size: 22px; 
-    line-height:1;
-}
-
-.no-rotate .stamp-note {
-    font-size: 13px;    line-height:1.25;
-    opacity: 1; /* This makes the note always visible in map view if desired */
-}
+        .no-rotate .stamp-name { font-size: 22px; line-height:1; }
+        .no-rotate .stamp-note { font-size: 13px; line-height:1.25; opacity: 1; }
 
         .stamp-image img {
             position: absolute; top: 50%; left: 50%; width: 102%; height: 102%;
@@ -153,18 +170,7 @@
 
         /* ---------- LEAFLET OVERRIDES & CARROT ---------- */
         .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; }
-        
-        .leaflet-popup-tip-container { 
-            display: block; 
-            width: 50px; /* Slightly bigger */
-            height: 25px; 
-            position: absolute; 
-            left: 50%; 
-            margin-left: -25px; 
-            bottom: 0px; /* Move down slightly */
-            z-index: -1;
-        }
-
+        .leaflet-popup-tip-container { display: block; width: 50px; height: 25px; position: absolute; left: 50%; margin-left: -25px; bottom: 0px; z-index: -1; }
         .leaflet-popup-content { margin: 0 !important; width: 280px !important; }
         
         .arrow-btn {
@@ -183,7 +189,10 @@
 <body>
     <div class="header"><h1>MassPort</h1></div>
     
-    <div class="collector-nav" id="filter-nav"></div>
+    <div class="collector-nav-container">
+        <div class="collector-nav" id="filter-nav"></div>
+        <div class="map-btn-wrapper" id="map-btn-anchor"></div>
+    </div>
     
     <div id="main-grid"></div>
     
@@ -242,6 +251,7 @@
 
             const navOrder = ['All', ...top4States, 'Europe', 'Other', 'Map'];
             const nav = document.getElementById('filter-nav');
+            const mapAnchor = document.getElementById('map-btn-anchor');
             
             navOrder.forEach(s => {
                 const btn = document.createElement('div');
@@ -252,29 +262,52 @@
                 btn.innerText = s === 'Map' ? 'Map View' : `${s} (${count})`;
                 btn.onclick = (e) => handleNavClick(s, e.currentTarget);
                 if(s === 'Other') btn.setAttribute('data-isother', 'true');
-                nav.appendChild(btn);
+                
+                // Stick Map button to the separate container, others to scroll nav
+                if (s === 'Map') {
+                    mapAnchor.appendChild(btn);
+                } else {
+                    nav.appendChild(btn);
+                }
             });
         }
 
         function handleNavClick(state, el) {
+            // Scroll to top immediately
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
 
+            const grid = document.getElementById('main-grid');
+
             if (state === 'Map') {
                 document.body.classList.add('map-active');
-                document.getElementById('main-grid').style.display = 'none';
+                grid.style.display = 'none';
                 document.getElementById('map-container').style.display = 'block';
                 map.invalidateSize();
             } else {
                 document.body.classList.remove('map-active');
-                document.getElementById('main-grid').style.display = 'grid';
                 document.getElementById('map-container').style.display = 'none';
-                const isOtherRequested = el.getAttribute('data-isother') === 'true';
-                const filtered = globalLocations.filter(l => 
-                    state === 'All' || 
-                    (isOtherRequested ? l.isOther : l.stateName === state)
-                );
-                renderGrid(applyCheckerboard(filtered));
+                
+                // Animate transition
+                grid.classList.add('grid-fade-out');
+                
+                setTimeout(() => {
+                    grid.style.display = 'grid';
+                    const isOtherRequested = el.getAttribute('data-isother') === 'true';
+                    const filtered = globalLocations.filter(l => 
+                        state === 'All' || 
+                        (isOtherRequested ? l.isOther : l.stateName === state)
+                    );
+                    renderGrid(applyCheckerboard(filtered));
+                    
+                    grid.classList.remove('grid-fade-out');
+                    grid.classList.add('grid-fade-in');
+                    
+                    // Cleanup animation classes
+                    setTimeout(() => grid.classList.remove('grid-fade-in'), 300);
+                }, 200);
             }
         }
 
@@ -317,7 +350,7 @@
                 className: 'custom-theme-marker',
                 iconSize: [30, 30],
                 iconAnchor: [15, 30],
-                popupAnchor: [0, -28] // Adjusted so the carrot meets the stamp base
+                popupAnchor: [0, -28]
             });
         }
 
@@ -353,7 +386,7 @@
                     maxWidth: 280, 
                     closeButton: false, 
                     autoPan: false,
-                    offset: [0, 24] // Fine-tuned vertical alignment for the carrot
+                    offset: [0, 24]
                 });
 
                 marker.on('click', () => { 

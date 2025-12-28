@@ -76,7 +76,7 @@
         /* ---------- STAMP CORE STYLING ---------- */
         .stamp-wrapper { opacity: 0; transform: translateY(20px); transition: 0.6s ease-out; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .stamp-wrapper.visible { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
-        .stamp-wrapper.no-rotate { --r: 0deg !important; transform: translateY(0) rotate(0deg) !important; width: 200px; margin: 0 auto; }
+        .stamp-wrapper.no-rotate { --r: 0deg !important; transform: translateY(0) rotate(0deg) !important; width: 250px; margin: 0 auto; }
         
         .stamp {
             background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
@@ -91,6 +91,17 @@
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
+        
+        /* Only applies to stamps inside the Map View popups */
+.no-rotate .stamp-name {
+    font-size: 22px; 
+    line-height:1;
+}
+
+.no-rotate .stamp-note {
+    font-size: 13px;    line-height:1.25;
+    opacity: 1; /* This makes the note always visible in map view if desired */
+}
 
         .stamp-image img {
             position: absolute; top: 50%; left: 50%; width: 102%; height: 102%;

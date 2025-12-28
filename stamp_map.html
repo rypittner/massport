@@ -45,7 +45,6 @@
         .collector-nav {
             display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
             padding: 4px 10px;
-            /* Mask creates the fade out effect where map button starts */
             -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
             mask-image: linear-gradient(to right, black 85%, transparent 100%);
         }
@@ -61,7 +60,6 @@
         }
         .nav-tag.active { background: #4478A2; color: #fff; }
         
-        /* Sticky Map View Button Styling */
         .map-btn-wrapper {
             padding: 0 4px 0 10px;
             border-left: 1px solid rgba(0,0,0,0.05);
@@ -85,12 +83,10 @@
             max-width: var(--grid-max); 
             margin: 0 auto; 
             padding: var(--grid-pad);
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            transition: opacity 0.3s ease;
         }
 
-        /* Fade Animation for Grid switching */
-        .grid-fade-out { opacity: 0; transform: translateY(10px); }
-        .grid-fade-in { opacity: 1; transform: translateY(0); }
+        .grid-fade-out { opacity: 0; }
 
         #map-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; }
         #map { height: 100%; width: 100%; }
@@ -99,17 +95,36 @@
         @media (max-width: 600px) { #main-grid { grid-template-columns: repeat(2, 1fr); } }
 
         /* ---------- STAMP CORE STYLING ---------- */
-        .stamp-wrapper { opacity: 0; transform: translateY(20px); transition: 0.6s ease-out; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        .stamp-wrapper.visible { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
-        .stamp-wrapper.no-rotate { --r: 0deg !important; transform: translateY(0) rotate(0deg) !important; width: 250px; margin: 0 auto; }
+        .stamp-wrapper { 
+            opacity: 0; 
+            transform: translateY(30px) rotate(var(--r, 0deg)); 
+            transition: opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); 
+        }
+        
+        /* New Animation Reveal Class */
+        .stamp-wrapper.revealed { 
+            opacity: 1; 
+            transform: translateY(0) rotate(var(--r, 0deg)); 
+        }
+
+        .stamp-wrapper.no-rotate { --r: 0deg !important; transform: translateY(0) rotate(0deg) !important; width: 250px; margin: 0 auto; opacity: 1; }
         
         .stamp {
             background: url("https://i.ibb.co/Wp7BDVDy/11bc6ca4cd38.png") center/cover no-repeat;
             padding: 13%; aspect-ratio: 151 / 195; cursor: pointer; position: relative;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        filter 0.4s ease;
         }
-        .stamp:hover { transform: scale(1.04) rotate(0deg) !important; z-index: 100; }
-        .no-rotate .stamp:hover { transform: scale(1) !important; }
+        
+        /* Enhanced Hover "Pick up" effect */
+        .stamp:hover { 
+            transform: scale(1.06) translateY(-5px) rotate(0deg) !important; 
+            z-index: 100;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.25));
+        }
+        .no-rotate .stamp:hover { transform: scale(1) translateY(0) !important; }
 
         .stamp-image {
             width: 100%; height: 100%; position: relative; overflow: hidden;
@@ -125,7 +140,7 @@
             object-fit: cover; transform: translate(-50%, -50%) scale(1);
             transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .stamp:hover .stamp-image img { transform: translate(-50%, -50%) scale(1.08); }
+        .stamp:hover .stamp-image img { transform: translate(-50%, -50%) scale(1.1); }
         img.normal { opacity: 0; transition: opacity 0.4s ease; }
         .stamp:hover img.normal { opacity: 1; }
 
@@ -177,12 +192,16 @@
             background-color: rgba(255,255,255,0.95); border: none; border-radius: 50%; 
             width: 40px; height: 40px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: flex; align-items: center; justify-content: center;
-            z-index: 10001; transition: all 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
+            z-index: 5 !important; /* PLACED BEHIND STAMP CONTENT */
+            transition: all 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
         }
-        .arrow-btn:hover { background: #fff; transform: translateY(-50%) scale(1.1); }
+        .arrow-btn:hover { background: #fff; transform: translateY(-50%) scale(1.1); z-index: 100 !important;}
         .arrow-btn.back { left: -20px; }
         .arrow-btn.forward { right: -20px; }
         .arrow-btn .material-symbols-rounded { font-size: 24px; color: #333; }
+        
+        /* Ensure stamp in popup is above arrows by default */
+        .leaflet-popup-content .stamp-wrapper { z-index: 10; position: relative; }
     </style>
 </head>
 
@@ -263,7 +282,6 @@
                 btn.onclick = (e) => handleNavClick(s, e.currentTarget);
                 if(s === 'Other') btn.setAttribute('data-isother', 'true');
                 
-                // Stick Map button to the separate container, others to scroll nav
                 if (s === 'Map') {
                     mapAnchor.appendChild(btn);
                 } else {
@@ -273,9 +291,7 @@
         }
 
         function handleNavClick(state, el) {
-            // Scroll to top immediately
             window.scrollTo({ top: 0, behavior: 'smooth' });
-
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
 
@@ -289,8 +305,6 @@
             } else {
                 document.body.classList.remove('map-active');
                 document.getElementById('map-container').style.display = 'none';
-                
-                // Animate transition
                 grid.classList.add('grid-fade-out');
                 
                 setTimeout(() => {
@@ -301,12 +315,7 @@
                         (isOtherRequested ? l.isOther : l.stateName === state)
                     );
                     renderGrid(applyCheckerboard(filtered));
-                    
                     grid.classList.remove('grid-fade-out');
-                    grid.classList.add('grid-fade-in');
-                    
-                    // Cleanup animation classes
-                    setTimeout(() => grid.classList.remove('grid-fade-in'), 300);
                 }, 200);
             }
         }
@@ -321,7 +330,7 @@
             const hidePostmark = isMapMode ? 'display:none' : '';
 
             return `
-                <div class="stamp-wrapper visible ${isMapMode ? 'no-rotate' : ''}" style="--r: ${rotation}">
+                <div class="stamp-wrapper ${isMapMode ? 'no-rotate' : ''}" style="--r: ${rotation}">
                     <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
                         <div class="postmark-seal" style="${hidePostmark}" onclick="window.open('${mapsUrl}', '_blank'); event.stopPropagation();">
                             ${citySt}
@@ -339,6 +348,28 @@
             `;
         }
 
+        function renderGrid(locs) {
+            const grid = document.getElementById('main-grid');
+            grid.innerHTML = '';
+            locs.forEach((loc, i) => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = generateStampHTML(loc, i);
+                grid.appendChild(tempDiv.firstElementChild);
+            });
+            
+            // Trigger staggered animation
+            requestAnimationFrame(() => revealStamps());
+        }
+
+        function revealStamps() {
+            const stamps = document.querySelectorAll('#main-grid .stamp-wrapper');
+            stamps.forEach((stamp, i) => {
+                // Stagger by 40ms per stamp
+                stamp.style.transitionDelay = `${i * 40}ms`;
+                stamp.classList.add('revealed');
+            });
+        }
+
         function createColoredMarkerIcon(color) {
             const svgTemplate = `
                 <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -351,16 +382,6 @@
                 iconSize: [30, 30],
                 iconAnchor: [15, 30],
                 popupAnchor: [0, -28]
-            });
-        }
-
-        function renderGrid(locs) {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = '';
-            locs.forEach((loc, i) => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = generateStampHTML(loc, i);
-                grid.appendChild(tempDiv.firstElementChild);
             });
         }
 

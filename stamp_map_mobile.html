@@ -31,7 +31,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            perspective: 1000px; /* Enable 3D depth */
         }
 
         body.map-active { overflow: hidden; height: 100vh; }
@@ -101,17 +100,17 @@
             #main-grid .stamp-wrapper {
                 flex: 0 0 65vw;
                 scroll-snap-align: center;
-                scroll-snap-stop: always; /* Forces snapping to every single stamp */
+                scroll-snap-stop: always;
                 padding: 0 15px;
                 position: relative;
                 z-index: 1;
-                transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), z-index 0.6s;
-                transform: scale(0.9) translateY(0); /* Default: stuck to page and slightly smaller */
+                transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+                transform: scale(0.9); /* Stuck to page */
             }
 
             #main-grid .stamp-wrapper.active-center {
                 z-index: 100;
-                transform: scale(1.1) translateY(-15px); /* Lifted and larger in center */
+                transform: scale(1.1) translateY(-10px); /* Lifted up */
             }
 
             .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; cursor: pointer; }
@@ -131,8 +130,8 @@
 
         /* ---------- STAMP CORE STYLING ---------- */
         .stamp-wrapper { 
-            opacity: 0;
-            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); 
+            opacity: 0; 
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); 
             will-change: transform;
         }
         .stamp-wrapper.revealed { opacity: 1; }
@@ -158,6 +157,8 @@
             transform: rotate(var(--r, 0deg));
         }
         
+        .active-center .stamp { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.3)); }
+
         .stamp-image {
             position: absolute;
             inset: calc(var(--radius) * 2.2);
@@ -168,12 +169,6 @@
 
         @media (min-width: 601px) {
             .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3)); }
-        }
-        
-        /* Centered Lift Effect */
-        .active-center .stamp { 
-            filter: drop-shadow(0 30px 50px rgba(0,0,0,0.35)); 
-            transform: rotate(0deg); /* Straighten up when centered */
         }
 
         .stamp-image img {
@@ -389,15 +384,10 @@
 
         function setupMobileObserver() {
             if (window.innerWidth > 600) return;
-            // High threshold ensures the "Lift" only happens in the sweet spot
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const wrapper = entry.target;
-                    if (entry.isIntersecting) {
-                        wrapper.classList.add('active-center');
-                    } else {
-                        wrapper.classList.remove('active-center');
-                    }
+                    if (entry.isIntersecting) entry.target.classList.add('active-center');
+                    else entry.target.classList.remove('active-center');
                 });
             }, { threshold: 0.95, root: document.getElementById('main-grid') });
             document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
@@ -428,42 +418,32 @@
                     }) 
                 }).addTo(map);
                 
-                const popupContent = `
-                    <div style="position:relative">
-                        <button class="arrow-btn back" onclick="window.navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button>
-                        <button class="arrow-btn forward" onclick="window.navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>
-                        ${generateStampHTML(loc, i, true)}
-                    </div>`;
-                
-                marker.bindPopup(popupContent, { maxWidth: 280, closeButton: false, autoPan: false });
+                marker.bindPopup(`<div style="position:relative"><button class="arrow-btn back" onclick="window.navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button><button class="arrow-btn forward" onclick="window.navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>${generateStampHTML(loc, i, true)}</div>`, { maxWidth: 280, closeButton: false, autoPan: false });
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
             });
-
             map.on('movestart', () => isMapMoving = true);
             map.on('moveend', () => isMapMoving = false);
         }
 
         function centerMarker(marker) {
-            if (!marker) return;
+            if (!marker || isMapMoving) return;
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
             targetPoint.y -= (map.getSize().y / 2 - 200);
             const targetLatLng = map.unproject(targetPoint, map.getZoom());
             
-            map.once('moveend', () => {
-                marker.openPopup();
-                isMapMoving = false;
-            });
-            
             isMapMoving = true;
             map.panTo(targetLatLng, { animate: true, duration: 0.45 });
+            
+            // Safety: in case moveend doesn't fire correctly
+            map.once('moveend', () => { marker.openPopup(); isMapMoving = false; });
+            setTimeout(() => { isMapMoving = false; }, 600);
         }
 
         window.navigateMap = function(dir) { 
             if (isMapMoving) return; 
             currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length; 
-            const nextMarker = markers[currentMarkerIndex];
-            centerMarker(nextMarker);
+            centerMarker(markers[currentMarkerIndex]);
         };
 
         function openModalByIndex(idx) {
@@ -474,7 +454,8 @@
         }
 
         function applyCheckerboard(locs) {
-            const cols = window.innerWidth <= 600 ? 1 : (window.innerWidth <= 850 ? 3 : 4);
+            if (window.innerWidth <= 600) return locs; // Single list on mobile, no placeholders
+            const cols = (window.innerWidth <= 850 ? 3 : 4);
             const withImg = locs.filter(x => x.imgUrl), noImg = locs.filter(x => !x.imgUrl), result = [];
             let imgIdx = 0, noImgIdx = 0;
             for (let i = 0; i < locs.length; i++) {

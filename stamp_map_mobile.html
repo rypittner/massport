@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --r: 12px; /* Restored/Adjusted control for your specific mask logic */
+            --r: 12px;
             --snap-speed: 0.25s;
             --ease-snap: cubic-bezier(0.2, 1, 0.3, 1);
         }
@@ -29,7 +29,6 @@
             background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
             color: #333;
             overflow-x: hidden;
-            padding-bottom: 140px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -37,9 +36,8 @@
 
         body.map-active { overflow: hidden; height: 100vh; }
 
-        .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 10px; text-align: center; position: relative; z-index: 10; transition: opacity 0.4s ease; }
+        .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 0; text-align: center; position: relative; z-index: 10; transition: opacity 0.4s ease; }
         .header h1 { font-family: 'Yrsa', serif; font-size: 42px; margin: 0; }
-        body.map-active .header { opacity: 0; pointer-events: none; }
 
         /* ---------- NAVIGATION ---------- */
         .collector-nav-container {
@@ -51,38 +49,24 @@
             max-width: 92vw; width: max-content;
         }
 
-        .collector-nav {
-            display: flex; gap: 6px; position: relative; padding: 4px 10px;
-            overflow-x: auto; scrollbar-width: none;
-        }
+        .collector-nav { display: flex; gap: 6px; position: relative; padding: 4px 10px; overflow-x: auto; scrollbar-width: none; }
         .collector-nav::-webkit-scrollbar { display: none; }
-        
-        .nav-pill-bg {
-            position: absolute; top: 4px; left: 10px; height: calc(100% - 8px);
-            background: var(--accent); border-radius: 20px;
-            transition: all 0.3s var(--ease-snap); z-index: 1;
-            pointer-events: none;
-        }
-
-        .nav-tag {
-            font-family: 'Inter', monospace; font-size: 11px; color: #444;
-            cursor: pointer; padding: 8px 14px; border-radius: 20px;
-            white-space: nowrap; transition: color 0.3s ease; position: relative;
-            z-index: 10; display: flex; align-items: center; justify-content: center;
-        }
+        .nav-pill-bg { position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); background: var(--accent); border-radius: 20px; transition: all 0.3s var(--ease-snap); z-index: 1; pointer-events: none; }
+        .nav-tag { font-family: 'Inter', monospace; font-size: 11px; color: #444; cursor: pointer; padding: 8px 14px; border-radius: 20px; white-space: nowrap; transition: color 0.3s ease; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .nav-tag.active { color: #fff !important; }
-        
         .map-btn-wrapper { padding: 0 4px 0 10px; border-left: 1px solid rgba(0,0,0,0.05); }
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
         .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
-        /* ---------- GRID & MOBILE HORIZONTAL SCROLL ---------- */
+        /* ---------- VERTICALLY CENTERED GRID ---------- */
         #main-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
             max-width: var(--grid-max); margin: 0 auto; 
             padding: 20px 30px; 
-            transition: opacity 0.5s ease, transform 0.5s ease;
+            transition: opacity 0.5s ease;
             flex-grow: 1;
+            align-items: center; 
+            min-height: 75vh;
         }
         
         @media (max-width: 600px) { 
@@ -95,11 +79,11 @@
                 scroll-snap-type: x mandatory; 
                 gap: 0;
                 width: 100vw;
-                padding: 40px 15vw 100px; 
+                padding: 0 15vw; 
                 scroll-padding: 0 15vw;
                 -webkit-overflow-scrolling: touch;
                 align-items: center; 
-                min-height: calc(100vh - 80px); 
+                min-height: 90vh; 
                 scrollbar-width: none;
             } 
             
@@ -107,100 +91,62 @@
                 flex: 0 0 70vw; 
                 scroll-snap-align: center;
                 scroll-snap-stop: always;
-                padding: 0 12px;
+                padding: 0 5px; /* Tighter distance between stamps */
                 position: relative;
+                will-change: transform, filter;
                 z-index: 1;
-                transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s linear 0s;
-                transform: scale(0.88); 
-                filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
             }
 
-            #main-grid .stamp-wrapper.active-center {
-                z-index: 100;
-                transform: scale(1.04) translateY(-25px);
-                filter: drop-shadow(0 15px 35px rgba(0,0,0,0.22));
-                transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s;
-            }
-
-            .scroll-edge { position: fixed; top: 0; bottom: 0; width: 10%; z-index: 999; cursor: pointer; }
-            .scroll-edge.left { left: 0; }
-            .scroll-edge.right { right: 0; }
+            /* Scroll-based logic handles the active state via JS */
         }
 
-        body.map-active #main-grid { opacity: 0; transform: scale(0.95); pointer-events: none; }
-
-        /* ---------- NEW MASK BORDER STAMP LOGIC ---------- */
+        /* ---------- STAMP & UNCLIPPED SEAL ---------- */
         .stamp {
             aspect-ratio: 7 / 9; 
             padding: var(--r);
             background: var(--btn-bg);
             cursor: pointer; position: relative;
-            transition: transform var(--snap-speed) var(--ease-snap);
             backface-visibility: hidden;
             transform: rotate(var(--r_deg, 0deg));
+            z-index: 2;
 
-            /* Integrated provided Masking logic */
-            -webkit-mask: 
-                radial-gradient(50% 50%, #0000 66%, #000 67%) round 
-                var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), 
-                conic-gradient(#000 0 0) content-box;
-            mask: 
-                radial-gradient(50% 50%, #0000 66%, #000 67%) round 
-                var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), 
-                conic-gradient(#000 0 0) content-box;
+            /* Mask logic */
+            -webkit-mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
+            mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
             position: absolute;
-            /* Inset slightly relative to the masking radius */
             inset: calc(var(--r) * 1.5); 
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
 
-        @media (min-width: 601px) {
-            .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; }
-            .stamp-wrapper:hover { filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3)); }
-        }
-
-        .stamp-image img {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: cover; object-position: center 25%;
-            transition: transform 1s var(--ease-snap);
-        }
-        
+        .stamp-image img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; transition: transform 1s var(--ease-snap); }
         img.normal { opacity: 0; transition: opacity 0.4s ease; }
-        .active-center img.normal, .stamp:hover:not(.no-hover) img.normal, .map-mode img.normal { opacity: 1; }
-
-        .placeholder { position: absolute; inset: -1px; --light: rgba(255,255,255,0.4); --dark: var(--theme-color); }
-        .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
-        .pattern-2 { background-image: repeating-linear-gradient(135deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
-        .pattern-3 { background-image: repeating-linear-gradient(135deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
-        .pattern-4 { background-image: repeating-linear-gradient(45deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
-
-        .stamp-title-overlay {
-            position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); 
-            padding: 10px; background: var(--theme-color); color: white; z-index: 5;
-        }
-        
-        .stamp-name { font-family: 'Yrsa', serif; font-size: 15px; line-height: 1.1; font-weight: 600; }
-        .note-container { overflow: hidden; display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--snap-speed) var(--ease-snap); }
-        .active-center .note-container, .stamp:hover:not(.no-hover) .note-container, .map-mode .note-container { grid-template-rows: 1fr; }
-        .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.3s ease; }
-        .active-center .stamp-note, .stamp:hover:not(.no-hover) .stamp-note, .map-mode .stamp-note { opacity: 1; padding-top: 6px; }
+        .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
 
         .postmark-seal {
-            position: absolute; top: -12px; right: -12px; width: 68px; height: 68px;
+            position: absolute; top: -15px; right: -10px; width: 68px; height: 68px;
             border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite'; font-size: 9px; text-align: center;
-            transform: rotate(15deg) scale(0);
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(2px); z-index: 60; color: rgba(0,0,0,0.5); padding: 4px;
-            transition: all 0.4s var(--ease-snap);
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(2px);
+            z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
+            transition: all 0.3s var(--ease-snap);
+            transform: rotate(15deg) scale(0.85);
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .active-center .postmark-seal, .stamp:hover:not(.no-hover) .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
+        .is-centered .postmark-seal, .stamp-wrapper:hover .postmark-seal { transform: rotate(0deg) scale(1.05); color: #C65265; border-color: #C65265; box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+
+        .stamp-title-overlay { position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); padding: 10px; background: var(--theme-color); color: white; z-index: 5; }
+        .stamp-name { font-family: 'Yrsa', serif; font-size: 15px; line-height: 1.1; font-weight: 600; }
+        .note-container { overflow: hidden; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.3s var(--ease-snap); }
+        .is-centered .note-container, .stamp:hover:not(.no-hover) .note-container { grid-template-rows: 1fr; }
+        .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.3s ease; }
+        .is-centered .stamp-note, .stamp:hover:not(.no-hover) .stamp-note { opacity: 1; padding-top: 6px; }
 
         /* ---------- MAP & MODAL ---------- */
         #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
@@ -208,51 +154,34 @@
         #map { height: 100%; width: 100%; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .modal-frame { position: relative; max-width: 85vw; animation: stampExpand 0.5s var(--ease-snap); }
-        @keyframes stampExpand { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .modal img { max-height: 65vh; max-width: 100%; border: 12px solid white; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
-        #caption { margin-top: 25px; color: white; text-align: center; width: 100%; display: flex; flex-direction: column; align-items: center; }
-        #caption h2 { font-family: 'Yrsa', serif; font-size: 34px; margin: 0; }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(0,0,0,0.2); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-
-        .arrow-btn { background-color: var(--btn-bg); border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; box-shadow: 0 10px 25px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 101 !important; transition: transform 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%); }
-        .arrow-btn.back { left: -22px; } .arrow-btn.forward { right: -22px; }
     </style>
 </head>
 
 <body>
     <div class="header"><h1>MassPort</h1></div>
-    
-    <div class="scroll-edge left" onclick="scrollGrid(-1)"></div>
-    <div class="scroll-edge right" onclick="scrollGrid(1)"></div>
+    <div id="main-grid"></div>
 
     <div class="collector-nav-container">
-        <div class="collector-nav" id="filter-nav">
-            <div class="nav-pill-bg" id="nav-pill"></div>
-        </div>
+        <div class="collector-nav" id="filter-nav"><div class="nav-pill-bg" id="nav-pill"></div></div>
         <div class="map-btn-wrapper" id="map-btn-anchor"></div>
     </div>
-    
-    <div id="main-grid"></div>
     
     <div id="map-container"><div id="map"></div></div>
 
     <div id="myModal" class="modal">
         <span class="close">×</span>
-        <div class="modal-frame">
-            <img id="img01">
-            <div id="caption"></div>
-        </div>
+        <div class="modal-frame"><img id="img01"><div id="caption" style="color:white;text-align:center;margin-top:20px;"></div></div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
-        const logoUrl = 'https://i.ibb.co/QFwQ7f83/8ba712cc8372.png';
         
         let globalLocations = [];
-        let map, markers = [], currentMarkerIndex = 0, themeOffset = 0, placeholderCounter = 0;
-        let isMapMoving = false; 
+        let map, themeOffset = 0;
 
         async function init() {
             try {
@@ -263,71 +192,55 @@
                     const cols = r.split('\t');
                     const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
                     const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
-                    return { name: cols[0], address: cols[1], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName };
+                    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName };
                 });
                 setupNavigation();
-                renderGrid(applyCheckerboard(globalLocations));
+                renderGrid(globalLocations);
                 initMap();
-                setTimeout(() => updatePill(document.querySelector('.nav-tag.active')), 100);
+                setupScrollEffect();
             } catch (e) { console.error(e); }
-        }
-
-        function updatePill(el) {
-            const pill = document.getElementById('nav-pill');
-            if (!el || !pill) return;
-            pill.style.width = el.offsetWidth + 'px';
-            pill.style.left = el.offsetLeft + 'px';
         }
 
         function setupNavigation() {
             const counts = {};
             globalLocations.forEach(l => counts[l.stateName] = (counts[l.stateName] || 0) + 1);
-            const top4States = Object.entries(counts).filter(([k]) => k !== 'Europe' && k !== 'Other').sort((a,b) => b[1] - a[1]).slice(0,4).map(e => e[0]);
-            globalLocations.forEach(l => l.isOther = !top4States.includes(l.stateName) && l.stateName !== 'Europe');
-
-            const navOrder = ['All', ...top4States, 'Europe', 'Other', 'Map'];
+            const top4 = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0,4).map(e => e[0]);
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
-            
-            navOrder.forEach(s => {
+            ['All', ...top4, 'Map'].forEach(s => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag' + (s === 'All' ? ' active' : '');
-                btn.setAttribute('data-type', s);
-                const count = s === 'Map' ? '' : (s === 'All' ? globalLocations.length : (s === 'Other' ? globalLocations.filter(x=>x.isOther).length : (counts[s] || 0)));
-                btn.innerText = s === 'Map' ? 'Map' : `${s} (${count})`;
-                btn.onmousedown = (e) => handleNavClick(s, e.currentTarget);
+                btn.innerText = s === 'Map' ? 'Map' : `${s} (${s === 'All' ? globalLocations.length : counts[s]})`;
+                btn.onclick = () => {
+                    if (s === 'Map') document.body.classList.add('map-active');
+                    else {
+                        document.body.classList.remove('map-active');
+                        renderGrid(s === 'All' ? globalLocations : globalLocations.filter(l => l.stateName === s));
+                    }
+                    document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    updatePill(btn);
+                };
                 if (s === 'Map') mapAnchor.appendChild(btn); else nav.appendChild(btn);
             });
+            setTimeout(() => updatePill(document.querySelector('.nav-tag.active')), 100);
         }
 
-        function handleNavClick(state, el) {
-            document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            updatePill(el);
-            if (state === 'Map') {
-                document.body.classList.add('map-active');
-                setTimeout(() => { map.invalidateSize(); if (markers.length > 0) centerMarker(markers[currentMarkerIndex]); }, 300);
-            } else {
-                document.body.classList.remove('map-active');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                themeOffset = Math.floor(Math.random() * themes.length);
-                const filtered = globalLocations.filter(l => state === 'All' || (el.innerText.includes('Other') ? l.isOther : l.stateName === state));
-                renderGrid(applyCheckerboard(filtered));
-            }
+        function updatePill(el) {
+            const pill = document.getElementById('nav-pill');
+            pill.style.width = el.offsetWidth + 'px';
+            pill.style.left = el.offsetLeft + 'px';
         }
 
-        function generateStampHTML(loc, index, isMapMode = false) {
+        function generateStampHTML(loc, index) {
             const color = themes[(index + themeOffset) % themes.length];
-            const parts = loc.city.split(',');
-            const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
-            const rotation = isMapMode ? '0deg' : (Math.random() * 4 - 2).toFixed(2) + 'deg';
+            const citySt = loc.city.split(',')[0].trim();
+            const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             return `
-                <div class="stamp-wrapper ${isMapMode ? 'map-stamp' : ''}" style="--r_deg: ${rotation}">
-                    <div class="stamp ${isMapMode ? 'no-hover map-mode' : ''}" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
-                        <div class="postmark-seal" style="${isMapMode ? 'display:none' : ''}">
-                            ${citySt}
-                        </div>
+                <div class="stamp-wrapper" style="--r_deg: ${rotation}">
+                    <div class="postmark-seal">${citySt}</div>
+                    <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
                         <div class="stamp-image">
-                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
+                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : ''}
                             <div class="stamp-title-overlay">
                                 <div class="stamp-name">${loc.name}</div>
                                 <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
@@ -339,88 +252,56 @@
 
         function renderGrid(locs) {
             const grid = document.getElementById('main-grid');
-            grid.innerHTML = '';
-            locs.forEach((loc, i) => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = generateStampHTML(loc, i);
-                grid.appendChild(tempDiv.firstElementChild);
-            });
-            requestAnimationFrame(() => { revealStamps(); setupMobileObserver(); });
-            if(window.innerWidth <= 600) grid.scrollLeft = 0;
+            grid.innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
+            grid.scrollLeft = 0;
+            setTimeout(setupScrollEffect, 50);
         }
 
-        function revealStamps() {
-            document.querySelectorAll('#main-grid .stamp-wrapper').forEach((s, i) => {
-                s.style.transitionDelay = `${i * 30}ms`;
-                s.classList.add('revealed');
-            });
-        }
-
-        function setupMobileObserver() {
-            if (window.innerWidth > 600) return;
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('active-center');
-                    else entry.target.classList.remove('active-center');
-                });
-            }, { threshold: 0.5, root: document.getElementById('main-grid') });
-            document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
-        }
-
-        function scrollGrid(dir) {
+        function setupScrollEffect() {
             const grid = document.getElementById('main-grid');
-            const item = grid.querySelector('.stamp-wrapper');
-            if(!item) return;
-            grid.scrollBy({ left: item.offsetWidth * dir, behavior: 'smooth' });
+            const wrappers = document.querySelectorAll('.stamp-wrapper');
+            if (window.innerWidth > 600 || wrappers.length === 0) return;
+
+            const update = () => {
+                const centerX = window.innerWidth / 2;
+                wrappers.forEach(w => {
+                    const rect = w.getBoundingClientRect();
+                    const itemCenter = rect.left + rect.width / 2;
+                    const dist = Math.abs(centerX - itemCenter);
+                    const maxDist = window.innerWidth * 0.6;
+                    
+                    const normalized = Math.min(dist / maxDist, 1);
+                    const scale = 1.05 - (normalized * 0.17); 
+                    const lift = -25 + (normalized * 25); 
+                    const shadowAlpha = 0.22 - (normalized * 0.12);
+
+                    w.style.transform = `scale(${scale}) translateY(${lift}px)`;
+                    w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${shadowAlpha}))`;
+                    
+                    // Center activation (roughly 25% from absolute center)
+                    if (normalized < 0.25) {
+                        w.classList.add('is-centered');
+                        w.style.zIndex = "100";
+                    } else {
+                        w.classList.remove('is-centered');
+                        w.style.zIndex = "1";
+                    }
+                });
+            };
+            grid.addEventListener('scroll', update);
+            update();
         }
 
         function initMap() {
             map = L.map('map', { attributionControl: false, zoomControl: false }).setView([39.8283, -98.5795], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
-            globalLocations.forEach((loc, i) => {
-                if(!loc.lat || !loc.lng) return;
-                const marker = L.marker([loc.lat, loc.lng], { 
-                    icon: L.divIcon({ 
-                        html: `<div class="marker-blob" style="background:${themes[i % themes.length]}"><img src="${logoUrl}" style="width:55%"></div>`, 
-                        className: 'custom-logo-marker', iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -10] 
-                    }) 
-                }).addTo(map);
-                marker.bindPopup(`<div style="position:relative"><button class="arrow-btn back" onclick="window.navigateMap(-1)"><span class="material-symbols-rounded">chevron_left</span></button><button class="arrow-btn forward" onclick="window.navigateMap(1)"><span class="material-symbols-rounded">chevron_right</span></button>${generateStampHTML(loc, i, true)}</div>`, { maxWidth: 280, closeButton: false, autoPan: false });
-                marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
-                markers.push(marker);
-            });
         }
-
-        function centerMarker(marker) {
-            if (!marker || isMapMoving) return;
-            const targetPoint = map.project(marker.getLatLng(), map.getZoom());
-            targetPoint.y -= (map.getSize().y / 2 - 200);
-            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.45 });
-            map.once('moveend', () => marker.openPopup());
-        }
-
-        window.navigateMap = function(dir) { 
-            currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length; 
-            centerMarker(markers[currentMarkerIndex]);
-        };
 
         function openModalByIndex(idx) {
             const loc = globalLocations[idx]; if (!loc.imgUrl) return;
             document.getElementById('img01').src = loc.imgUrl;
             document.getElementById('caption').innerHTML = `<h2>${loc.name}</h2><div>${loc.city}</div>`;
             document.getElementById('myModal').style.display = 'flex';
-        }
-
-        function applyCheckerboard(locs) {
-            if (window.innerWidth <= 600) return locs;
-            const cols = (window.innerWidth <= 850 ? 3 : 4), withImg = locs.filter(x => x.imgUrl), noImg = locs.filter(x => !x.imgUrl), result = [];
-            let imgIdx = 0, noImgIdx = 0;
-            for (let i = 0; i < locs.length; i++) {
-                const row = Math.floor(i / cols), col = i % cols;
-                if ((row + col) % 2 === 0) result.push(imgIdx < withImg.length ? withImg[imgIdx++] : noImg[noImgIdx++]);
-                else result.push(noImgIdx < noImg.length ? noImg[noImgIdx++] : withImg[imgIdx++]);
-            }
-            return result.filter(x => x);
         }
 
         document.querySelector('.close').onclick = () => document.getElementById('myModal').style.display = 'none';

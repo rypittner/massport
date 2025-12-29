@@ -43,7 +43,7 @@
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
 
-        /* ---------- NAVIGATION (JUMP SYSTEM) ---------- */
+        /* ---------- NAVIGATION ---------- */
         .collector-nav-container {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
@@ -55,13 +55,16 @@
 
         .collector-nav { display: flex; gap: 6px; position: relative; padding: 4px 10px; overflow-x: auto; scrollbar-width: none; }
         .collector-nav::-webkit-scrollbar { display: none; }
-        .nav-pill-bg { position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); background: var(--accent); border-radius: 20px; transition: all 0.4s var(--ease-out-quint); z-index: 1; pointer-events: none; }
+        .nav-pill-bg { position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); background: var(--accent); border-radius: 20px; transition: all 0.5s var(--ease-out-quint); z-index: 1; pointer-events: none; }
+        
         .nav-tag { font-family: 'Inter', monospace; font-size: 11px; color: #444; cursor: pointer; padding: 8px 14px; border-radius: 20px; white-space: nowrap; transition: color 0.3s ease; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .nav-tag.active { color: #fff !important; }
-        .map-btn-wrapper { padding: 0 4px 0 10px; border-left: 1px solid rgba(0,0,0,0.05); }
         
-        .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
-        .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
+        .map-btn-wrapper { padding: 0 10px; border-left: 1px solid rgba(0,0,0,0.05); position: relative; }
+        
+        /* Fixed Map Button Styling */
+        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; }
+        .map-tag.active { background: var(--accent) !important; color: #fff !important; border-color: transparent; }
 
         /* ---------- MAIN GRID ---------- */
         #main-grid { 
@@ -176,7 +179,8 @@
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
         
         let globalLocations = [];
-        let map, themeOffset = 0, placeholderCounter = 0;
+        let map, placeholderCounter = 0;
+        let isManualScrolling = false; // Flag to prevent nav-jumping during manual clicks
 
         async function init() {
             try {
@@ -189,52 +193,60 @@
                     const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
                     return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName };
                 });
-                // Sort by state for a logical giant list
                 globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
                 setupNavigation();
                 renderGrid(globalLocations); 
                 initMap();
                 setupScrollEffect();
+                setupAutoNavTracker(); // Start the observer
             } catch (e) { console.error(e); }
         }
 
         function setupNavigation() {
             const counts = {};
             globalLocations.forEach(l => counts[l.stateName] = (counts[l.stateName] || 0) + 1);
-            
-            // Get sorted list of states
             const sortedStates = Object.keys(counts).sort();
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
             
-            // Render state buttons
             sortedStates.forEach((s, idx) => {
                 const btn = document.createElement('div');
-                btn.className = 'nav-tag' + (idx === 0 ? ' active' : '');
+                btn.className = 'nav-tag';
+                btn.id = `nav-${s}`;
                 btn.innerText = `${s} (${counts[s]})`;
                 btn.onclick = () => {
+                    isManualScrolling = true;
                     document.body.classList.remove('map-active');
                     scrollToGroup(s);
-                    document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
-                    btn.classList.add('active');
-                    updatePill(btn);
+                    setActiveNav(btn);
+                    setTimeout(() => isManualScrolling = false, 1000);
                 };
                 nav.appendChild(btn);
             });
 
-            // Render Map button separately
             const mapBtn = document.createElement('div');
-            mapBtn.className = 'nav-tag';
+            mapBtn.className = 'nav-tag map-tag';
             mapBtn.innerText = 'Map';
             mapBtn.onclick = () => {
                 document.body.classList.add('map-active');
-                document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
-                mapBtn.classList.add('active');
-                updatePill(mapBtn);
+                setActiveNav(mapBtn);
             };
             mapAnchor.appendChild(mapBtn);
             
-            setTimeout(() => updatePill(document.querySelector('.nav-tag.active')), 100);
+            setTimeout(() => setActiveNav(document.querySelector('.nav-tag')), 100);
+        }
+
+        function setActiveNav(el) {
+            document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            const pill = document.getElementById('nav-pill');
+            
+            // If the element is in the main nav, move pill. If map, hide pill or move to map
+            pill.style.width = el.offsetWidth + 'px';
+            pill.style.left = el.offsetLeft + 'px';
+            
+            // Auto-scroll the nav bar to keep active tab visible
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
 
         function scrollToGroup(state) {
@@ -244,14 +256,33 @@
             }
         }
 
-        function updatePill(el) {
-            const pill = document.getElementById('nav-pill');
-            pill.style.width = el.offsetWidth + 'px';
-            pill.style.left = el.offsetLeft + 'px';
+        // AUTO-CHANGE TAB ON SCROLL
+        function setupAutoNavTracker() {
+            const grid = document.getElementById('main-grid');
+            const options = { root: grid, threshold: 0.6 }; // Must be 60% visible to trigger
+
+            const observer = new IntersectionObserver((entries) => {
+                if (isManualScrolling || document.body.classList.contains('map-active')) return;
+
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const state = entry.target.getAttribute('data-state');
+                        const correspondingNav = document.getElementById(`nav-${state}`);
+                        if (correspondingNav) setActiveNav(correspondingNav);
+                    }
+                });
+            }, options);
+
+            // Observe the first stamp of every state group
+            const groups = [...new Set(globalLocations.map(l => l.stateName))];
+            groups.forEach(state => {
+                const el = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
+                if (el) observer.observe(el);
+            });
         }
 
         function generateStampHTML(loc, index) {
-            const color = themes[(index + themeOffset) % themes.length];
+            const color = themes[index % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
             const stateStr = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
@@ -278,7 +309,6 @@
         function renderGrid(locs) {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
-            setTimeout(setupScrollEffect, 50);
         }
 
         function scrollGrid(dir) {
@@ -300,14 +330,10 @@
                     const itemCenter = rect.left + rect.width / 2;
                     const dist = Math.abs(centerX - itemCenter);
                     const maxDist = window.innerWidth * 0.65;
-                    
                     const normalized = Math.min(dist / maxDist, 1);
-                    const scale = 1.05 - (normalized * 0.17); 
-                    const lift = -25 + (normalized * 25); 
-                    const shadowAlpha = 0.22 - (normalized * 0.12);
-
-                    w.style.transform = `scale(${scale}) translateY(${lift}px)`;
-                    w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${shadowAlpha}))`;
+                    
+                    w.style.transform = `scale(${1.05 - (normalized * 0.17)}) translateY(${-25 + (normalized * 25)}px)`;
+                    w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
                     
                     if (normalized < 0.22) {
                         w.classList.add('is-centered');
@@ -321,10 +347,7 @@
             };
 
             grid.addEventListener('scroll', () => {
-                if (!ticking) {
-                    window.requestAnimationFrame(update);
-                    ticking = true;
-                }
+                if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
             }, { passive: true });
             update();
         }
@@ -337,7 +360,7 @@
         function openModalByIndex(idx) {
             const loc = globalLocations[idx]; if (!loc.imgUrl) return;
             document.getElementById('img01').src = loc.imgUrl;
-            document.getElementById('caption').innerHTML = `<h2 style="font-size:28px; margin:0;">${loc.name}</h2><div style="font-size:16px; opacity:0.8;">${loc.city}</div>`;
+            document.getElementById('caption').innerHTML = `<h2 style="margin:0;">${loc.name}</h2><div>${loc.city}</div>`;
             document.getElementById('myModal').style.display = 'flex';
         }
 

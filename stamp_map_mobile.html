@@ -15,8 +15,8 @@
             --grid-max: 1100px;
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
-            --accent: #4478A2;
-            --r: 12px; /* Control radius for stamp edge */
+            --accent: #4478A2; /* Fallback accent */
+            --r: 12px;
             --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -24,14 +24,10 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
+            margin: 0; font-family: 'Inter', sans-serif;
             background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
-            color: #333;
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            color: #333; overflow-x: hidden; min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         body.map-active { overflow: hidden; height: 100vh; }
@@ -55,7 +51,13 @@
 
         .collector-nav { display: flex; gap: 6px; position: relative; padding: 4px 10px; overflow-x: auto; scrollbar-width: none; }
         .collector-nav::-webkit-scrollbar { display: none; }
-        .nav-pill-bg { position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); background: var(--accent); border-radius: 20px; transition: all 0.5s var(--ease-out-quint); z-index: 1; pointer-events: none; }
+        
+        .nav-pill-bg { 
+            position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); 
+            background: var(--accent); border-radius: 20px; 
+            transition: left 0.5s var(--ease-out-quint), width 0.5s var(--ease-out-quint), background 0.4s ease; 
+            z-index: 1; pointer-events: none; 
+        }
         
         .nav-tag { font-family: 'Inter', monospace; font-size: 11px; color: #444; cursor: pointer; padding: 8px 14px; border-radius: 20px; white-space: nowrap; transition: color 0.3s ease; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .nav-tag.active { color: #fff !important; }
@@ -84,51 +86,26 @@
                 scroll-behavior: smooth;
             } 
             #main-grid .stamp-wrapper {
-                flex: 0 0 70vw; 
-                scroll-snap-align: center; 
-                scroll-snap-stop: always;
-                padding: 0 8px; position: relative; z-index: 1;
-                /* Anti-flicker optimizations */
-                will-change: transform; 
-                transform-style: preserve-3d;
-                backface-visibility: hidden;
-            }
-            #main-grid .stamp-wrapper.state-ink-wrapper {
-                flex: 0 0 60vw;
-                padding: 0 15px;
-                scroll-snap-align: center;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                flex: 0 0 70vw; scroll-snap-align: center; scroll-snap-stop: always;
+                padding: 0 12px; position: relative; z-index: 1; flex-shrink: 0;
+                will-change: transform, filter; transform-style: preserve-3d;
             }
         }
 
         /* ---------- STAMP VISUALS (PAPER) ---------- */
-        /* Updated with user requested MASK for perforated edges */
         .stamp {
-            aspect-ratio: 7 / 9; 
-            padding: var(--r); 
-            background: var(--btn-bg);
-            cursor: pointer; position: relative; 
-            backface-visibility: hidden;
+            aspect-ratio: 7 / 9; padding: var(--r); background: var(--btn-bg);
+            cursor: pointer; position: relative; backface-visibility: hidden;
             transform: rotate(var(--r_deg, 0deg)); z-index: 2;
-            
-            /* The perforated edge mask */
-            mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
             -webkit-mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
+            mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
-            position: absolute; inset: var(--r); overflow: hidden;
+            position: absolute; inset: calc(var(--r) * 1.5); overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
-
-        .placeholder { position: absolute; inset: -1px; --light: rgba(255,255,255,0.4); --dark: var(--theme-color); }
-        .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
-        .pattern-2 { background-image: repeating-linear-gradient(135deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
-        .pattern-3 { background-image: repeating-linear-gradient(135deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
-        .pattern-4 { background-image: repeating-linear-gradient(45deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
 
         .stamp-image img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; transition: transform 1.2s var(--ease-out-quint); }
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
@@ -142,8 +119,7 @@
             background: rgba(255,255,255,0.96); backdrop-filter: blur(2px);
             z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
             transition: all 0.5s var(--ease-out-quint); 
-            transform: rotate(15deg) scale(0.85);
-            pointer-events: none;
+            transform: rotate(15deg) scale(0.85); pointer-events: none;
         }
         .is-centered .postmark-seal { transform: rotate(0deg) scale(1.05); color: #C65265; border-color: #C65265; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
 
@@ -157,71 +133,38 @@
 
         /* ---------- STATE INK STAMP VISUALS ---------- */
         .ink-stamp {
-            aspect-ratio: 1;
-            width: 100%;
-            max-width: 250px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Special Elite', cursive;
-            color: var(--ink-color);
-            text-transform: uppercase;
-            text-align: center;
-            font-weight: bold;
-            position: relative;
-            z-index: 2;
-            transform: rotate(var(--r_deg, 0deg));
-            backface-visibility: hidden;
-            mix-blend-mode: multiply;
-            opacity: 0.9; 
-            transition: all 0.5s var(--ease-out-quint);
+            aspect-ratio: 7 / 9; /* Matches paper stamp ratio */
+            width: 100%; display: flex; align-items: center; justify-content: center;
+            font-family: 'Special Elite', cursive; color: var(--ink-color);
+            text-transform: uppercase; text-align: center;
+            position: relative; z-index: 2; mix-blend-mode: multiply;
+            opacity: 0.9; transition: all 0.5s var(--ease-out-quint);
         }
 
         .ink-stamp-inner {
-            border: 6px double var(--ink-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 90%;
-            height: 90%;
-            background: rgba(255,255,255,0.05); 
+            border: 6px double var(--ink-color); padding: 20px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 85%; height: 85%;
         }
         
-        .ink-stamp-text {
-            font-size: 28px;
-            line-height: 1.1;
-            margin: 10px 0;
-            letter-spacing: 1px;
-            word-wrap: break-word;
-            max-width: 100%;
-        }
-
-        .ink-stamp-icon { font-size: 40px; margin-bottom: 5px; }
+        .ink-stamp-text-abbr { font-size: 42px; line-height: 1; margin: 0; font-weight: 900; }
+        .ink-stamp-text-full { font-size: 18px; line-height: 1.1; margin-top: 5px; border-top: 2px solid var(--ink-color); padding-top: 5px; }
+        .ink-stamp-icon { font-size: 44px; margin-bottom: 10px; }
         
-        /* Unique shapes */
-        .ink-shape-round .ink-stamp-inner { border-radius: 50%; border-style: solid; border-width: 3px; outline: 2px dashed var(--ink-color); outline-offset: 4px; }
-        .ink-shape-oval .ink-stamp-inner { border-radius: 40px; border-style: dashed; }
-        .ink-shape-shield .ink-stamp-inner { border-radius: 4px 4px 60px 60px; border-width: 4px; }
-        .ink-shape-box .ink-stamp-inner { border-radius: 8px; border-style: double; border-width: 8px; transform: rotate(-2deg); }
+        /* Diverse Shapes */
+        .ink-shape-0 .ink-stamp-inner { border-radius: 50%; border-style: solid; outline: 3px double var(--ink-color); outline-offset: 4px; }
+        .ink-shape-1 .ink-stamp-inner { border-radius: 15px; border-style: dashed; }
+        .ink-shape-2 .ink-stamp-inner { border-radius: 5px 5px 80px 80px; border-width: 5px; }
+        .ink-shape-3 .ink-stamp-inner { border-radius: 50% 5px; border-style: double; }
 
-        .is-centered .ink-stamp {
-            opacity: 1;
-            transform: rotate(0deg) scale(1.1);
-        }
+        .is-centered .ink-stamp { opacity: 1; transform: scale(1.1) rotate(var(--r_deg)); }
 
-        /* ---------- MAP & MODAL ---------- */
         #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
-        .modal-frame { position: relative; max-width: 85vw; display: flex; flex-direction: column; align-items: center; animation: stampExpand 0.6s var(--ease-out-quint); }
-        .modal img { max-height: 70vh; width: auto; max-width: 100%; border: 12px solid white; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
         .close { position: fixed; top: 30px; right: 30px; color: white; font-size: 35px; cursor: pointer; z-index: 20010; background: rgba(255,255,255,0.1); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        @keyframes stampExpand { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
     </style>
 </head>
 
@@ -241,8 +184,8 @@
 
     <div id="myModal" class="modal">
         <span class="close">×</span>
-        <div class="modal-frame">
-            <img id="img01">
+        <div class="modal-frame" style="position:relative; max-width:85vw; display:flex; flex-direction:column; align-items:center;">
+            <img id="img01" style="max-height:70vh; width:auto; max-width:100%; border:12px solid white; box-shadow:0 30px 60px rgba(0,0,0,0.5);">
             <div id="caption" style="color:white; text-align:center; margin-top:20px; font-family:'Yrsa', serif;"></div>
         </div>
     </div>
@@ -251,71 +194,45 @@
     <script>
         const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
+        const inkPalette = ['#1B4F72', '#78281F', '#186A3B', '#7E5109', '#512E5F', '#117864'];
         
-        // Full State Name Mapping
-        const stateNameMap = {
-            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
-            'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
-            'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
-            'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
-            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
-            'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
-            'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
-            'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
-            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
-            'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming',
-            'DC': 'Washington D.C.'
-        };
-
         let globalLocations = [];
-        let map, placeholderCounter = 0;
+        let stateInkMap = {}; // To store the specific ink color for nav pill syncing
+        let placeholderCounter = 0;
         let isManualScrolling = false;
-        
-        // Track previous styles to prevent adjacent duplicates
-        let lastInkShapeIndex = -1;
-        let lastInkColorIndex = -1;
 
         async function init() {
             try {
                 const response = await fetch(tsvUrl);
                 const data = await response.text();
                 const rows = data.trim().split('\n').slice(1);
-                globalLocations = rows.map(r => {
+                
+                let rawLocs = rows.map(r => {
                     const cols = r.split('\t');
                     const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
                     const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
-                    return { 
-                        name: cols[0], 
-                        note: cols[2], 
-                        imgUrl: cols[3] || '', 
-                        city: cols[4] || '', 
-                        lat: parseFloat(cols[5]), 
-                        lng: parseFloat(cols[6]), 
-                        stateName, 
-                        type: 'paper' 
-                    };
+                    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', stateName, type: 'paper' };
                 });
+                rawLocs.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
-                // Sort by state
-                globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
-                
-                // Inject Ink Stamps
-                let processedLocations = [];
+                let processed = [];
                 let lastState = null;
-                globalLocations.forEach(loc => {
+                let inkIdx = 0;
+                
+                rawLocs.forEach(loc => {
                     if (loc.stateName !== lastState) {
-                        // Determine the theme color of the NEXT paper stamp to avoid clashes
-                        // We do a simple lookahead or just assume the theme logic
-                        // Since we don't have the final index yet, we will handle color assignment in generateStampHTML
-                        processedLocations.push({ stateName: loc.stateName, type: 'ink' });
+                        const color = inkPalette[inkIdx % inkPalette.length];
+                        stateInkMap[loc.stateName] = color;
+                        processed.push({ stateName: loc.stateName, type: 'ink', inkColor: color, styleIdx: inkIdx });
                         lastState = loc.stateName;
+                        inkIdx++;
                     }
-                    processedLocations.push(loc);
+                    processed.push(loc);
                 });
-                globalLocations = processedLocations;
+                globalLocations = processed;
 
                 setupNavigation();
-                renderGrid(globalLocations); 
+                renderGrid(); 
                 initMap();
                 setupScrollEffect();
                 setupAutoNavTracker(); 
@@ -324,13 +241,10 @@
 
         function setupNavigation() {
             const counts = {};
-            globalLocations.forEach(l => {
-                if(l.type === 'paper') counts[l.stateName] = (counts[l.stateName] || 0) + 1;
-            });
-            const sortedStates = Object.keys(counts).sort();
+            globalLocations.forEach(l => { if(l.type === 'paper') counts[l.stateName] = (counts[l.stateName] || 0) + 1; });
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
             
-            sortedStates.forEach((s) => {
+            Object.keys(counts).sort().forEach(s => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag';
                 btn.id = `nav-${s}`;
@@ -339,7 +253,7 @@
                     isManualScrolling = true;
                     document.body.classList.remove('map-active');
                     scrollToGroup(s);
-                    setActiveNav(btn);
+                    setActiveNav(btn, stateInkMap[s]);
                     setTimeout(() => isManualScrolling = false, 800);
                 };
                 nav.appendChild(btn);
@@ -347,130 +261,79 @@
 
             const mapBtn = document.createElement('div');
             mapBtn.className = 'nav-tag map-tag';
-            mapBtn.id = "nav-map";
             mapBtn.innerText = 'Map';
-            mapBtn.onclick = () => {
-                document.body.classList.add('map-active');
-                setActiveNav(mapBtn);
-            };
+            mapBtn.onclick = () => { document.body.classList.add('map-active'); setActiveNav(mapBtn, '#4478A2'); };
             mapAnchor.appendChild(mapBtn);
-            setTimeout(() => setActiveNav(document.querySelector('.nav-tag')), 100);
+            
+            setTimeout(() => {
+                const first = document.querySelector('.nav-tag');
+                setActiveNav(first, stateInkMap[Object.keys(stateInkMap).sort()[0]]);
+            }, 100);
         }
 
-        function setActiveNav(el) {
+        function setActiveNav(el, color) {
             if (!el) return;
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
-            
             const pill = document.getElementById('nav-pill');
-            if (el.classList.contains('map-tag')) {
-                pill.style.opacity = "0"; 
-            } else {
-                pill.style.opacity = "1";
-                pill.style.width = el.offsetWidth + 'px';
-                pill.style.left = el.offsetLeft + 'px';
-                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
+            pill.style.opacity = el.classList.contains('map-tag') ? "0" : "1";
+            pill.style.width = el.offsetWidth + 'px';
+            pill.style.left = el.offsetLeft + 'px';
+            if(color) pill.style.background = color;
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
 
         function scrollToGroup(state) {
-            const firstOfState = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
-            if (firstOfState) firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            const target = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
 
         function setupAutoNavTracker() {
             const grid = document.getElementById('main-grid');
-            const options = { root: grid, threshold: 0.7 }; 
-
             const observer = new IntersectionObserver((entries) => {
                 if (isManualScrolling || document.body.classList.contains('map-active')) return;
-
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const state = entry.target.getAttribute('data-state');
-                        const correspondingNav = document.getElementById(`nav-${state}`);
-                        if (correspondingNav && !correspondingNav.classList.contains('active')) {
-                            setActiveNav(correspondingNav);
-                        }
+                        const navBtn = document.getElementById(`nav-${state}`);
+                        if (navBtn) setActiveNav(navBtn, stateInkMap[state]);
                     }
                 });
-            }, options);
-
+            }, { root: grid, threshold: 0.8 });
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
-        }
-
-        function getUniqueInkStyle(neighborThemeColor) {
-            const inkColors = ['#C65265', '#4478A2', '#297381', '#D78143', '#89974F'];
-            const inkShapes = ['ink-shape-round', 'ink-shape-oval', 'ink-shape-shield', 'ink-shape-box'];
-            
-            // SHAPE LOGIC: cycle to next shape, ensure it's not the same as last time
-            let shapeIdx = (lastInkShapeIndex + 1) % inkShapes.length;
-            lastInkShapeIndex = shapeIdx;
-            
-            // COLOR LOGIC: 
-            // 1. Must not match previous ink color
-            // 2. Must not match the neighbor paper stamp color (theme)
-            let colorIdx = (lastInkColorIndex + 1) % inkColors.length;
-            
-            // Simple safety loop to find a valid color
-            let safety = 0;
-            while (
-                (inkColors[colorIdx] === neighborThemeColor || colorIdx === lastInkColorIndex) 
-                && safety < 10
-            ) {
-                colorIdx = (colorIdx + 1) % inkColors.length;
-                safety++;
-            }
-            lastInkColorIndex = colorIdx;
-
-            return {
-                shape: inkShapes[shapeIdx],
-                color: inkColors[colorIdx]
-            };
         }
 
         function generateStampHTML(loc, index) {
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             
             if (loc.type === 'ink') {
-                // Determine what the NEXT paper stamp's theme color will be to avoid clash
-                // The next item is at index + 1 in the global list
-                const nextItemIndex = index + 1;
-                // Themes rotate simply based on index
-                const neighborThemeColor = themes[nextItemIndex % themes.length];
+                const icons = ['airplane_ticket', 'location_on', 'explore', 'public', 'history_edu', 'flag'];
+                const icon = icons[loc.styleIdx % icons.length];
+                const abbr = loc.stateName.substring(0,2).toUpperCase();
                 
-                const style = getUniqueInkStyle(neighborThemeColor);
-                const inkIcon = ['airplane_ticket', 'location_on', 'explore', 'public'][index % 4];
-
-                // Convert state abbreviation to full name if possible
-                const fullName = stateNameMap[loc.stateName] || loc.stateName;
-
                 return `
                     <div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
-                        <div class="ink-stamp ${style.shape}" style="--ink-color: ${style.color}">
+                        <div class="ink-stamp ink-shape-${loc.styleIdx % 4}" style="--ink-color: ${loc.inkColor}">
                             <div class="ink-stamp-inner">
-                                <span class="material-symbols-rounded ink-stamp-icon">${inkIcon}</span>
-                                <div class="ink-stamp-text">${fullName}</div>
-                                <div style="font-size: 10px; letter-spacing: 2px;">WELCOME</div>
+                                <span class="material-symbols-rounded ink-stamp-icon">${icon}</span>
+                                <div class="ink-stamp-text-abbr">${abbr}</div>
+                                <div class="ink-stamp-text-full">${loc.stateName}</div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }
 
-            // Paper stamp logic
             const color = themes[index % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
-            const stateStr = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
-            const sealText = stateStr ? `${cityStr}, ${stateStr}` : cityStr;
+            const stateCode = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
             
             return `
                 <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
-                    <div class="postmark-seal">${sealText}</div>
+                    <div class="postmark-seal">${stateCode ? cityStr + ', ' + stateCode : cityStr}</div>
                     <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
                         <div class="stamp-image">
-                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
+                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder" style="background:${color} opacity:0.3"></div>`}
                             <div class="stamp-title-overlay">
                                 <div class="stamp-name">${loc.name}</div>
                                 <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
@@ -480,8 +343,8 @@
                 </div>`;
         }
 
-        function renderGrid(locs) {
-            document.getElementById('main-grid').innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
+        function renderGrid() {
+            document.getElementById('main-grid').innerHTML = globalLocations.map((l, i) => generateStampHTML(l, i)).join('');
         }
 
         function scrollGrid(dir) {
@@ -492,47 +355,27 @@
 
         function setupScrollEffect() {
             const grid = document.getElementById('main-grid');
-            // Select wrappers dynamically to ensure we get them all
-            const getWrappers = () => document.querySelectorAll('.stamp-wrapper');
-            
-            if (window.innerWidth > 600 || getWrappers().length === 0) return;
+            const wrappers = document.querySelectorAll('.stamp-wrapper');
+            if (window.innerWidth > 600) return;
 
-            let ticking = false;
             const update = () => {
-                const wrappers = getWrappers();
                 const centerX = window.innerWidth / 2;
-                
                 wrappers.forEach(w => {
                     const rect = w.getBoundingClientRect();
-                    // Optimization: Skip calculation if off-screen significantly
-                    if (rect.right < -100 || rect.left > window.innerWidth + 100) return;
-
-                    const itemCenter = rect.left + rect.width / 2;
-                    const dist = Math.abs(centerX - itemCenter);
-                    const maxDist = window.innerWidth * 0.65;
-                    const normalized = Math.min(dist / maxDist, 1);
+                    const dist = Math.abs(centerX - (rect.left + rect.width / 2));
+                    const normalized = Math.min(dist / (window.innerWidth * 0.65), 1);
                     
                     if (w.classList.contains('state-ink-wrapper')) {
-                        w.style.transform = `scale(${1.0 - (normalized * 0.05)})`;
-                        w.style.opacity = 1 - (normalized * 0.4); 
+                        w.style.transform = `scale(${1.0 - (normalized * 0.1)})`;
                     } else {
                         w.style.transform = `scale(${1.05 - (normalized * 0.17)}) translateY(${-25 + (normalized * 25)}px)`;
                         w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
                     }
-                    
-                    if (normalized < 0.22) {
-                        w.classList.add('is-centered');
-                        w.style.zIndex = "100";
-                    } else {
-                        w.classList.remove('is-centered');
-                        w.style.zIndex = "1";
-                    }
+                    if (normalized < 0.25) { w.classList.add('is-centered'); w.style.zIndex = "100"; } 
+                    else { w.classList.remove('is-centered'); w.style.zIndex = "1"; }
                 });
-                ticking = false;
             };
-            
-            grid.addEventListener('scroll', () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } }, { passive: true });
-            // Run once to init
+            grid.addEventListener('scroll', update, { passive: true });
             update();
         }
 
@@ -542,8 +385,7 @@
         }
 
         function openModalByIndex(idx) {
-            const loc = globalLocations[idx]; 
-            if (loc.type === 'ink' || !loc.imgUrl) return;
+            const loc = globalLocations[idx]; if (loc.type === 'ink' || !loc.imgUrl) return;
             document.getElementById('img01').src = loc.imgUrl;
             document.getElementById('caption').innerHTML = `<h2 style="margin:0;">${loc.name}</h2><div>${loc.city}</div>`;
             document.getElementById('myModal').style.display = 'flex';

@@ -84,14 +84,20 @@
                 scroll-behavior: smooth;
             } 
             #main-grid .stamp-wrapper {
-                flex: 0 0 70vw; scroll-snap-align: center; scroll-snap-stop: always;
+                flex: 0 0 70vw; 
+                scroll-snap-align: center; /* Critical for locking */
+                scroll-snap-stop: always;
                 padding: 0 8px; position: relative; z-index: 1;
                 will-change: transform, filter; transform-style: preserve-3d;
             }
             /* Special styling for the state ink stamp wrapper */
             #main-grid .stamp-wrapper.state-ink-wrapper {
-                flex: 0 0 55vw; /* Slightly smaller to stand out */
+                flex: 0 0 60vw; /* Fixed width for the ink stamp */
                 padding: 0 15px;
+                scroll-snap-align: center; /* Ensure it locks to center */
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
         }
 
@@ -141,11 +147,11 @@
         .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s var(--ease-standard); }
         .is-centered .stamp-note { opacity: 1; padding-top: 6px; }
 
-        /* ---------- STATE INK STAMP VISUALS ---------- */
+        /* ---------- STATE INK STAMP VISUALS (FIXED VISIBILITY) ---------- */
         .ink-stamp {
             aspect-ratio: 1;
             width: 100%;
-            max-width: 300px;
+            max-width: 250px;
             margin: 0 auto;
             display: flex;
             align-items: center;
@@ -159,53 +165,43 @@
             z-index: 2;
             transform: rotate(var(--r_deg, 0deg));
             backface-visibility: hidden;
-            /* Ink texture effect */
-            -webkit-mask-image: url("https://i.ibb.co/9gdjX9M/ink-texture.png");
-            mask-image: url("https://i.ibb.co/9gdjX9M/ink-texture.png");
-            -webkit-mask-size: cover;
-            mask-size: cover;
-            opacity: 0.85;
+            /* Use blending instead of masking for reliability */
+            mix-blend-mode: multiply;
+            opacity: 0.9; 
             transition: all 0.5s var(--ease-out-quint);
         }
 
         .ink-stamp-inner {
-            border: 5px double var(--ink-color);
+            border: 6px double var(--ink-color);
             padding: 20px;
-            border-radius: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            width: 90%;
+            height: 90%;
+            background: rgba(255,255,255,0.05); /* Slight tint for body */
         }
         
         .ink-stamp-text {
-            font-size: 24px;
-            line-height: 1.2;
-            margin: 5px 0;
+            font-size: 32px;
+            line-height: 1.1;
+            margin: 10px 0;
+            letter-spacing: 1px;
         }
 
-        .ink-stamp-icon {
-            font-size: 36px;
-            margin-bottom: 5px;
-        }
+        .ink-stamp-icon { font-size: 40px; margin-bottom: 5px; }
         
-        /* Unique shapes for different states */
-        .ink-shape-round .ink-stamp-inner { border-radius: 50%; padding: 40px; aspect-ratio: 1; }
-        .ink-shape-oval .ink-stamp-inner { border-radius: 50%; padding: 30px 60px; aspect-ratio: 1.6 / 1; }
-        .ink-shape-shield .ink-stamp-inner { border-radius: 5px 5px 50px 50px; }
-        .ink-shape-hexagon .ink-stamp-inner {
-            -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-            border: 5px solid var(--ink-color);
-            border-radius: 0;
-        }
+        /* Unique shapes via border-radius */
+        .ink-shape-round .ink-stamp-inner { border-radius: 50%; border-style: solid; border-width: 3px; outline: 2px dashed var(--ink-color); outline-offset: 4px; }
+        .ink-shape-oval .ink-stamp-inner { border-radius: 40px; border-style: dashed; }
+        .ink-shape-shield .ink-stamp-inner { border-radius: 4px 4px 60px 60px; border-width: 4px; }
+        .ink-shape-box .ink-stamp-inner { border-radius: 8px; border-style: double; border-width: 8px; transform: rotate(-2deg); }
 
         .is-centered .ink-stamp {
             opacity: 1;
             transform: rotate(0deg) scale(1.1);
-            filter: drop-shadow(0 0 10px var(--ink-color));
         }
-
 
         /* ---------- MAP & MODAL ---------- */
         #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
@@ -264,12 +260,12 @@
                 });
                 globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
-                // Inject State Ink Stamps
+                // Inject State Ink Stamps at the START of each group
                 let processedLocations = [];
                 let lastState = null;
                 globalLocations.forEach(loc => {
                     if (loc.stateName !== lastState) {
-                        processedLocations.push({ stateName: loc.stateName, type: 'ink' });
+                        processedLocations.push({ stateName: loc.stateName, type: 'ink' }); // This is the first item of the group
                         lastState = loc.stateName;
                     }
                     processedLocations.push(loc);
@@ -336,6 +332,7 @@
         }
 
         function scrollToGroup(state) {
+            // Find the INK stamp for this state (it is the first item with this data-state)
             const firstOfState = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
             if (firstOfState) firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
@@ -366,25 +363,26 @@
             
             if (loc.type === 'ink') {
                 const inkColors = ['#C65265', '#4478A2', '#297381', '#D78143', '#89974F'];
-                const inkShapes = ['ink-shape-round', 'ink-shape-oval', 'ink-shape-shield', 'ink-shape-hexagon'];
+                const inkShapes = ['ink-shape-round', 'ink-shape-oval', 'ink-shape-shield', 'ink-shape-box'];
                 const inkColor = inkColors[index % inkColors.length];
                 const inkShape = inkShapes[index % inkShapes.length];
                 const inkIcon = ['airplane_ticket', 'location_on', 'explore', 'public'][index % 4];
 
+                // Added 'state-ink-wrapper' class specifically for these
                 return `
                     <div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
                         <div class="ink-stamp ${inkShape}" style="--ink-color: ${inkColor}">
                             <div class="ink-stamp-inner">
                                 <span class="material-symbols-rounded ink-stamp-icon">${inkIcon}</span>
                                 <div class="ink-stamp-text">${loc.stateName}</div>
-                                <div style="font-size: 12px;">WELCOME</div>
+                                <div style="font-size: 10px; letter-spacing: 2px;">WELCOME</div>
                             </div>
                         </div>
                     </div>
                 `;
             }
 
-            // Regular paper stamp logic
+            // Regular paper stamp
             const color = themes[index % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
@@ -432,10 +430,11 @@
                     const normalized = Math.min(dist / maxDist, 1);
                     
                     if (w.classList.contains('state-ink-wrapper')) {
-                        // Subtler effect for ink stamps
-                        w.style.transform = `scale(${1.02 - (normalized * 0.08)}) translateY(${-5 + (normalized * 5)}px)`;
+                        // Ink stamp animation
+                        w.style.transform = `scale(${1.0 - (normalized * 0.05)})`;
+                        w.style.opacity = 1 - (normalized * 0.4); // Fade out slightly at edges
                     } else {
-                        // Full effect for paper stamps
+                        // Paper stamp animation
                         w.style.transform = `scale(${1.05 - (normalized * 0.17)}) translateY(${-25 + (normalized * 25)}px)`;
                         w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
                     }

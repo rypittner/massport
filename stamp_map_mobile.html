@@ -17,7 +17,6 @@
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
             --r: 12px;
-            /* Smoother Easing Function */
             --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -44,6 +43,7 @@
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
 
+        /* ---------- NAVIGATION (JUMP SYSTEM) ---------- */
         .collector-nav-container {
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
@@ -59,13 +59,15 @@
         .nav-tag { font-family: 'Inter', monospace; font-size: 11px; color: #444; cursor: pointer; padding: 8px 14px; border-radius: 20px; white-space: nowrap; transition: color 0.3s ease; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .nav-tag.active { color: #fff !important; }
         .map-btn-wrapper { padding: 0 4px 0 10px; border-left: 1px solid rgba(0,0,0,0.05); }
+        
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
         .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
+        /* ---------- MAIN GRID ---------- */
         #main-grid { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; 
             max-width: var(--grid-max); margin: 0 auto; 
-            padding: 20px 30px; 
+            padding: 40px 30px 140px; 
             transition: opacity 0.5s ease; flex-grow: 1;
             align-items: center; min-height: 75vh;
         }
@@ -87,6 +89,7 @@
             }
         }
 
+        /* ---------- STAMP VISUALS ---------- */
         .stamp {
             aspect-ratio: 7 / 9; padding: var(--r); background: var(--btn-bg);
             cursor: pointer; position: relative; backface-visibility: hidden;
@@ -118,7 +121,6 @@
             font-family: 'Special Elite'; font-size: 8px; text-align: center;
             background: rgba(255,255,255,0.96); backdrop-filter: blur(2px);
             z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
-            /* Improved Seal Transition */
             transition: all 0.5s var(--ease-out-quint); 
             transform: rotate(15deg) scale(0.85);
             pointer-events: none;
@@ -128,11 +130,15 @@
         .stamp-title-overlay { position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); padding: 10px; background: var(--theme-color); color: white; z-index: 5; }
         .stamp-name { font-family: 'Yrsa', serif; font-size: 15px; line-height: 1.1; font-weight: 600; }
         
-        /* Smoothed note expansion */
         .note-container { overflow: hidden; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s var(--ease-out-quint); }
         .is-centered .note-container { grid-template-rows: 1fr; }
         .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s var(--ease-standard); }
         .is-centered .stamp-note { opacity: 1; padding-top: 6px; }
+
+        /* ---------- MAP & MODAL ---------- */
+        #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
+        body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
+        #map { height: 100%; width: 100%; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
         .modal-frame { position: relative; max-width: 85vw; display: flex; flex-direction: column; align-items: center; animation: stampExpand 0.6s var(--ease-out-quint); }
@@ -183,47 +189,59 @@
                     const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
                     return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName };
                 });
+                // Sort by state for a logical giant list
+                globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
+                
                 setupNavigation();
-                renderGrid(applyCheckerboard(globalLocations));
+                renderGrid(globalLocations); 
                 initMap();
                 setupScrollEffect();
             } catch (e) { console.error(e); }
         }
 
-        function applyCheckerboard(locs) {
-            if (window.innerWidth <= 600) return locs;
-            const cols = (window.innerWidth <= 850 ? 3 : 4), withImg = locs.filter(x => x.imgUrl), noImg = locs.filter(x => !x.imgUrl), result = [];
-            let imgIdx = 0, noImgIdx = 0;
-            for (let i = 0; i < locs.length; i++) {
-                const row = Math.floor(i / cols), col = i % cols;
-                if ((row + col) % 2 === 0) result.push(imgIdx < withImg.length ? withImg[imgIdx++] : noImg[noImgIdx++]);
-                else result.push(noImgIdx < noImg.length ? noImg[noImgIdx++] : withImg[imgIdx++]);
-            }
-            return result.filter(x => x);
-        }
-
         function setupNavigation() {
             const counts = {};
             globalLocations.forEach(l => counts[l.stateName] = (counts[l.stateName] || 0) + 1);
-            const top4 = Object.entries(counts).sort((a,b) => b[1] - a[1]).slice(0,4).map(e => e[0]);
+            
+            // Get sorted list of states
+            const sortedStates = Object.keys(counts).sort();
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
-            ['All', ...top4, 'Map'].forEach(s => {
+            
+            // Render state buttons
+            sortedStates.forEach((s, idx) => {
                 const btn = document.createElement('div');
-                btn.className = 'nav-tag' + (s === 'All' ? ' active' : '');
-                btn.innerText = s === 'Map' ? 'Map' : `${s} (${s === 'All' ? globalLocations.length : counts[s]})`;
+                btn.className = 'nav-tag' + (idx === 0 ? ' active' : '');
+                btn.innerText = `${s} (${counts[s]})`;
                 btn.onclick = () => {
-                    if (s === 'Map') document.body.classList.add('map-active');
-                    else {
-                        document.body.classList.remove('map-active');
-                        renderGrid(s === 'All' ? globalLocations : globalLocations.filter(l => l.stateName === s));
-                    }
+                    document.body.classList.remove('map-active');
+                    scrollToGroup(s);
                     document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
                     btn.classList.add('active');
                     updatePill(btn);
                 };
-                if (s === 'Map') mapAnchor.appendChild(btn); else nav.appendChild(btn);
+                nav.appendChild(btn);
             });
+
+            // Render Map button separately
+            const mapBtn = document.createElement('div');
+            mapBtn.className = 'nav-tag';
+            mapBtn.innerText = 'Map';
+            mapBtn.onclick = () => {
+                document.body.classList.add('map-active');
+                document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
+                mapBtn.classList.add('active');
+                updatePill(mapBtn);
+            };
+            mapAnchor.appendChild(mapBtn);
+            
             setTimeout(() => updatePill(document.querySelector('.nav-tag.active')), 100);
+        }
+
+        function scrollToGroup(state) {
+            const firstOfState = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
+            if (firstOfState) {
+                firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            }
         }
 
         function updatePill(el) {
@@ -236,15 +254,14 @@
             const color = themes[(index + themeOffset) % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
-            // Restored Tucson, AZ formatting logic
             const stateStr = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
             const sealText = stateStr ? `${cityStr}, ${stateStr}` : cityStr;
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             
             return `
-                <div class="stamp-wrapper" style="--r_deg: ${rotation}">
+                <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
                     <div class="postmark-seal">${sealText}</div>
-                    <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
+                    <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
                         <div class="stamp-image">
                             ${loc.imgUrl ? 
                                 `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
@@ -261,16 +278,13 @@
         function renderGrid(locs) {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
-            grid.scrollLeft = 0;
             setTimeout(setupScrollEffect, 50);
         }
 
-        // SMOOTHED EDGE SCROLLING
         function scrollGrid(dir) {
             const grid = document.getElementById('main-grid');
             const itemWidth = grid.querySelector('.stamp-wrapper').offsetWidth;
-            const target = grid.scrollLeft + (itemWidth * dir);
-            grid.scrollTo({ left: target, behavior: 'smooth' });
+            grid.scrollBy({ left: itemWidth * dir, behavior: 'smooth' });
         }
 
         function setupScrollEffect() {

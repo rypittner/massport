@@ -86,10 +86,14 @@
         @media (max-width: 600px) { 
             .header { display: none; }
             #main-grid { 
-                display: flex; flex-wrap: nowrap; overflow-x: auto; 
-                scroll-snap-type: x mandatory; gap: 0;
-                padding: 0 17.5vw; 
-                scroll-padding: 0 17.5vw;
+                display: flex; 
+                flex-wrap: nowrap; 
+                overflow-x: auto; 
+                scroll-snap-type: x mandatory; 
+                gap: 0;
+                width: 100vw;
+                padding: 0 15vw; /* Creates the space for side stamps */
+                scroll-padding: 0 15vw;
                 -webkit-overflow-scrolling: touch;
                 align-items: center; 
                 min-height: calc(100vh - 100px); 
@@ -98,22 +102,22 @@
             #main-grid::-webkit-scrollbar { display: none; }
             
             #main-grid .stamp-wrapper {
-                flex: 0 0 65vw;
+                flex: 0 0 70vw; /* Exact size for 1/2 -- Full -- 1/2 layout */
                 scroll-snap-align: center;
                 scroll-snap-stop: always;
-                padding: 0 15px;
+                padding: 0 10px;
                 position: relative;
                 z-index: 1;
                 transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-                transform: scale(0.9); /* Stuck to page */
+                transform: scale(0.9); /* "Pasted to paper" look */
             }
 
             #main-grid .stamp-wrapper.active-center {
                 z-index: 100;
-                transform: scale(1.1) translateY(-10px); /* Lifted up */
+                transform: scale(1.05) translateY(-20px); /* "Hover mode" lift */
             }
 
-            .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; cursor: pointer; }
+            .scroll-edge { position: fixed; top: 0; bottom: 0; width: 10%; z-index: 999; cursor: pointer; }
             .scroll-edge.left { left: 0; }
             .scroll-edge.right { right: 0; }
         }
@@ -131,11 +135,15 @@
         /* ---------- STAMP CORE STYLING ---------- */
         .stamp-wrapper { 
             opacity: 0; 
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1)); 
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.15)); /* Flat shadow by default */
             will-change: transform;
         }
         .stamp-wrapper.revealed { opacity: 1; }
         
+        .active-center {
+            filter: drop-shadow(0 25px 45px rgba(0,0,0,0.3)); /* Lifted shadow */
+        }
+
         .map-stamp { 
             --r: 0deg !important; width: 240px; margin: 0 auto; opacity: 1; 
             transform: translateY(0) !important;
@@ -157,8 +165,6 @@
             transform: rotate(var(--r, 0deg));
         }
         
-        .active-center .stamp { filter: drop-shadow(0 30px 60px rgba(0,0,0,0.3)); }
-
         .stamp-image {
             position: absolute;
             inset: calc(var(--radius) * 2.2);
@@ -389,7 +395,7 @@
                     if (entry.isIntersecting) entry.target.classList.add('active-center');
                     else entry.target.classList.remove('active-center');
                 });
-            }, { threshold: 0.95, root: document.getElementById('main-grid') });
+            }, { threshold: 0.85, root: document.getElementById('main-grid') });
             document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
         }
 
@@ -435,7 +441,6 @@
             isMapMoving = true;
             map.panTo(targetLatLng, { animate: true, duration: 0.45 });
             
-            // Safety: in case moveend doesn't fire correctly
             map.once('moveend', () => { marker.openPopup(); isMapMoving = false; });
             setTimeout(() => { isMapMoving = false; }, 600);
         }
@@ -454,7 +459,7 @@
         }
 
         function applyCheckerboard(locs) {
-            if (window.innerWidth <= 600) return locs; // Single list on mobile, no placeholders
+            if (window.innerWidth <= 600) return locs;
             const cols = (window.innerWidth <= 850 ? 3 : 4);
             const withImg = locs.filter(x => x.imgUrl), noImg = locs.filter(x => !x.imgUrl), result = [];
             let imgIdx = 0, noImgIdx = 0;

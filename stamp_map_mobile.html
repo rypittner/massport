@@ -88,7 +88,7 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
-                padding: 0 17.5vw; /* Centering padding for first/last items */
+                padding: 0 17.5vw; 
                 -webkit-overflow-scrolling: touch;
                 align-items: center; 
                 min-height: calc(100vh - 100px); 
@@ -97,11 +97,20 @@
             #main-grid::-webkit-scrollbar { display: none; }
             
             #main-grid .stamp-wrapper {
-                flex: 0 0 65vw; /* Shrunk size */
+                flex: 0 0 65vw;
                 scroll-snap-align: center;
                 padding: 0 15px;
                 position: relative;
+                z-index: 1; /* Default lower z-index */
+                transition: transform 0.5s ease, z-index 0.5s step-end;
             }
+
+            /* Center element sitting on top */
+            #main-grid .stamp-wrapper.active-center {
+                z-index: 100;
+                transform: scale(1.1);
+            }
+
             .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; cursor: pointer; }
             .scroll-edge.left { left: 0; }
             .scroll-edge.right { right: 0; }
@@ -123,13 +132,9 @@
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15)); 
             will-change: transform;
-            z-index: 1;
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
         
-        /* High Z-Index for Active Center Stamp */
-        .stamp-wrapper.active-center { z-index: 50; }
-
         .map-stamp { 
             --r: 0deg !important; width: 240px; margin: 0 auto; opacity: 1; 
             transform: translateY(0) !important;
@@ -144,7 +149,7 @@
             background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
             background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
             
-            aspect-ratio: 7 / 9; /* Updated Ratio */
+            aspect-ratio: 7 / 9; 
             cursor: pointer; position: relative;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
             backface-visibility: hidden;
@@ -161,7 +166,8 @@
         @media (min-width: 601px) {
             .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3)); }
         }
-        .stamp.mobile-hover { transform: scale(1.1) translateY(-10px) rotate(0deg) !important; filter: drop-shadow(0 25px 45px rgba(0,0,0,0.35)); }
+        
+        .active-center .stamp { filter: drop-shadow(0 25px 45px rgba(0,0,0,0.35)); }
 
         .stamp-image img {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -170,7 +176,7 @@
         }
         
         img.normal { opacity: 0; transition: opacity 0.4s ease; }
-        .stamp:hover:not(.no-hover) img.normal, .stamp.mobile-hover img.normal, .map-mode img.normal { opacity: 1; }
+        .active-center img.normal, .stamp:hover:not(.no-hover) img.normal, .map-mode img.normal { opacity: 1; }
 
         .placeholder { position: absolute; inset: -1px; --light: rgba(255,255,255,0.4); --dark: var(--theme-color); }
         .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
@@ -185,9 +191,9 @@
         
         .stamp-name { font-family: 'Yrsa', serif; font-size: 15px; line-height: 1.1; font-weight: 600; }
         .note-container { overflow: hidden; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .stamp:hover:not(.no-hover) .note-container, .stamp.mobile-hover .note-container, .map-mode .note-container { grid-template-rows: 1fr; }
+        .active-center .note-container, .stamp:hover:not(.no-hover) .note-container, .map-mode .note-container { grid-template-rows: 1fr; }
         .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.3s ease; }
-        .stamp:hover:not(.no-hover) .stamp-note, .stamp.mobile-hover .stamp-note, .map-mode .stamp-note { opacity: 1; padding-top: 6px; }
+        .active-center .stamp-note, .stamp:hover:not(.no-hover) .stamp-note, .map-mode .stamp-note { opacity: 1; padding-top: 6px; }
 
         .postmark-seal {
             position: absolute; top: -12px; right: -12px; width: 68px; height: 68px;
@@ -199,7 +205,7 @@
             backdrop-filter: blur(2px); z-index: 60; color: rgba(0,0,0,0.5); padding: 4px;
             transition: all 0.4s ease;
         }
-        .stamp:hover:not(.no-hover) .postmark-seal, .stamp.mobile-hover .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
+        .active-center .postmark-seal, .stamp:hover:not(.no-hover) .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
         /* ---------- MODAL & POPUP ---------- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(5px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; }
@@ -270,6 +276,7 @@
         
         let globalLocations = [];
         let map, markers = [], currentMarkerIndex = 0, themeOffset = 0, placeholderCounter = 0;
+        let isMapMoving = false; // Prevents freezing during rapid clicks
 
         async function init() {
             try {
@@ -378,16 +385,13 @@
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const wrapper = entry.target;
-                    const stamp = wrapper.querySelector('.stamp');
                     if (entry.isIntersecting) {
-                        stamp.classList.add('mobile-hover');
                         wrapper.classList.add('active-center');
                     } else {
-                        stamp.classList.remove('mobile-hover');
                         wrapper.classList.remove('active-center');
                     }
                 });
-            }, { threshold: 0.8, root: document.getElementById('main-grid') });
+            }, { threshold: 0.7, root: document.getElementById('main-grid') });
             document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
         }
 
@@ -427,17 +431,21 @@
                 marker.on('click', () => { currentMarkerIndex = i; centerMarker(marker); });
                 markers.push(marker);
             });
+
+            map.on('movestart', () => isMapMoving = true);
+            map.on('moveend', () => isMapMoving = false);
         }
 
         function centerMarker(marker) {
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
             targetPoint.y -= (map.getSize().y / 2 - 200);
             map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.4 });
-            marker.openPopup();
+            // Small delay to ensure the pan doesn't interrupt the popup open
+            setTimeout(() => marker.openPopup(), 100);
         }
 
         window.navigateMap = function(dir) { 
-            // Cycle index
+            if (isMapMoving) return; // Ignore input while map is moving to prevent freeze
             currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length; 
             const nextMarker = markers[currentMarkerIndex];
             if (nextMarker) centerMarker(nextMarker);

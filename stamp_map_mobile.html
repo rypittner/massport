@@ -89,6 +89,7 @@
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
                 padding: 0 17.5vw; 
+                scroll-padding: 0 17.5vw; /* Forces strict snapping to center */
                 -webkit-overflow-scrolling: touch;
                 align-items: center; 
                 min-height: calc(100vh - 100px); 
@@ -101,14 +102,13 @@
                 scroll-snap-align: center;
                 padding: 0 15px;
                 position: relative;
-                z-index: 1; /* Default lower z-index */
-                transition: transform 0.5s ease, z-index 0.5s step-end;
+                z-index: 1;
+                transition: transform 0.4s ease;
             }
 
-            /* Center element sitting on top */
             #main-grid .stamp-wrapper.active-center {
                 z-index: 100;
-                transform: scale(1.1);
+                transform: scale(1.05); /* Subtle lift for center */
             }
 
             .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; cursor: pointer; }
@@ -276,7 +276,7 @@
         
         let globalLocations = [];
         let map, markers = [], currentMarkerIndex = 0, themeOffset = 0, placeholderCounter = 0;
-        let isMapMoving = false; // Prevents freezing during rapid clicks
+        let isMapMoving = false; 
 
         async function init() {
             try {
@@ -382,6 +382,7 @@
 
         function setupMobileObserver() {
             if (window.innerWidth > 600) return;
+            // Higher threshold (0.9) ensures stamp is practically centered before activating
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     const wrapper = entry.target;
@@ -391,7 +392,7 @@
                         wrapper.classList.remove('active-center');
                     }
                 });
-            }, { threshold: 0.7, root: document.getElementById('main-grid') });
+            }, { threshold: 0.9, root: document.getElementById('main-grid') });
             document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
         }
 
@@ -437,18 +438,26 @@
         }
 
         function centerMarker(marker) {
+            if (!marker) return;
             const targetPoint = map.project(marker.getLatLng(), map.getZoom());
             targetPoint.y -= (map.getSize().y / 2 - 200);
-            map.panTo(map.unproject(targetPoint, map.getZoom()), { animate: true, duration: 0.4 });
-            // Small delay to ensure the pan doesn't interrupt the popup open
-            setTimeout(() => marker.openPopup(), 100);
+            const targetLatLng = map.unproject(targetPoint, map.getZoom());
+            
+            // Wait for pan to finish BEFORE opening popup to prevent Leaflet freeze
+            map.once('moveend', () => {
+                marker.openPopup();
+                isMapMoving = false;
+            });
+            
+            isMapMoving = true;
+            map.panTo(targetLatLng, { animate: true, duration: 0.45 });
         }
 
         window.navigateMap = function(dir) { 
-            if (isMapMoving) return; // Ignore input while map is moving to prevent freeze
+            if (isMapMoving) return; 
             currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length; 
             const nextMarker = markers[currentMarkerIndex];
-            if (nextMarker) centerMarker(nextMarker);
+            centerMarker(nextMarker);
         };
 
         function openModalByIndex(idx) {

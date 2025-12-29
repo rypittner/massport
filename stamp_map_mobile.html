@@ -15,7 +15,7 @@
             --grid-max: 1100px;
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
-            --accent: #4478A2; /* Fallback accent */
+            --accent: #4478A2;
             --r: 12px;
             --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
@@ -61,10 +61,6 @@
         
         .nav-tag { font-family: 'Inter', monospace; font-size: 11px; color: #444; cursor: pointer; padding: 8px 14px; border-radius: 20px; white-space: nowrap; transition: color 0.3s ease; position: relative; z-index: 10; display: flex; align-items: center; justify-content: center; }
         .nav-tag.active { color: #fff !important; }
-        
-        .map-btn-wrapper { padding: 0 10px; border-left: 1px solid rgba(0,0,0,0.05); position: relative; }
-        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; transition: all 0.3s ease; }
-        .map-tag.active { background: var(--accent) !important; color: #fff !important; border-color: transparent; }
 
         /* ---------- MAIN GRID ---------- */
         #main-grid { 
@@ -107,6 +103,13 @@
             display: flex; flex-direction: column; justify-content: flex-end;
         }
 
+        /* Placeholder Pattern logic */
+        .placeholder { position: absolute; inset: -1px; --light: rgba(255,255,255,0.4); --dark: var(--theme-color); }
+        .pattern-1 { background-image: repeating-linear-gradient(45deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
+        .pattern-2 { background-image: repeating-linear-gradient(135deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
+        .pattern-3 { background-image: repeating-linear-gradient(135deg, var(--light), var(--light) 14px, var(--dark) 14px, var(--dark) 18px); }
+        .pattern-4 { background-image: repeating-linear-gradient(45deg, var(--dark), var(--dark) 14px, var(--light) 14px, var(--light) 18px); }
+
         .stamp-image img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; transition: transform 1.2s var(--ease-out-quint); }
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
         .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
@@ -133,8 +136,7 @@
 
         /* ---------- STATE INK STAMP VISUALS ---------- */
         .ink-stamp {
-            aspect-ratio: 7 / 9; /* Matches paper stamp ratio */
-            width: 100%; display: flex; align-items: center; justify-content: center;
+            aspect-ratio: 7 / 9; width: 100%; display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite', cursive; color: var(--ink-color);
             text-transform: uppercase; text-align: center;
             position: relative; z-index: 2; mix-blend-mode: multiply;
@@ -142,18 +144,18 @@
         }
 
         .ink-stamp-inner {
-            border: 6px double var(--ink-color); padding: 20px;
+            border: 6px double var(--ink-color); padding: 15px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             width: 85%; height: 85%;
         }
         
-        .ink-stamp-text-abbr { font-size: 42px; line-height: 1; margin: 0; font-weight: 900; }
-        .ink-stamp-text-full { font-size: 18px; line-height: 1.1; margin-top: 5px; border-top: 2px solid var(--ink-color); padding-top: 5px; }
-        .ink-stamp-icon { font-size: 44px; margin-bottom: 10px; }
+        .ink-stamp-text-abbr { font-size: 52px; line-height: 0.9; margin: 0; font-weight: 900; }
+        .ink-stamp-text-full { font-size: 16px; line-height: 1.1; margin-top: 8px; border-top: 2px solid var(--ink-color); padding-top: 5px; letter-spacing: 1px; width: 100%; }
+        .ink-stamp-icon { font-size: 40px; margin-bottom: 5px; }
         
-        /* Diverse Shapes */
+        /* Shape Variants */
         .ink-shape-0 .ink-stamp-inner { border-radius: 50%; border-style: solid; outline: 3px double var(--ink-color); outline-offset: 4px; }
-        .ink-shape-1 .ink-stamp-inner { border-radius: 15px; border-style: dashed; }
+        .ink-shape-1 .ink-stamp-inner { border-radius: 12px; border-style: dashed; }
         .ink-shape-2 .ink-stamp-inner { border-radius: 5px 5px 80px 80px; border-width: 5px; }
         .ink-shape-3 .ink-stamp-inner { border-radius: 50% 5px; border-style: double; }
 
@@ -197,7 +199,7 @@
         const inkPalette = ['#1B4F72', '#78281F', '#186A3B', '#7E5109', '#512E5F', '#117864'];
         
         let globalLocations = [];
-        let stateInkMap = {}; // To store the specific ink color for nav pill syncing
+        let stateInkMap = {}; 
         let placeholderCounter = 0;
         let isManualScrolling = false;
 
@@ -267,7 +269,7 @@
             
             setTimeout(() => {
                 const first = document.querySelector('.nav-tag');
-                setActiveNav(first, stateInkMap[Object.keys(stateInkMap).sort()[0]]);
+                if(first) setActiveNav(first, stateInkMap[Object.keys(stateInkMap).sort()[0]]);
             }, 100);
         }
 
@@ -333,7 +335,9 @@
                     <div class="postmark-seal">${stateCode ? cityStr + ', ' + stateCode : cityStr}</div>
                     <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
                         <div class="stamp-image">
-                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder" style="background:${color} opacity:0.3"></div>`}
+                            ${loc.imgUrl ? 
+                                `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
+                                `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}" style="--theme-color: ${color}"></div>`}
                             <div class="stamp-title-overlay">
                                 <div class="stamp-name">${loc.name}</div>
                                 <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>

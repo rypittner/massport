@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --radius: 10px; /* Slightly larger for better jagged definition */
+            --radius: 8px; /* Restored to original */
             --snap-speed: 0.25s;
             --ease-snap: cubic-bezier(0.2, 1, 0.3, 1);
         }
@@ -29,7 +29,7 @@
             background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
             color: #333;
             overflow-x: hidden;
-            padding-bottom: 120px;
+            padding-bottom: 140px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -91,14 +91,15 @@
                 display: flex; 
                 flex-wrap: nowrap; 
                 overflow-x: auto; 
+                overflow-y: visible; /* Prevents shadow clipping */
                 scroll-snap-type: x mandatory; 
                 gap: 0;
                 width: 100vw;
-                padding: 0 15vw; 
+                padding: 20px 15vw 80px; /* Extra bottom padding for shadows */
                 scroll-padding: 0 15vw;
                 -webkit-overflow-scrolling: touch;
                 align-items: center; 
-                min-height: calc(100vh - 100px); 
+                min-height: calc(100vh - 80px); 
                 scrollbar-width: none;
             } 
             
@@ -109,14 +110,13 @@
                 padding: 0 12px;
                 position: relative;
                 z-index: 1;
-                /* Quickened Animation for faster "Pick Up" */
                 transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s linear 0s;
                 transform: scale(0.88); 
             }
 
             #main-grid .stamp-wrapper.active-center {
                 z-index: 100;
-                transform: scale(1.05) translateY(-25px);
+                transform: scale(1.04) translateY(-18px); /* Refined lift height */
                 transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s;
             }
 
@@ -135,30 +135,26 @@
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
 
-        /* ---------- STAMP CORE STYLING & CORRECTED EDGES ---------- */
+        /* ---------- STAMP CORE STYLING & ORIGINAL EDGES ---------- */
         .stamp-wrapper { 
             opacity: 0; 
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12)); 
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1)); /* Softened default */
             will-change: transform, filter;
         }
         .stamp-wrapper.revealed { opacity: 1; }
         
         .active-center {
-            filter: drop-shadow(0 30px 60px rgba(0,0,0,0.35)); 
+            filter: drop-shadow(0 15px 30px rgba(0,0,0,0.2)); /* Less extreme pop out shadow */
         }
 
         .stamp {
-            /* FIXED GRADIENT EDGE LOGIC */
+            /* REVERTED TO ORIGINAL EDGE STYLE */
             background-image: 
-                radial-gradient(circle at center, transparent 0, transparent 65%, var(--btn-bg) 65%, var(--btn-bg) 100%),
-                linear-gradient(var(--btn-bg), var(--btn-bg));
-            background-size: 
-                calc(var(--radius) * 2) calc(var(--radius) * 2), 
-                calc(100% - var(--radius) * 2) calc(100% - var(--radius) * 2);
-            background-position: 
-                calc(var(--radius) * -1) calc(var(--radius) * -1), 
-                center center;
-            background-repeat: repeat, no-repeat;
+                radial-gradient(var(--radius), transparent 98%, var(--btn-bg)),
+                linear-gradient(var(--btn-bg) 0 0);
+            background-repeat: round, no-repeat;
+            background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
+            background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
 
             aspect-ratio: 7 / 9; 
             cursor: pointer; position: relative;
@@ -169,7 +165,7 @@
         
         .stamp-image {
             position: absolute;
-            inset: calc(var(--radius) * 1.5); /* Adjusted to fit closer to the edge */
+            inset: calc(var(--radius) * 2.2); 
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
@@ -392,7 +388,6 @@
 
         function setupMobileObserver() {
             if (window.innerWidth > 600) return;
-            /* Threshold lowered to 0.5 for a much earlier pick-up animation */
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) entry.target.classList.add('active-center');

@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --radius: 12px; 
+            --r: 12px; /* Restored/Adjusted control for your specific mask logic */
             --snap-speed: 0.25s;
             --ease-snap: cubic-bezier(0.2, 1, 0.3, 1);
         }
@@ -112,14 +112,13 @@
                 z-index: 1;
                 transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s linear 0s;
                 transform: scale(0.88); 
-                /* drop-shadow on wrapper is better for jagged shapes */
-                filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+                filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
             }
 
             #main-grid .stamp-wrapper.active-center {
                 z-index: 100;
                 transform: scale(1.04) translateY(-25px);
-                filter: drop-shadow(0 20px 40px rgba(0,0,0,0.25));
+                filter: drop-shadow(0 15px 35px rgba(0,0,0,0.22));
                 transition: transform var(--snap-speed) var(--ease-snap), filter var(--snap-speed) var(--ease-snap), z-index 0s;
             }
 
@@ -130,30 +129,31 @@
 
         body.map-active #main-grid { opacity: 0; transform: scale(0.95); pointer-events: none; }
 
-        /* ---------- STAMP CORE STYLING - UPDATED FOR JAGGED EDGES ---------- */
+        /* ---------- NEW MASK BORDER STAMP LOGIC ---------- */
         .stamp {
-            background-color: var(--btn-bg);
             aspect-ratio: 7 / 9; 
+            padding: var(--r);
+            background: var(--btn-bg);
             cursor: pointer; position: relative;
             transition: transform var(--snap-speed) var(--ease-snap);
             backface-visibility: hidden;
-            transform: rotate(var(--r, 0deg));
+            transform: rotate(var(--r_deg, 0deg));
 
-            /* MASKING TECHNOLOGY FOR PERFECT EDGES */
-            --mask: radial-gradient(var(--radius), #000 98%, #0000);
-            -webkit-mask-image: var(--mask);
-            mask-image: var(--mask);
-            -webkit-mask-size: calc(var(--radius) * 2.5) calc(var(--radius) * 2.5);
-            mask-size: calc(var(--radius) * 2.5) calc(var(--radius) * 2.5);
-            -webkit-mask-repeat: round;
-            mask-repeat: round;
-            -webkit-mask-position: calc(var(--radius) * -1.25) calc(var(--radius) * -1.25);
-            mask-position: calc(var(--radius) * -1.25) calc(var(--radius) * -1.25);
+            /* Integrated provided Masking logic */
+            -webkit-mask: 
+                radial-gradient(50% 50%, #0000 66%, #000 67%) round 
+                var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), 
+                conic-gradient(#000 0 0) content-box;
+            mask: 
+                radial-gradient(50% 50%, #0000 66%, #000 67%) round 
+                var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), 
+                conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
             position: absolute;
-            inset: calc(var(--radius) * 1.5); 
+            /* Inset slightly relative to the masking radius */
+            inset: calc(var(--r) * 1.5); 
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
@@ -202,7 +202,7 @@
         }
         .active-center .postmark-seal, .stamp:hover:not(.no-hover) .postmark-seal { transform: rotate(0deg) scale(1.1); color: #C65265; background: rgba(255,255,255,0.95); border-color: #C65265; }
 
-        /* ---------- MAP & MODAL (NO CHANGES) ---------- */
+        /* ---------- MAP & MODAL ---------- */
         #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
@@ -321,7 +321,7 @@
             const citySt = parts.length > 1 ? `${parts[0].trim()}, ${parts[parts.length-1].trim().substring(0,2).toUpperCase()}` : loc.city;
             const rotation = isMapMode ? '0deg' : (Math.random() * 4 - 2).toFixed(2) + 'deg';
             return `
-                <div class="stamp-wrapper ${isMapMode ? 'map-stamp' : ''}" style="--r: ${rotation}">
+                <div class="stamp-wrapper ${isMapMode ? 'map-stamp' : ''}" style="--r_deg: ${rotation}">
                     <div class="stamp ${isMapMode ? 'no-hover map-mode' : ''}" style="--theme-color: ${color}" onclick="openModalByIndex(${globalLocations.indexOf(loc)})">
                         <div class="postmark-seal" style="${isMapMode ? 'display:none' : ''}">
                             ${citySt}

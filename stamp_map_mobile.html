@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --r: 12px;
+            --r: 12px; /* Control radius for stamp edge */
             --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -85,16 +85,18 @@
             } 
             #main-grid .stamp-wrapper {
                 flex: 0 0 70vw; 
-                scroll-snap-align: center; /* Critical for locking */
+                scroll-snap-align: center; 
                 scroll-snap-stop: always;
                 padding: 0 8px; position: relative; z-index: 1;
-                will-change: transform, filter; transform-style: preserve-3d;
+                /* Anti-flicker optimizations */
+                will-change: transform; 
+                transform-style: preserve-3d;
+                backface-visibility: hidden;
             }
-            /* Special styling for the state ink stamp wrapper */
             #main-grid .stamp-wrapper.state-ink-wrapper {
-                flex: 0 0 60vw; /* Fixed width for the ink stamp */
+                flex: 0 0 60vw;
                 padding: 0 15px;
-                scroll-snap-align: center; /* Ensure it locks to center */
+                scroll-snap-align: center;
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -102,16 +104,22 @@
         }
 
         /* ---------- STAMP VISUALS (PAPER) ---------- */
+        /* Updated with user requested MASK for perforated edges */
         .stamp {
-            aspect-ratio: 7 / 9; padding: var(--r); background: var(--btn-bg);
-            cursor: pointer; position: relative; backface-visibility: hidden;
+            aspect-ratio: 7 / 9; 
+            padding: var(--r); 
+            background: var(--btn-bg);
+            cursor: pointer; position: relative; 
+            backface-visibility: hidden;
             transform: rotate(var(--r_deg, 0deg)); z-index: 2;
-            -webkit-mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
+            
+            /* The perforated edge mask */
             mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
+            -webkit-mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
-            position: absolute; inset: calc(var(--r) * 1.5); overflow: hidden;
+            position: absolute; inset: var(--r); overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
@@ -147,7 +155,7 @@
         .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s var(--ease-standard); }
         .is-centered .stamp-note { opacity: 1; padding-top: 6px; }
 
-        /* ---------- STATE INK STAMP VISUALS (FIXED VISIBILITY) ---------- */
+        /* ---------- STATE INK STAMP VISUALS ---------- */
         .ink-stamp {
             aspect-ratio: 1;
             width: 100%;
@@ -165,7 +173,6 @@
             z-index: 2;
             transform: rotate(var(--r_deg, 0deg));
             backface-visibility: hidden;
-            /* Use blending instead of masking for reliability */
             mix-blend-mode: multiply;
             opacity: 0.9; 
             transition: all 0.5s var(--ease-out-quint);
@@ -180,19 +187,21 @@
             justify-content: center;
             width: 90%;
             height: 90%;
-            background: rgba(255,255,255,0.05); /* Slight tint for body */
+            background: rgba(255,255,255,0.05); 
         }
         
         .ink-stamp-text {
-            font-size: 32px;
+            font-size: 28px;
             line-height: 1.1;
             margin: 10px 0;
             letter-spacing: 1px;
+            word-wrap: break-word;
+            max-width: 100%;
         }
 
         .ink-stamp-icon { font-size: 40px; margin-bottom: 5px; }
         
-        /* Unique shapes via border-radius */
+        /* Unique shapes */
         .ink-shape-round .ink-stamp-inner { border-radius: 50%; border-style: solid; border-width: 3px; outline: 2px dashed var(--ink-color); outline-offset: 4px; }
         .ink-shape-oval .ink-stamp-inner { border-radius: 40px; border-style: dashed; }
         .ink-shape-shield .ink-stamp-inner { border-radius: 4px 4px 60px 60px; border-width: 4px; }
@@ -243,9 +252,28 @@
         const tsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSz_zdXMghmyVYL5ugKVPciQ2f9o7vJEPokp1YKS1lZ0_SamkfF40hQlSMYdPhvmlCTlf2ZWojFlo2p/pub?gid=0&single=true&output=tsv';
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
         
+        // Full State Name Mapping
+        const stateNameMap = {
+            'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+            'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+            'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+            'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+            'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+            'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+            'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+            'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+            'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+            'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming',
+            'DC': 'Washington D.C.'
+        };
+
         let globalLocations = [];
-        let map, themeOffset = 0, placeholderCounter = 0;
+        let map, placeholderCounter = 0;
         let isManualScrolling = false;
+        
+        // Track previous styles to prevent adjacent duplicates
+        let lastInkShapeIndex = -1;
+        let lastInkColorIndex = -1;
 
         async function init() {
             try {
@@ -256,16 +284,30 @@
                     const cols = r.split('\t');
                     const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
                     const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
-                    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName, type: 'paper' };
+                    return { 
+                        name: cols[0], 
+                        note: cols[2], 
+                        imgUrl: cols[3] || '', 
+                        city: cols[4] || '', 
+                        lat: parseFloat(cols[5]), 
+                        lng: parseFloat(cols[6]), 
+                        stateName, 
+                        type: 'paper' 
+                    };
                 });
+                
+                // Sort by state
                 globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
-                // Inject State Ink Stamps at the START of each group
+                // Inject Ink Stamps
                 let processedLocations = [];
                 let lastState = null;
                 globalLocations.forEach(loc => {
                     if (loc.stateName !== lastState) {
-                        processedLocations.push({ stateName: loc.stateName, type: 'ink' }); // This is the first item of the group
+                        // Determine the theme color of the NEXT paper stamp to avoid clashes
+                        // We do a simple lookahead or just assume the theme logic
+                        // Since we don't have the final index yet, we will handle color assignment in generateStampHTML
+                        processedLocations.push({ stateName: loc.stateName, type: 'ink' });
                         lastState = loc.stateName;
                     }
                     processedLocations.push(loc);
@@ -332,7 +374,6 @@
         }
 
         function scrollToGroup(state) {
-            // Find the INK stamp for this state (it is the first item with this data-state)
             const firstOfState = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
             if (firstOfState) firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
@@ -358,23 +399,58 @@
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
+        function getUniqueInkStyle(neighborThemeColor) {
+            const inkColors = ['#C65265', '#4478A2', '#297381', '#D78143', '#89974F'];
+            const inkShapes = ['ink-shape-round', 'ink-shape-oval', 'ink-shape-shield', 'ink-shape-box'];
+            
+            // SHAPE LOGIC: cycle to next shape, ensure it's not the same as last time
+            let shapeIdx = (lastInkShapeIndex + 1) % inkShapes.length;
+            lastInkShapeIndex = shapeIdx;
+            
+            // COLOR LOGIC: 
+            // 1. Must not match previous ink color
+            // 2. Must not match the neighbor paper stamp color (theme)
+            let colorIdx = (lastInkColorIndex + 1) % inkColors.length;
+            
+            // Simple safety loop to find a valid color
+            let safety = 0;
+            while (
+                (inkColors[colorIdx] === neighborThemeColor || colorIdx === lastInkColorIndex) 
+                && safety < 10
+            ) {
+                colorIdx = (colorIdx + 1) % inkColors.length;
+                safety++;
+            }
+            lastInkColorIndex = colorIdx;
+
+            return {
+                shape: inkShapes[shapeIdx],
+                color: inkColors[colorIdx]
+            };
+        }
+
         function generateStampHTML(loc, index) {
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             
             if (loc.type === 'ink') {
-                const inkColors = ['#C65265', '#4478A2', '#297381', '#D78143', '#89974F'];
-                const inkShapes = ['ink-shape-round', 'ink-shape-oval', 'ink-shape-shield', 'ink-shape-box'];
-                const inkColor = inkColors[index % inkColors.length];
-                const inkShape = inkShapes[index % inkShapes.length];
+                // Determine what the NEXT paper stamp's theme color will be to avoid clash
+                // The next item is at index + 1 in the global list
+                const nextItemIndex = index + 1;
+                // Themes rotate simply based on index
+                const neighborThemeColor = themes[nextItemIndex % themes.length];
+                
+                const style = getUniqueInkStyle(neighborThemeColor);
                 const inkIcon = ['airplane_ticket', 'location_on', 'explore', 'public'][index % 4];
 
-                // Added 'state-ink-wrapper' class specifically for these
+                // Convert state abbreviation to full name if possible
+                const fullName = stateNameMap[loc.stateName] || loc.stateName;
+
                 return `
                     <div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
-                        <div class="ink-stamp ${inkShape}" style="--ink-color: ${inkColor}">
+                        <div class="ink-stamp ${style.shape}" style="--ink-color: ${style.color}">
                             <div class="ink-stamp-inner">
                                 <span class="material-symbols-rounded ink-stamp-icon">${inkIcon}</span>
-                                <div class="ink-stamp-text">${loc.stateName}</div>
+                                <div class="ink-stamp-text">${fullName}</div>
                                 <div style="font-size: 10px; letter-spacing: 2px;">WELCOME</div>
                             </div>
                         </div>
@@ -382,7 +458,7 @@
                 `;
             }
 
-            // Regular paper stamp
+            // Paper stamp logic
             const color = themes[index % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
@@ -416,25 +492,30 @@
 
         function setupScrollEffect() {
             const grid = document.getElementById('main-grid');
-            const wrappers = document.querySelectorAll('.stamp-wrapper');
-            if (window.innerWidth > 600 || wrappers.length === 0) return;
+            // Select wrappers dynamically to ensure we get them all
+            const getWrappers = () => document.querySelectorAll('.stamp-wrapper');
+            
+            if (window.innerWidth > 600 || getWrappers().length === 0) return;
 
             let ticking = false;
             const update = () => {
+                const wrappers = getWrappers();
                 const centerX = window.innerWidth / 2;
+                
                 wrappers.forEach(w => {
                     const rect = w.getBoundingClientRect();
+                    // Optimization: Skip calculation if off-screen significantly
+                    if (rect.right < -100 || rect.left > window.innerWidth + 100) return;
+
                     const itemCenter = rect.left + rect.width / 2;
                     const dist = Math.abs(centerX - itemCenter);
                     const maxDist = window.innerWidth * 0.65;
                     const normalized = Math.min(dist / maxDist, 1);
                     
                     if (w.classList.contains('state-ink-wrapper')) {
-                        // Ink stamp animation
                         w.style.transform = `scale(${1.0 - (normalized * 0.05)})`;
-                        w.style.opacity = 1 - (normalized * 0.4); // Fade out slightly at edges
+                        w.style.opacity = 1 - (normalized * 0.4); 
                     } else {
-                        // Paper stamp animation
                         w.style.transform = `scale(${1.05 - (normalized * 0.17)}) translateY(${-25 + (normalized * 25)}px)`;
                         w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
                     }
@@ -449,7 +530,9 @@
                 });
                 ticking = false;
             };
+            
             grid.addEventListener('scroll', () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } }, { passive: true });
+            // Run once to init
             update();
         }
 

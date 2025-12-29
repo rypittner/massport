@@ -24,14 +24,10 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
+            margin: 0; font-family: 'Inter', sans-serif;
             background: var(--bg) url("https://i.ibb.co/RpsfLzc4/88f6ca36fda8.jpg") repeat;
-            color: #333;
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            color: #333; overflow-x: hidden; min-height: 100vh;
+            display: flex; flex-direction: column;
         }
 
         body.map-active { overflow: hidden; height: 100vh; }
@@ -61,9 +57,7 @@
         .nav-tag.active { color: #fff !important; }
         
         .map-btn-wrapper { padding: 0 10px; border-left: 1px solid rgba(0,0,0,0.05); position: relative; }
-        
-        /* Fixed Map Button Styling */
-        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; }
+        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; transition: all 0.3s ease; }
         .map-tag.active { background: var(--accent) !important; color: #fff !important; border-color: transparent; }
 
         /* ---------- MAIN GRID ---------- */
@@ -92,7 +86,6 @@
             }
         }
 
-        /* ---------- STAMP VISUALS ---------- */
         .stamp {
             aspect-ratio: 7 / 9; padding: var(--r); background: var(--btn-bg);
             cursor: pointer; position: relative; backface-visibility: hidden;
@@ -138,7 +131,6 @@
         .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s var(--ease-standard); }
         .is-centered .stamp-note { opacity: 1; padding-top: 6px; }
 
-        /* ---------- MAP & MODAL ---------- */
         #map-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 0.6s ease, transform 0.6s ease; }
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
@@ -168,8 +160,7 @@
     <div id="myModal" class="modal">
         <span class="close">×</span>
         <div class="modal-frame">
-            <img id="img01">
-            <div id="caption" style="color:white; text-align:center; margin-top:20px; font-family:'Yrsa', serif;"></div>
+            <img id="img01"><div id="caption" style="color:white; text-align:center; margin-top:20px; font-family:'Yrsa', serif;"></div>
         </div>
     </div>
 
@@ -180,7 +171,7 @@
         
         let globalLocations = [];
         let map, placeholderCounter = 0;
-        let isManualScrolling = false; // Flag to prevent nav-jumping during manual clicks
+        let isManualScrolling = false;
 
         async function init() {
             try {
@@ -190,8 +181,7 @@
                 globalLocations = rows.map(r => {
                     const cols = r.split('\t');
                     const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
-                    const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
-                    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName };
+                    return { name: cols[0], note: cols[2], imgUrl: cols[3] || '', city: cols[4] || '', lat: parseFloat(cols[5]), lng: parseFloat(cols[6]), stateName: ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState };
                 });
                 globalLocations.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
@@ -199,7 +189,7 @@
                 renderGrid(globalLocations); 
                 initMap();
                 setupScrollEffect();
-                setupAutoNavTracker(); // Start the observer
+                setupAutoNavTracker(); 
             } catch (e) { console.error(e); }
         }
 
@@ -209,7 +199,7 @@
             const sortedStates = Object.keys(counts).sort();
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
             
-            sortedStates.forEach((s, idx) => {
+            sortedStates.forEach((s) => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag';
                 btn.id = `nav-${s}`;
@@ -219,47 +209,48 @@
                     document.body.classList.remove('map-active');
                     scrollToGroup(s);
                     setActiveNav(btn);
-                    setTimeout(() => isManualScrolling = false, 1000);
+                    setTimeout(() => isManualScrolling = false, 800);
                 };
                 nav.appendChild(btn);
             });
 
             const mapBtn = document.createElement('div');
             mapBtn.className = 'nav-tag map-tag';
+            mapBtn.id = "nav-map";
             mapBtn.innerText = 'Map';
             mapBtn.onclick = () => {
                 document.body.classList.add('map-active');
                 setActiveNav(mapBtn);
             };
             mapAnchor.appendChild(mapBtn);
-            
             setTimeout(() => setActiveNav(document.querySelector('.nav-tag')), 100);
         }
 
         function setActiveNav(el) {
+            if (!el) return;
             document.querySelectorAll('.nav-tag').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
+            
             const pill = document.getElementById('nav-pill');
-            
-            // If the element is in the main nav, move pill. If map, hide pill or move to map
-            pill.style.width = el.offsetWidth + 'px';
-            pill.style.left = el.offsetLeft + 'px';
-            
-            // Auto-scroll the nav bar to keep active tab visible
-            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            if (el.classList.contains('map-tag')) {
+                pill.style.opacity = "0"; // Hide pill on map mode
+            } else {
+                pill.style.opacity = "1";
+                pill.style.width = el.offsetWidth + 'px';
+                pill.style.left = el.offsetLeft + 'px';
+                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         }
 
         function scrollToGroup(state) {
             const firstOfState = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
-            if (firstOfState) {
-                firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-            }
+            if (firstOfState) firstOfState.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
 
-        // AUTO-CHANGE TAB ON SCROLL
+        // IMPROVED SYNC: Every stamp is now tracked
         function setupAutoNavTracker() {
             const grid = document.getElementById('main-grid');
-            const options = { root: grid, threshold: 0.6 }; // Must be 60% visible to trigger
+            const options = { root: grid, threshold: 0.7 }; 
 
             const observer = new IntersectionObserver((entries) => {
                 if (isManualScrolling || document.body.classList.contains('map-active')) return;
@@ -268,17 +259,15 @@
                     if (entry.isIntersecting) {
                         const state = entry.target.getAttribute('data-state');
                         const correspondingNav = document.getElementById(`nav-${state}`);
-                        if (correspondingNav) setActiveNav(correspondingNav);
+                        if (correspondingNav && !correspondingNav.classList.contains('active')) {
+                            setActiveNav(correspondingNav);
+                        }
                     }
                 });
             }, options);
 
-            // Observe the first stamp of every state group
-            const groups = [...new Set(globalLocations.map(l => l.stateName))];
-            groups.forEach(state => {
-                const el = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
-                if (el) observer.observe(el);
-            });
+            // Observe ALL stamps to ensure seamless handover
+            document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
         function generateStampHTML(loc, index) {
@@ -287,16 +276,13 @@
             const cityStr = cityParts[0].trim();
             const stateStr = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
             const sealText = stateStr ? `${cityStr}, ${stateStr}` : cityStr;
-            const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             
             return `
-                <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
+                <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${(Math.random() * 4 - 2).toFixed(2)}deg">
                     <div class="postmark-seal">${sealText}</div>
                     <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
                         <div class="stamp-image">
-                            ${loc.imgUrl ? 
-                                `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : 
-                                `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
+                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}"></div>`}
                             <div class="stamp-title-overlay">
                                 <div class="stamp-name">${loc.name}</div>
                                 <div class="note-container"><div class="stamp-note">${loc.note || ''}</div></div>
@@ -307,8 +293,7 @@
         }
 
         function renderGrid(locs) {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
+            document.getElementById('main-grid').innerHTML = locs.map((l, i) => generateStampHTML(l, i)).join('');
         }
 
         function scrollGrid(dir) {
@@ -327,28 +312,18 @@
                 const centerX = window.innerWidth / 2;
                 wrappers.forEach(w => {
                     const rect = w.getBoundingClientRect();
-                    const itemCenter = rect.left + rect.width / 2;
-                    const dist = Math.abs(centerX - itemCenter);
-                    const maxDist = window.innerWidth * 0.65;
-                    const normalized = Math.min(dist / maxDist, 1);
+                    const dist = Math.abs(centerX - (rect.left + rect.width / 2));
+                    const normalized = Math.min(dist / (window.innerWidth * 0.65), 1);
                     
                     w.style.transform = `scale(${1.05 - (normalized * 0.17)}) translateY(${-25 + (normalized * 25)}px)`;
                     w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
                     
-                    if (normalized < 0.22) {
-                        w.classList.add('is-centered');
-                        w.style.zIndex = "100";
-                    } else {
-                        w.classList.remove('is-centered');
-                        w.style.zIndex = "1";
-                    }
+                    if (normalized < 0.22) { w.classList.add('is-centered'); w.style.zIndex = "100"; } 
+                    else { w.classList.remove('is-centered'); w.style.zIndex = "1"; }
                 });
                 ticking = false;
             };
-
-            grid.addEventListener('scroll', () => {
-                if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
-            }, { passive: true });
+            grid.addEventListener('scroll', () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } }, { passive: true });
             update();
         }
 

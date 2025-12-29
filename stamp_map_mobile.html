@@ -74,7 +74,7 @@
         .nav-tag[data-type="Map"] { color: var(--accent); font-weight: 600; border: 2px solid var(--accent); }
         .nav-tag[data-type="Map"].active { border-color: transparent; background: var(--accent); color: #fff !important; }
 
-        /* ---------- GRID & MOBILE VERTICAL CENTERING ---------- */
+        /* ---------- GRID & MOBILE HORIZONTAL SCROLL ---------- */
         #main-grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; 
             max-width: var(--grid-max); margin: 0 auto; 
@@ -88,15 +88,19 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; 
                 scroll-snap-type: x mandatory; gap: 0;
-                padding: 0; /* Clear padding to assist vertical center */
+                padding: 0 17.5vw; /* Centering padding for first/last items */
                 -webkit-overflow-scrolling: touch;
-                align-items: center; /* Vertical centering */
+                align-items: center; 
                 min-height: calc(100vh - 100px); 
+                scrollbar-width: none;
             } 
+            #main-grid::-webkit-scrollbar { display: none; }
+            
             #main-grid .stamp-wrapper {
-                flex: 0 0 78vw;
+                flex: 0 0 65vw; /* Shrunk size */
                 scroll-snap-align: center;
-                padding: 0 12px;
+                padding: 0 15px;
+                position: relative;
             }
             .scroll-edge { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 999; cursor: pointer; }
             .scroll-edge.left { left: 0; }
@@ -119,10 +123,13 @@
             transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15)); 
             will-change: transform;
+            z-index: 1;
         }
         .stamp-wrapper.revealed { opacity: 1; transform: translateY(0) rotate(var(--r, 0deg)); }
         
-        /* Deeper shadow for map stamp */
+        /* High Z-Index for Active Center Stamp */
+        .stamp-wrapper.active-center { z-index: 50; }
+
         .map-stamp { 
             --r: 0deg !important; width: 240px; margin: 0 auto; opacity: 1; 
             transform: translateY(0) !important;
@@ -137,7 +144,7 @@
             background-position: calc(var(--radius) * -1.5) calc(var(--radius) * -1.5), 50%;
             background-size: calc(var(--radius) * 3) calc(var(--radius) * 3), calc(100% - var(--radius) * 3) calc(100% - var(--radius) * 3);
             
-            aspect-ratio: 7/9;* Updated Ratio */
+            aspect-ratio: 7 / 9; /* Updated Ratio */
             cursor: pointer; position: relative;
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.4s ease;
             backface-visibility: hidden;
@@ -154,7 +161,7 @@
         @media (min-width: 601px) {
             .stamp:hover:not(.no-hover) { transform: scale(1.06) translateY(-8px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 20px 40px rgba(0,0,0,0.3)); }
         }
-        .stamp.mobile-hover { transform: scale(1.08) translateY(-15px) rotate(0deg) !important; z-index: 100; filter: drop-shadow(0 25px 45px rgba(0,0,0,0.35)); }
+        .stamp.mobile-hover { transform: scale(1.1) translateY(-10px) rotate(0deg) !important; filter: drop-shadow(0 25px 45px rgba(0,0,0,0.35)); }
 
         .stamp-image img {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -214,6 +221,7 @@
             display: flex; align-items: center; justify-content: center; z-index: 101 !important;
             transition: transform 0.2s ease; position: absolute; top: 50%; transform: translateY(-50%);
         }
+        .arrow-btn:active { transform: translateY(-50%) scale(0.9); }
         .arrow-btn.back { left: -22px; }
         .arrow-btn.forward { right: -22px; }
         .arrow-btn .material-symbols-rounded { font-size: 24px; color: #333; pointer-events: none; }
@@ -369,9 +377,15 @@
             if (window.innerWidth > 600) return;
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    const stamp = entry.target.querySelector('.stamp');
-                    if (entry.isIntersecting) stamp.classList.add('mobile-hover');
-                    else stamp.classList.remove('mobile-hover');
+                    const wrapper = entry.target;
+                    const stamp = wrapper.querySelector('.stamp');
+                    if (entry.isIntersecting) {
+                        stamp.classList.add('mobile-hover');
+                        wrapper.classList.add('active-center');
+                    } else {
+                        stamp.classList.remove('mobile-hover');
+                        wrapper.classList.remove('active-center');
+                    }
                 });
             }, { threshold: 0.8, root: document.getElementById('main-grid') });
             document.querySelectorAll('#main-grid .stamp-wrapper').forEach(s => observer.observe(s));
@@ -423,8 +437,10 @@
         }
 
         window.navigateMap = function(dir) { 
+            // Cycle index
             currentMarkerIndex = (currentMarkerIndex + dir + markers.length) % markers.length; 
-            centerMarker(markers[currentMarkerIndex]); 
+            const nextMarker = markers[currentMarkerIndex];
+            if (nextMarker) centerMarker(nextMarker);
         };
 
         function openModalByIndex(idx) {

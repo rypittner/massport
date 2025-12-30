@@ -82,14 +82,16 @@
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: visible;
                 scroll-snap-type: x mandatory; gap: 0; width: 100vw;
-                padding: 0 14vw; scroll-padding: 0 14vw;
+                padding: 0 7vw; scroll-padding: 0 7vw; /* Decreased padding to see more of neighbors */
                 -webkit-overflow-scrolling: touch; align-items: center; 
                 min-height: 90vh; scrollbar-width: none;
                 scroll-behavior: smooth;
             } 
             #main-grid .stamp-wrapper {
-                flex: 0 0 72vw; scroll-snap-align: center; scroll-snap-stop: always;
-                padding: 0 10px; position: relative; z-index: 1; flex-shrink: 0;
+                flex: 0 0 86vw; /* Increased stamp size significantly */
+                scroll-snap-align: center; scroll-snap-stop: always;
+                padding: 0 8px; /* Closer together */
+                position: relative; z-index: 1; flex-shrink: 0;
                 will-change: transform, filter; transform-style: preserve-3d;
             }
         }
@@ -126,7 +128,7 @@
 
         /* ---------- CITY STICKER (POSTMARK) UPDATED ---------- */
         .postmark-seal {
-            position: absolute; top: -15px; right: -10px; width: 100px; height: 100px;
+            position: absolute; top: 0px; right: 0px; width: 100px; height: 100px;
             border: 4px solid var(--stamp-red);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
@@ -137,9 +139,9 @@
             cursor: pointer;
             pointer-events: none;
             opacity: 0;
-            /* Animated "Stamping" effect: start larger and fade in */
+            /* Animated "Stamping" effect */
             transform: scale(1.6) rotate(var(--seal-rot, 15deg));
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
             box-shadow: inset 0 0 0 2px var(--stamp-red);
         }
         
@@ -426,8 +428,8 @@
 
         function generateStampHTML(loc, index) {
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
-            // Random seal rotation between -12 and 12 degrees
-            const sealRotation = (Math.random() * 24 - 12).toFixed(2) + 'deg';
+            // EXTREME Random seal rotation between -35 and 35 degrees
+            const sealRotation = (Math.random() * 70 - 35).toFixed(2) + 'deg';
 
             if (loc.type === 'ink') {
                 const abbr = loc.stateName; 
@@ -499,8 +501,9 @@
                         w.style.transform = `scale(${1.0 - (normalized * 0.1)})`;
                         w.style.opacity = 1 - (normalized * 0.4);
                     } else {
-                        const scale = 1.05 - (normalized * 0.2);
-                        const transY = -25 + (normalized * 25);
+                        // Keep larger scale and more dramatic movement
+                        const scale = 1.05 - (normalized * 0.15);
+                        const transY = -15 + (normalized * 15);
                         w.style.transform = `scale(${scale}) translateY(${transY}px)`;
                     }
                     if (normalized < 0.25) { w.classList.add('is-centered'); w.style.zIndex = "100"; }

@@ -16,9 +16,9 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
+            --postmark-red: #C65265;
             --r: 20px; 
-            --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
-            --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother animation profile */
+            --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -125,33 +125,32 @@
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
         .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
 
-        /* ---------- CITY STICKER (POSTMARK) ---------- */
+        /* ---------- NEW CITY STICKER (POSTMARK) ---------- */
         .postmark-seal {
-            position: absolute; top: -25px; right: -20px; width: 92px; height: 92px;
-            border: 2px solid rgba(0,0,0,0.15); /* Reduced stroke weight */
+            position: absolute; top: -30px; right: -25px; width: 100px; height: 100px;
+            background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite'; 
-            font-size: 11px; 
-            text-align: center;
-            background: rgba(255,255,255,0.96); backdrop-filter: blur(2px);
-            z-index: 20; color: rgba(0,0,0,0.5); padding: 8px;
+            z-index: 20; 
             cursor: pointer;
             pointer-events: none;
-            transform: scale(0); /* Default scale 0 */
-            transition: border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-            line-height: 1.2;
+            transform: scale(0);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            /* Double stroke red styling */
+            box-shadow: inset 0 0 0 4px var(--postmark-red), inset 0 0 0 5.5px white, inset 0 0 0 7px var(--postmark-red);
         }
         
-        /* Centered state handled by JS script for fluid shrinking */
-        .postmark-seal.active-view {
-            color: #C65265; border-color: #C65265; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
-            pointer-events: auto;
+        .postmark-content {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            width: 100%; height: 100%; padding: 15px;
+            color: var(--postmark-red);
         }
-        
-        .postmark-seal:hover {
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-        }
+
+        .postmark-line { width: 45px; height: 1.5px; background: var(--postmark-red); margin: 4px 0; opacity: 0.8; }
+        .postmark-city { font-size: 11px; text-transform: uppercase; font-weight: 900; line-height: 1; text-align: center; }
+
+        .postmark-seal.active-view { pointer-events: auto; }
 
         .stamp-title-overlay { 
             position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); 
@@ -173,29 +172,35 @@
         }
         .is-centered .stamp-note, .stamp:hover .stamp-note { opacity: 1; padding-top: 8px; }
 
-        /* ---------- STATE INK STAMP SHAPES ---------- */
+        /* ---------- RESTORED INK STAMP STYLES ---------- */
         .ink-stamp {
             aspect-ratio: 7 / 9; width: 100%; display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite', cursive; color: var(--ink-color);
             text-transform: uppercase; text-align: center;
             position: relative; z-index: 2; mix-blend-mode: multiply;
-            opacity: 0.8; transition: all 0.6s var(--ease-smooth);
+            opacity: 0.85; transition: all 0.6s var(--ease-smooth);
         }
         
-        /* Re-adding the Fun Unique Ink Shapes */
-        .ink-shape-0 { -webkit-mask: radial-gradient(circle at 50% 50%, black 70%, transparent 72%); mask: radial-gradient(circle at 50% 50%, black 70%, transparent 72%); }
-        .ink-shape-1 { -webkit-mask: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); mask: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
-        .ink-shape-2 { -webkit-mask: inset(10% 10% round 20% 5% 20% 5%); mask: inset(10% 10% round 20% 5% 20% 5%); }
-        .ink-shape-3 { -webkit-mask: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); mask: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
+        /* Shape Masks */
+        .ink-shape-0 { -webkit-mask: radial-gradient(circle at 50% 50%, black 70%, transparent 72%); }
+        .ink-shape-1 { -webkit-mask: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .ink-shape-2 { -webkit-mask: inset(5% 5% round 15%); }
+        .ink-shape-3 { -webkit-mask: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
 
         .ink-stamp-inner {
-            border: 6px double var(--ink-color); padding: 20px;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             width: 85%; height: 85%;
         }
-        .ink-stamp-text-abbr { font-size: 62px; line-height: 0.8; margin: 18px 0 0 0; font-weight: 900; }
-        .ink-stamp-text-full { font-size: 14px; line-height: 1.2; margin-top: 18px; border-top: 2.5px solid var(--ink-color); padding-top: 12px; letter-spacing: 2px; width: 100%; }
-        .ink-stamp-icon { font-size: 52px; margin-bottom: 15px; }
+        
+        /* Variation in Border Weights */
+        .ink-weight-0 { border: 4px solid var(--ink-color); }
+        .ink-weight-1 { border: 6px double var(--ink-color); }
+        .ink-weight-2 { border: 3px dashed var(--ink-color); padding: 5px; }
+        .ink-weight-3 { border: 8px ridge var(--ink-color); }
+
+        .ink-stamp-text-abbr { font-size: 62px; line-height: 0.8; margin: 10px 0; font-weight: 900; }
+        .ink-stamp-text-full { font-size: 13px; letter-spacing: 2px; border-top: 2px solid var(--ink-color); padding-top: 8px; width: 80%; }
+        .ink-stamp-icon { font-size: 48px; margin-bottom: 5px; }
         
         .is-centered .ink-stamp { opacity: 1; transform: scale(1.1) rotate(var(--r_deg)); }
 
@@ -203,32 +208,23 @@
         body.map-active #map-container { opacity: 1; transform: scale(1); pointer-events: all; }
         #map { height: 100%; width: 100%; }
 
-        /* ---------- MODAL UPDATES ---------- */
+        /* ---------- MODAL ---------- */
         .modal { display: none; position: fixed; inset: 0; background: rgba(30,30,30,0.6); backdrop-filter: blur(12px); flex-direction: column; justify-content: center; align-items: center; z-index: 20000; animation: fadeIn 0.4s var(--ease-smooth); }
         
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .close { 
             position: fixed; top: 30px; right: 30px; color: white; cursor: pointer; z-index: 20010; 
-            background: rgba(0,0,0,0.7); 
-            width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.7); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
             transition: all 0.3s var(--ease-smooth);
         }
         .close:hover { background: rgba(0,0,0,0.9); transform: scale(1.1); }
-        .close .material-symbols-rounded { font-size: 24px; font-weight: 600; }
 
         .modal-city-pill {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 18px;
-            border-radius: 50px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-size: 12px;
-            margin-top: 20px;
-            font-weight: 600;
-            display: inline-block;
-            font-family: 'Inter', sans-serif;
-            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.2); padding: 8px 18px; border-radius: 50px;
+            text-transform: uppercase; letter-spacing: 1px; font-size: 12px; margin-top: 20px;
+            font-weight: 600; display: inline-block; font-family: 'Inter', sans-serif;
+            border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
         }
     </style>
 </head>
@@ -268,11 +264,7 @@
         const stateIcons = {
             "AZ": "brightness_7", "CA": "beach_access", "PA": "notifications_active", "EU": "public",
             "NY": "apartment", "FL": "sunny", "TX": "star", "NV": "playing_cards",
-            "WA": "coffee", "HI": "surfing", "CO": "mountain_flag", "MA": "history_edu",
-            "IL": "location_city", "LA": "music_note", "TN": "music_note", 
-            "GA": "agriculture", "OR": "forest", "ME": "sailing", "DC": "gavel",
-            "UT": "hiking", "NM": "light_mode", "OH": "flight", "MI": "kayaking",
-            "AK": "ac_unit", "WI": "forest", "VT": "ac_unit", "MT":"landscape", "NE":"psychiatry"
+            "WA": "coffee", "HI": "surfing", "CO": "mountain_flag", "MA": "history_edu"
         };
         const defaultIcons = ['explore', 'place', 'map', 'flag', 'travel_explore'];
 
@@ -284,8 +276,7 @@
 
         function triggerHaptic(type = 'light') {
             if (window.navigator && window.navigator.vibrate) {
-                if (type === 'light') window.navigator.vibrate(10);
-                else if (type === 'medium') window.navigator.vibrate(20);
+                window.navigator.vibrate(type === 'light' ? 10 : 20);
             }
         }
 
@@ -298,17 +289,11 @@
                 let rawLocs = rows.map(r => {
                     const cols = r.split('\t');
                     let rawState = cols[4] ? cols[4].split(',').pop().trim().toUpperCase() : 'XX';
-                    if (rawState.length > 2 || rawState === 'IT' || rawState === 'VC' || !abbrToState[rawState]) {
-                         if (!abbrToState[rawState] || rawState === 'ITALY') rawState = 'EU';
-                    }
+                    if (rawState.length > 2 || !abbrToState[rawState]) rawState = 'EU';
                     return { name: cols[0], note: (cols[2] || "").trim(), imgUrl: cols[3] || '', city: cols[4] || '', stateName: rawState, type: 'paper' };
                 });
                 
-                rawLocs.sort((a,b) => {
-                    if (a.stateName === 'EU') return 1;
-                    if (b.stateName === 'EU') return -1;
-                    return a.stateName.localeCompare(b.stateName);
-                });
+                rawLocs.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
                 let processed = [];
                 let lastState = null;
@@ -325,12 +310,7 @@
                     processed.push(loc);
                 });
                 globalLocations = processed;
-
-                setupNavigation();
-                renderGrid(); 
-                initMap();
-                setupScrollEffect();
-                setupAutoNavTracker(); 
+                setupNavigation(); renderGrid(); initMap(); setupScrollEffect(); setupAutoNavTracker(); 
             } catch (e) { console.error(e); }
         }
 
@@ -338,24 +318,12 @@
             const counts = {};
             globalLocations.forEach(l => { if(l.type === 'paper') counts[l.stateName] = (counts[l.stateName] || 0) + 1; });
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
-            const sortedKeys = Object.keys(counts).sort((a, b) => {
-                if (a === 'EU') return 1;
-                if (b === 'EU') return -1;
-                return a.localeCompare(b);
-            });
-            sortedKeys.forEach(s => {
+            Object.keys(counts).sort().forEach(s => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag';
                 btn.id = `nav-${s}`;
                 btn.innerText = `${s} (${counts[s]})`;
-                btn.onclick = () => {
-                    isManualScrolling = true;
-                    triggerHaptic('medium');
-                    document.body.classList.remove('map-active');
-                    scrollToGroup(s);
-                    setActiveNav(btn, stateInkMap[s]);
-                    setTimeout(() => isManualScrolling = false, 800);
-                };
+                btn.onclick = () => { isManualScrolling = true; triggerHaptic('medium'); scrollToGroup(s); setActiveNav(btn, stateInkMap[s]); setTimeout(() => isManualScrolling = false, 800); };
                 nav.appendChild(btn);
             });
             const mapBtn = document.createElement('div');
@@ -363,10 +331,7 @@
             mapBtn.innerText = 'Map';
             mapBtn.onclick = () => { triggerHaptic('medium'); document.body.classList.add('map-active'); setActiveNav(mapBtn, '#4478A2'); };
             mapAnchor.appendChild(mapBtn);
-            setTimeout(() => {
-                const first = document.querySelector('.nav-tag');
-                if(first) setActiveNav(first, stateInkMap[sortedKeys[0]]);
-            }, 100);
+            setTimeout(() => setActiveNav(document.querySelector('.nav-tag'), stateInkMap[Object.keys(counts).sort()[0]]), 100);
         }
 
         function setActiveNav(el, color) {
@@ -387,150 +352,106 @@
         }
 
         function setupAutoNavTracker() {
-            const grid = document.getElementById('main-grid');
             const observer = new IntersectionObserver((entries) => {
                 if (isManualScrolling || document.body.classList.contains('map-active')) return;
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        const state = entry.target.getAttribute('data-state');
-                        const navBtn = document.getElementById(`nav-${state}`);
-                        if (navBtn && lastHapticId !== state) {
-                            setActiveNav(navBtn, stateInkMap[state]);
-                            triggerHaptic('light');
-                            lastHapticId = state;
-                        }
+                        const s = entry.target.getAttribute('data-state');
+                        const navBtn = document.getElementById(`nav-${s}`);
+                        if (navBtn && lastHapticId !== s) { setActiveNav(navBtn, stateInkMap[s]); triggerHaptic('light'); lastHapticId = s; }
                     }
                 });
-            }, { root: grid, threshold: 0.8 });
+            }, { root: document.getElementById('main-grid'), threshold: 0.8 });
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
         function openMap(name, city) {
             triggerHaptic('medium');
-            const query = encodeURIComponent(`${name}, ${city}`);
-            window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(name + ' ' + city)}`, '_blank');
         }
 
         function generateStampHTML(loc, index) {
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             if (loc.type === 'ink') {
-                const abbr = loc.stateName; 
-                const icon = stateIcons[abbr] || defaultIcons[loc.styleIdx % defaultIcons.length];
-                const fullName = abbrToState[abbr] || "UNITED STATES";
-                return `
-                    <div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
-                        <div class="ink-stamp ink-shape-${loc.styleIdx % 4}" style="--ink-color: ${loc.inkColor}">
-                            <div class="ink-stamp-inner">
-                                <span class="material-symbols-rounded ink-stamp-icon">${icon}</span>
-                                <div class="ink-stamp-text-abbr">${abbr}</div>
-                                <div class="ink-stamp-text-full">${fullName}</div>
-                            </div>
-                        </div>
-                    </div>`;
-            }
-            const color = themes[index % themes.length];
-            const cityParts = loc.city.split(',');
-            const cityStr = cityParts[0].trim();
-            const stateCode = loc.stateName;
-            const safeName = loc.name.replace(/'/g, "\\'");
-            const safeCity = loc.city.replace(/'/g, "\\'");
-            
-            // Centered text lines
-            const stickerLabel = stateCode ? `${cityStr}<br>${stateCode}` : cityStr;
-
-            return `
-                <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
-                    <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
-                        <div class="stamp-image">
-                            ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}" style="--theme-color: ${color}"></div>`}
-                            <div class="stamp-title-overlay">
-                                <div class="stamp-name">${loc.name}</div>
-                                ${loc.note ? `<div class="note-container"><div class="stamp-note">${loc.note}</div></div>` : ''}
-                            </div>
+                const icon = stateIcons[loc.stateName] || defaultIcons[loc.styleIdx % defaultIcons.length];
+                const shapeClass = `ink-shape-${loc.styleIdx % 4}`;
+                const weightClass = `ink-weight-${loc.styleIdx % 4}`;
+                return `<div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
+                    <div class="ink-stamp ${shapeClass}" style="--ink-color: ${loc.inkColor}">
+                        <div class="ink-stamp-inner ${weightClass}">
+                            <span class="material-symbols-rounded ink-stamp-icon">${icon}</span>
+                            <div class="ink-stamp-text-abbr">${loc.stateName}</div>
+                            <div class="ink-stamp-text-full">${abbrToState[loc.stateName]}</div>
                         </div>
                     </div>
-                    <div class="postmark-seal" onclick="openMap('${safeName}', '${safeCity}')"><span>${stickerLabel}</span></div>
                 </div>`;
+            }
+            const color = themes[index % themes.length];
+            const cityStr = loc.city.split(',')[0].trim();
+            return `<div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
+                <div class="stamp" style="--theme-color: ${color}" onclick="openModalByIndex(${index})">
+                    <div class="stamp-image">
+                        ${loc.imgUrl ? `<img src="${loc.imgUrl}" class="duotone"><img src="${loc.imgUrl}" class="normal">` : `<div class="placeholder pattern-${(placeholderCounter++ % 4) + 1}" style="--theme-color: ${color}"></div>`}
+                        <div class="stamp-title-overlay">
+                            <div class="stamp-name">${loc.name}</div>
+                            ${loc.note ? `<div class="note-container"><div class="stamp-note">${loc.note}</div></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="postmark-seal" onclick="openMap('${loc.name.replace(/'/g, "\\'")}', '${loc.city.replace(/'/g, "\\'")}')">
+                    <div class="postmark-content">
+                        <div class="postmark-line"></div>
+                        <div class="postmark-city">${cityStr}</div>
+                        <div class="postmark-line"></div>
+                    </div>
+                </div>
+            </div>`;
         }
 
-        function renderGrid() {
-            document.getElementById('main-grid').innerHTML = globalLocations.map((l, i) => generateStampHTML(l, i)).join('');
-        }
+        function renderGrid() { document.getElementById('main-grid').innerHTML = globalLocations.map((l, i) => generateStampHTML(l, i)).join(''); }
 
         function scrollGrid(dir) {
             const grid = document.getElementById('main-grid');
-            const itemWidth = grid.querySelector('.stamp-wrapper').offsetWidth;
-            grid.scrollBy({ left: itemWidth * dir, behavior: 'smooth' });
+            grid.scrollBy({ left: grid.querySelector('.stamp-wrapper').offsetWidth * dir, behavior: 'smooth' });
             triggerHaptic('light');
         }
 
         function setupScrollEffect() {
             const grid = document.getElementById('main-grid');
             if (window.innerWidth > 600) return;
-            let ticking = false;
             const update = () => {
-                const wrappers = document.querySelectorAll('.stamp-wrapper');
                 const centerX = window.innerWidth / 2;
-                wrappers.forEach(w => {
+                document.querySelectorAll('.stamp-wrapper').forEach(w => {
                     const rect = w.getBoundingClientRect();
-                    const cardCenter = rect.left + rect.width / 2;
-                    const distFromCenter = Math.abs(centerX - cardCenter);
-                    const normalized = Math.min(distFromCenter / (window.innerWidth * 0.6), 1);
-                    
-                    // Card scaling
-                    if (w.classList.contains('state-ink-wrapper')) {
-                        w.style.transform = `scale(${1.0 - (normalized * 0.1)})`;
-                        w.style.opacity = 1 - (normalized * 0.4);
-                    } else {
-                        const scale = 1.05 - (normalized * 0.2);
-                        const transY = -25 + (normalized * 25);
-                        w.style.transform = `scale(${scale}) translateY(${transY}px)`;
-                        w.style.filter = `drop-shadow(0 ${15 - normalized*10}px ${35 - normalized*25}px rgba(0,0,0,${0.22 - (normalized * 0.12)}))`;
-                        
-                        // FLUID CITY STICKER SCALING (Shrinks to 0)
+                    const dist = Math.abs(centerX - (rect.left + rect.width / 2));
+                    const norm = Math.min(dist / (window.innerWidth * 0.6), 1);
+                    if (!w.classList.contains('state-ink-wrapper')) {
+                        w.style.transform = `scale(${1.05 - (norm * 0.2)}) translateY(${-25 + (norm * 25)}px)`;
                         const seal = w.querySelector('.postmark-seal');
                         if (seal) {
-                            // Only visible in the center 40% of the screen
-                            const sealScale = Math.max(0, 1.1 - (normalized * 4.5)); 
+                            const sealScale = Math.max(0, 1.1 - (norm * 4.5));
                             seal.style.transform = `scale(${sealScale})`;
                             seal.style.opacity = sealScale > 0.1 ? 1 : 0;
-                            
-                            if (sealScale > 0.5) seal.classList.add('active-view');
-                            else seal.classList.remove('active-view');
+                            if (sealScale > 0.5) seal.classList.add('active-view'); else seal.classList.remove('active-view');
                         }
-                    }
-                    
-                    if (normalized < 0.25) { w.classList.add('is-centered'); w.style.zIndex = "100"; }
-                    else { w.classList.remove('is-centered'); w.style.zIndex = "1"; }
+                    } else { w.style.transform = `scale(${1.0 - (norm * 0.1)})`; w.style.opacity = 1 - (norm * 0.4); }
+                    if (norm < 0.25) w.classList.add('is-centered'); else w.classList.remove('is-centered');
                 });
-                ticking = false;
             };
-            grid.addEventListener('scroll', () => {
-                if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
-            }, { passive: true });
+            grid.addEventListener('scroll', () => window.requestAnimationFrame(update), { passive: true });
             update();
         }
 
         function initMap() {
-            map = L.map('map', { attributionControl: false, zoomControl: false }).setView([39.8283, -98.5795], 4);
+            map = L.map('map', { attributionControl: false, zoomControl: false }).setView([39.8, -98.5], 4);
             L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png').addTo(map);
         }
 
-        function balanceText(text) {
-            if (!text || text.length < 22) return text; 
-            const middle = Math.floor(text.length / 2);
-            const before = text.lastIndexOf(' ', middle);
-            const after = text.indexOf(' ', middle + 1);
-            const splitPoint = (after === -1 || (before !== -1 && middle - before < after - middle)) ? before : after;
-            return splitPoint !== -1 ? text.substring(0, splitPoint) + '<br>' + text.substring(splitPoint + 1) : text;
-        }
-
         function openModalByIndex(idx) {
-            triggerHaptic('medium');
             const loc = globalLocations[idx]; if (loc.type === 'ink' || !loc.imgUrl) return;
+            triggerHaptic('medium');
             document.getElementById('img01').src = loc.imgUrl;
-            const noteHtml = loc.note ? `<div style="font-family:'Inter', sans-serif; font-size:14px; opacity:0.9; margin-top:8px;">${loc.note}</div>` : '';
-            document.getElementById('caption').innerHTML = `<h2 style="margin:0; line-height:1.2;">${balanceText(loc.name)}</h2>${noteHtml}<div class="modal-city-pill">${loc.city}</div>`;
+            document.getElementById('caption').innerHTML = `<h2 style="margin:0;">${loc.name}</h2><div class="modal-city-pill" onclick="openMap('${loc.name.replace(/'/g, "\\'")}', '${loc.city.replace(/'/g, "\\'")}')">${loc.city}</div>`;
             document.getElementById('myModal').style.display = 'flex';
         }
 

@@ -16,7 +16,7 @@
             --grid-pad: 20px; 
             --btn-bg: #F2EDEB;
             --accent: #4478A2;
-            --r: 12px;
+            --r: 20px; /* Updated radius per request */
             --ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -92,17 +92,23 @@
             }
         }
 
-        /* ---------- STAMP VISUALS (PAPER) ---------- */
+        /* ---------- NEW STAMP VISUALS (PERFORATED MASK) ---------- */
         .stamp {
-            aspect-ratio: 7 / 9; padding: var(--r); background: var(--btn-bg);
+            --r: 20px; /* Radius per request */
+            aspect-ratio: 7 / 9; /* Kept to preserve grid layout */
+            padding: var(--r); 
+            background: var(--btn-bg);
             cursor: pointer; position: relative; backface-visibility: hidden;
             transform: rotate(var(--r_deg, 0deg)); z-index: 2;
-            -webkit-mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
-            mask: radial-gradient(50% 50%, #0000 66%, #000 67%) round var(--r) var(--r) / calc(2 * var(--r)) calc(2 * var(--r)), conic-gradient(#000 0 0) content-box;
+            
+            /* The specific mask code requested */
+            -webkit-mask: radial-gradient(50% 50%,#0000 66%,#000 67%) round var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), conic-gradient(#000 0 0) content-box;
+            mask: radial-gradient(50% 50%,#0000 66%,#000 67%) round var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
-            position: absolute; inset: calc(var(--r) * 1.5); overflow: hidden;
+            position: absolute; inset: var(--r); /* Adjusted inset to match radius */
+            overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
         }
@@ -117,6 +123,7 @@
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
         .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
 
+        /* ---------- FIXED POSTMARK LOGIC ---------- */
         .postmark-seal {
             position: absolute; top: -15px; right: -10px; width: 70px; height: 70px;
             border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
@@ -124,22 +131,30 @@
             font-family: 'Special Elite'; font-size: 8px; text-align: center;
             background: rgba(255,255,255,0.96); backdrop-filter: blur(2px);
             z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
-            transition: all 0.5s var(--ease-out-quint); 
+            
+            /* Improved transition to prevent sticking */
+            transform-origin: center center;
             transform: rotate(15deg) scale(0); 
-            pointer-events: none; opacity: 0; visibility: hidden;
+            opacity: 0; 
+            visibility: hidden; /* Ensures it is gone when not active */
+            pointer-events: none;
+            
+            transition: transform 0.4s var(--ease-out-quint), opacity 0.3s ease, visibility 0.4s ease;
         }
+        
+        /* Only visible when centered or hovered */
         .is-centered .postmark-seal, .stamp:hover + .postmark-seal { 
             transform: rotate(0deg) scale(1.05); 
-            opacity: 1; visibility: visible;
+            opacity: 1; 
+            visibility: visible;
             color: #C65265; border-color: #C65265; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
         }
 
         .stamp-title-overlay { 
             position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); 
             padding: 12px 10px; background: var(--theme-color); color: white; z-index: 5;
-            transition: all 0.6s var(--ease-out-quint); /* Smoother growth */
+            transition: all 0.6s var(--ease-out-quint); 
         }
-        /* Increased Text Sizes */
         .stamp-name { font-family: 'Yrsa', serif; font-size: 18px; line-height: 1.1; font-weight: 600; }
         
         .note-container { 
@@ -151,7 +166,7 @@
         .stamp-note { 
             font-family: 'Inter', sans-serif; font-size: 11px; line-height: 1.35; 
             opacity: 0; transition: opacity 0.4s ease 0.1s; 
-            min-height: 0; /* Important for grid transition */
+            min-height: 0;
         }
         .is-centered .stamp-note, .stamp:hover .stamp-note { opacity: 1; padding-top: 8px; }
 
@@ -218,11 +233,24 @@
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
         const inkPalette = ['#1B4F72', '#78281F', '#186A3B', '#7E5109', '#512E5F', '#117864'];
         
-        // FORWARD MAPPING
+        // FORWARD MAPPING: Abbr -> Full Name
         const abbrToState = {
             "AL": "ALABAMA", "AK": "ALASKA", "AZ": "ARIZONA", "AR": "ARKANSAS", "CA": "CALIFORNIA", "CO": "COLORADO", "CT": "CONNECTICUT", "DE": "DELAWARE", "FL": "FLORIDA", "GA": "GEORGIA", "HI": "HAWAII", "ID": "IDAHO", "IL": "ILLINOIS", "IN": "INDIANA", "IA": "IOWA", "KS": "KANSAS", "KY": "KENTUCKY", "LA": "LOUISIANA", "ME": "MAINE", "MD": "MARYLAND", "MA": "MASSACHUSETTS", "MI": "MICHIGAN", "MN": "MINNESOTA", "MS": "MISSISSIPPI", "MO": "MISSOURI", "MT": "MONTANA", "NE": "NEBRASKA", "NV": "NEVADA", "NH": "NEW HAMPSHIRE", "NJ": "NEW JERSEY", "NM": "NEW MEXICO", "NY": "NEW YORK", "NC": "NORTH CAROLINA", "ND": "NORTH DAKOTA", "OH": "OHIO", "OK": "OKLAHOMA", "OR": "OREGON", "PA": "PENNSYLVANIA", "RI": "RHODE ISLAND", "SC": "SOUTH CAROLINA", "SD": "SOUTH DAKOTA", "TN": "TENNESSEE", "TX": "TEXAS", "UT": "UTAH", "VT": "VERMONT", "VA": "VIRGINIA", "WA": "WASHINGTON", "WV": "WEST VIRGINIA", "WI": "WISCONSIN", "WY": "WYOMING", 
             "EU": "EUROPE"
         };
+
+        // ICON MAPPING: Abbr -> Material Symbol String
+        const stateIcons = {
+            "AZ": "cactus", "CA": "wb_sunny", "PA": "notifications_active", "EU": "public",
+            "NY": "apartment", "FL": "sunny", "TX": "star", "NV": "casino",
+            "WA": "coffee", "HI": "surfing", "CO": "hiking", "MA": "history_edu",
+            "IL": "location_city", "LA": "music_note", "TN": "music_note", 
+            "GA": "agriculture", "OR": "forest", "ME": "sailing", "DC": "gavel",
+            "UT": "landscape", "NM": "light_mode", "OH": "flight", "MI": "directions_car",
+            "AK": "ac_unit", "WI": "forest", "VT": "ac_unit"
+        };
+        // Fallback icon list if state isn't mapped specifically
+        const defaultIcons = ['explore', 'place', 'map', 'flag', 'travel_explore'];
 
         let globalLocations = [];
         let stateInkMap = {}; 
@@ -239,9 +267,8 @@
                     const cols = r.split('\t');
                     let rawState = cols[4] ? cols[4].split(',').pop().trim().toUpperCase() : 'XX';
                     
-                    // EUROPE LOGIC: If length > 2 (e.g. ITALY) or is explicitly 'VC' (Vatican), force to EU
+                    // EUROPE LOGIC
                     if (rawState.length > 2 || rawState === 'IT' || rawState === 'VC' || !abbrToState[rawState]) {
-                         // Check if it's a known US abbr, if not, assume EU
                          if (!abbrToState[rawState] || rawState === 'ITALY') {
                              rawState = 'EU';
                          }
@@ -356,9 +383,9 @@
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';
             
             if (loc.type === 'ink') {
-                const icons = ['airplane_ticket', 'location_on', 'explore', 'public', 'history_edu', 'flag'];
-                const icon = icons[loc.styleIdx % icons.length];
                 const abbr = loc.stateName; 
+                // Look up custom icon, fallback to default loop if not found
+                const icon = stateIcons[abbr] || defaultIcons[loc.styleIdx % defaultIcons.length];
                 const fullName = abbrToState[abbr] || "UNITED STATES";
                 
                 return `

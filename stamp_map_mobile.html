@@ -117,6 +117,7 @@
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
         .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
 
+        /* FIXED POSTMARK: Forces disappear when not centered/hovered */
         .postmark-seal {
             position: absolute; top: -15px; right: -10px; width: 70px; height: 70px;
             border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
@@ -124,13 +125,14 @@
             font-family: 'Special Elite'; font-size: 8px; text-align: center;
             background: rgba(255,255,255,0.96); backdrop-filter: blur(2px);
             z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
-            transition: all 0.6s var(--ease-out-quint); 
-            transform: rotate(15deg) scale(0); pointer-events: none;
-            opacity: 0;
+            transition: all 0.5s var(--ease-out-quint); 
+            transform: rotate(15deg) scale(0); 
+            pointer-events: none; opacity: 0;
+            visibility: hidden;
         }
         .is-centered .postmark-seal, .stamp:hover + .postmark-seal { 
             transform: rotate(0deg) scale(1.05); 
-            opacity: 1;
+            opacity: 1; visibility: visible;
             color: #C65265; border-color: #C65265; box-shadow: 0 8px 20px rgba(0,0,0,0.1); 
         }
 
@@ -212,9 +214,9 @@
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
         const inkPalette = ['#1B4F72', '#78281F', '#186A3B', '#7E5109', '#512E5F', '#117864'];
         
-        // Comprehensive Mapping logic
-        const stateToAbbr = {
-            "Alabama": "AL", "Alaska": "AK", "Arizona": "AZ", "Arkansas": "AR", "California": "CA", "Colorado": "CO", "Connecticut": "CT", "Delaware": "DE", "Florida": "FL", "Georgia": "GA", "Hawaii": "HI", "Idaho": "ID", "Illinois": "IL", "Indiana": "IN", "Iowa": "IA", "Kansas": "KS", "Kentucky": "KY", "Louisiana": "LA", "Maine": "ME", "Maryland": "MD", "Massachusetts": "MA", "Michigan": "MI", "Minnesota": "MN", "Mississippi": "MS", "Missouri": "MO", "Montana": "MT", "Nebraska": "NE", "Nevada": "NV", "New Hampshire": "NH", "New Jersey": "NJ", "New Mexico": "NM", "New York": "NY", "North Carolina": "NC", "North Dakota": "ND", "Ohio": "OH", "Oklahoma": "OK", "Oregon": "OR", "Pennsylvania": "PA", "Rhode Island": "RI", "South Carolina": "SC", "South Dakota": "SD", "Tennessee": "TN", "Texas": "TX", "Utah": "UT", "Vermont": "VT", "Virginia": "VA", "Washington": "WA", "West Virginia": "WV", "Wisconsin": "WI", "Wyoming": "WY", "Europe": "EU", "Italy": "IT", "Vatican City": "VC"
+        // FORWARD MAPPING: Input "AZ" (from sheet) -> Output "ARIZONA"
+        const abbrToState = {
+            "AL": "ALABAMA", "AK": "ALASKA", "AZ": "ARIZONA", "AR": "ARKANSAS", "CA": "CALIFORNIA", "CO": "COLORADO", "CT": "CONNECTICUT", "DE": "DELAWARE", "FL": "FLORIDA", "GA": "GEORGIA", "HI": "HAWAII", "ID": "IDAHO", "IL": "ILLINOIS", "IN": "INDIANA", "IA": "IOWA", "KS": "KANSAS", "KY": "KENTUCKY", "LA": "LOUISIANA", "ME": "MAINE", "MD": "MARYLAND", "MA": "MASSACHUSETTS", "MI": "MICHIGAN", "MN": "MINNESOTA", "MS": "MISSISSIPPI", "MO": "MISSOURI", "MT": "MONTANA", "NE": "NEBRASKA", "NV": "NEVADA", "NH": "NEW HAMPSHIRE", "NJ": "NEW JERSEY", "NM": "NEW MEXICO", "NY": "NEW YORK", "NC": "NORTH CAROLINA", "ND": "NORTH DAKOTA", "OH": "OHIO", "OK": "OKLAHOMA", "OR": "OREGON", "PA": "PENNSYLVANIA", "RI": "RHODE ISLAND", "SC": "SOUTH CAROLINA", "SD": "SOUTH DAKOTA", "TN": "TENNESSEE", "TX": "TEXAS", "UT": "UTAH", "VT": "VERMONT", "VA": "VIRGINIA", "WA": "WASHINGTON", "WV": "WEST VIRGINIA", "WI": "WISCONSIN", "WY": "WYOMING", "EU": "EUROPE", "IT": "ITALY", "VC": "VATICAN CITY"
         };
 
         let globalLocations = [];
@@ -230,9 +232,9 @@
                 
                 let rawLocs = rows.map(r => {
                     const cols = r.split('\t');
-                    const rawState = cols[4] ? cols[4].split(',').pop().trim() : 'Other';
-                    const stateName = ['Italy','Vatican City'].includes(rawState) ? 'Europe' : rawState;
-                    return { name: cols[0], note: (cols[2] || "").trim(), imgUrl: cols[3] || '', city: cols[4] || '', stateName, type: 'paper' };
+                    // In your sheet, rawState is "AZ"
+                    const rawState = cols[4] ? cols[4].split(',').pop().trim().toUpperCase() : 'XX';
+                    return { name: cols[0], note: (cols[2] || "").trim(), imgUrl: cols[3] || '', city: cols[4] || '', stateName: rawState, type: 'paper' };
                 });
                 rawLocs.sort((a,b) => a.stateName.localeCompare(b.stateName));
                 
@@ -331,8 +333,9 @@
                 const icons = ['airplane_ticket', 'location_on', 'explore', 'public', 'history_edu', 'flag'];
                 const icon = icons[loc.styleIdx % icons.length];
                 
-                // CRITICAL FIX: Explicit lookup of Abbreviation
-                const abbr = stateToAbbr[loc.stateName] || "US";
+                // DATA LOGIC: "AZ" from sheet -> "ARIZONA" via lookup
+                const abbr = loc.stateName; 
+                const fullName = abbrToState[abbr] || "UNITED STATES";
                 
                 return `
                     <div class="stamp-wrapper state-ink-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">
@@ -340,7 +343,7 @@
                             <div class="ink-stamp-inner">
                                 <span class="material-symbols-rounded ink-stamp-icon">${icon}</span>
                                 <div class="ink-stamp-text-abbr">${abbr}</div>
-                                <div class="ink-stamp-text-full">${loc.stateName}</div>
+                                <div class="ink-stamp-text-full">${fullName}</div>
                             </div>
                         </div>
                     </div>`;
@@ -349,7 +352,7 @@
             const color = themes[index % themes.length];
             const cityParts = loc.city.split(',');
             const cityStr = cityParts[0].trim();
-            const stateCode = cityParts.length > 1 ? cityParts[cityParts.length-1].trim().slice(-2).toUpperCase() : '';
+            const stateCode = loc.stateName;
             
             return `
                 <div class="stamp-wrapper" data-state="${loc.stateName}" style="--r_deg: ${rotation}">

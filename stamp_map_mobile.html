@@ -117,7 +117,6 @@
         img.normal { opacity: 0; transition: opacity 0.5s var(--ease-standard); }
         .is-centered img.normal, .stamp:hover:not(.no-hover) img.normal { opacity: 1; }
 
-        /* FIXED POSTMARK: Forces disappear when not centered/hovered */
         .postmark-seal {
             position: absolute; top: -15px; right: -10px; width: 70px; height: 70px;
             border: 1.5px solid rgba(0,0,0,0.1); border-radius: 50%;
@@ -127,8 +126,7 @@
             z-index: 20; color: rgba(0,0,0,0.5); padding: 4px;
             transition: all 0.5s var(--ease-out-quint); 
             transform: rotate(15deg) scale(0); 
-            pointer-events: none; opacity: 0;
-            visibility: hidden;
+            pointer-events: none; opacity: 0; visibility: hidden;
         }
         .is-centered .postmark-seal, .stamp:hover + .postmark-seal { 
             transform: rotate(0deg) scale(1.05); 
@@ -138,18 +136,24 @@
 
         .stamp-title-overlay { 
             position: absolute; bottom: -1px; left: -1px; width: calc(100% + 2px); 
-            padding: 10px; background: var(--theme-color); color: white; z-index: 5;
-            transition: transform 0.5s var(--ease-out-quint);
+            padding: 12px 10px; background: var(--theme-color); color: white; z-index: 5;
+            transition: all 0.6s var(--ease-out-quint); /* Smoother growth */
         }
-        .stamp-name { font-family: 'Yrsa', serif; font-size: 15px; line-height: 1.1; font-weight: 600; }
+        /* Increased Text Sizes */
+        .stamp-name { font-family: 'Yrsa', serif; font-size: 18px; line-height: 1.1; font-weight: 600; }
         
         .note-container { 
             overflow: hidden; display: grid; grid-template-rows: 0fr; 
-            transition: grid-template-rows 0.5s var(--ease-out-quint); 
+            transition: grid-template-rows 0.6s var(--ease-out-quint); 
         }
-        .is-centered .note-container { grid-template-rows: 1fr; }
-        .stamp-note { font-family: 'Inter', sans-serif; font-size: 9px; line-height: 1.4; opacity: 0; transition: opacity 0.4s var(--ease-standard); }
-        .is-centered .stamp-note { opacity: 1; padding-top: 6px; }
+        .is-centered .note-container, .stamp:hover .note-container { grid-template-rows: 1fr; }
+        
+        .stamp-note { 
+            font-family: 'Inter', sans-serif; font-size: 11px; line-height: 1.35; 
+            opacity: 0; transition: opacity 0.4s ease 0.1s; 
+            min-height: 0; /* Important for grid transition */
+        }
+        .is-centered .stamp-note, .stamp:hover .stamp-note { opacity: 1; padding-top: 8px; }
 
         /* ---------- STATE INK STAMP VISUALS ---------- */
         .ink-stamp {
@@ -214,9 +218,10 @@
         const themes = ['#4478A2','#C65265','#D78143','#297381','#89974F','#DAAD60','#757498','#AA7876','#D7A995','#6E917A'];
         const inkPalette = ['#1B4F72', '#78281F', '#186A3B', '#7E5109', '#512E5F', '#117864'];
         
-        // FORWARD MAPPING: Input "AZ" (from sheet) -> Output "ARIZONA"
+        // FORWARD MAPPING
         const abbrToState = {
-            "AL": "ALABAMA", "AK": "ALASKA", "AZ": "ARIZONA", "AR": "ARKANSAS", "CA": "CALIFORNIA", "CO": "COLORADO", "CT": "CONNECTICUT", "DE": "DELAWARE", "FL": "FLORIDA", "GA": "GEORGIA", "HI": "HAWAII", "ID": "IDAHO", "IL": "ILLINOIS", "IN": "INDIANA", "IA": "IOWA", "KS": "KANSAS", "KY": "KENTUCKY", "LA": "LOUISIANA", "ME": "MAINE", "MD": "MARYLAND", "MA": "MASSACHUSETTS", "MI": "MICHIGAN", "MN": "MINNESOTA", "MS": "MISSISSIPPI", "MO": "MISSOURI", "MT": "MONTANA", "NE": "NEBRASKA", "NV": "NEVADA", "NH": "NEW HAMPSHIRE", "NJ": "NEW JERSEY", "NM": "NEW MEXICO", "NY": "NEW YORK", "NC": "NORTH CAROLINA", "ND": "NORTH DAKOTA", "OH": "OHIO", "OK": "OKLAHOMA", "OR": "OREGON", "PA": "PENNSYLVANIA", "RI": "RHODE ISLAND", "SC": "SOUTH CAROLINA", "SD": "SOUTH DAKOTA", "TN": "TENNESSEE", "TX": "TEXAS", "UT": "UTAH", "VT": "VERMONT", "VA": "VIRGINIA", "WA": "WASHINGTON", "WV": "WEST VIRGINIA", "WI": "WISCONSIN", "WY": "WYOMING", "EU": "EUROPE", "IT": "ITALY", "VC": "VATICAN CITY"
+            "AL": "ALABAMA", "AK": "ALASKA", "AZ": "ARIZONA", "AR": "ARKANSAS", "CA": "CALIFORNIA", "CO": "COLORADO", "CT": "CONNECTICUT", "DE": "DELAWARE", "FL": "FLORIDA", "GA": "GEORGIA", "HI": "HAWAII", "ID": "IDAHO", "IL": "ILLINOIS", "IN": "INDIANA", "IA": "IOWA", "KS": "KANSAS", "KY": "KENTUCKY", "LA": "LOUISIANA", "ME": "MAINE", "MD": "MARYLAND", "MA": "MASSACHUSETTS", "MI": "MICHIGAN", "MN": "MINNESOTA", "MS": "MISSISSIPPI", "MO": "MISSOURI", "MT": "MONTANA", "NE": "NEBRASKA", "NV": "NEVADA", "NH": "NEW HAMPSHIRE", "NJ": "NEW JERSEY", "NM": "NEW MEXICO", "NY": "NEW YORK", "NC": "NORTH CAROLINA", "ND": "NORTH DAKOTA", "OH": "OHIO", "OK": "OKLAHOMA", "OR": "OREGON", "PA": "PENNSYLVANIA", "RI": "RHODE ISLAND", "SC": "SOUTH CAROLINA", "SD": "SOUTH DAKOTA", "TN": "TENNESSEE", "TX": "TEXAS", "UT": "UTAH", "VT": "VERMONT", "VA": "VIRGINIA", "WA": "WASHINGTON", "WV": "WEST VIRGINIA", "WI": "WISCONSIN", "WY": "WYOMING", 
+            "EU": "EUROPE"
         };
 
         let globalLocations = [];
@@ -232,11 +237,25 @@
                 
                 let rawLocs = rows.map(r => {
                     const cols = r.split('\t');
-                    // In your sheet, rawState is "AZ"
-                    const rawState = cols[4] ? cols[4].split(',').pop().trim().toUpperCase() : 'XX';
+                    let rawState = cols[4] ? cols[4].split(',').pop().trim().toUpperCase() : 'XX';
+                    
+                    // EUROPE LOGIC: If length > 2 (e.g. ITALY) or is explicitly 'VC' (Vatican), force to EU
+                    if (rawState.length > 2 || rawState === 'IT' || rawState === 'VC' || !abbrToState[rawState]) {
+                         // Check if it's a known US abbr, if not, assume EU
+                         if (!abbrToState[rawState] || rawState === 'ITALY') {
+                             rawState = 'EU';
+                         }
+                    }
+
                     return { name: cols[0], note: (cols[2] || "").trim(), imgUrl: cols[3] || '', city: cols[4] || '', stateName: rawState, type: 'paper' };
                 });
-                rawLocs.sort((a,b) => a.stateName.localeCompare(b.stateName));
+                
+                // Sort with EU at the end
+                rawLocs.sort((a,b) => {
+                    if (a.stateName === 'EU') return 1;
+                    if (b.stateName === 'EU') return -1;
+                    return a.stateName.localeCompare(b.stateName);
+                });
                 
                 let processed = [];
                 let lastState = null;
@@ -267,7 +286,14 @@
             globalLocations.forEach(l => { if(l.type === 'paper') counts[l.stateName] = (counts[l.stateName] || 0) + 1; });
             const nav = document.getElementById('filter-nav'), mapAnchor = document.getElementById('map-btn-anchor');
             
-            Object.keys(counts).sort().forEach(s => {
+            // Sort keys: US states alphabetically, then EU last
+            const sortedKeys = Object.keys(counts).sort((a, b) => {
+                if (a === 'EU') return 1;
+                if (b === 'EU') return -1;
+                return a.localeCompare(b);
+            });
+
+            sortedKeys.forEach(s => {
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag';
                 btn.id = `nav-${s}`;
@@ -290,7 +316,7 @@
             
             setTimeout(() => {
                 const first = document.querySelector('.nav-tag');
-                if(first) setActiveNav(first, stateInkMap[Object.keys(stateInkMap).sort()[0]]);
+                if(first) setActiveNav(first, stateInkMap[sortedKeys[0]]);
             }, 100);
         }
 
@@ -332,8 +358,6 @@
             if (loc.type === 'ink') {
                 const icons = ['airplane_ticket', 'location_on', 'explore', 'public', 'history_edu', 'flag'];
                 const icon = icons[loc.styleIdx % icons.length];
-                
-                // DATA LOGIC: "AZ" from sheet -> "ARIZONA" via lookup
                 const abbr = loc.stateName; 
                 const fullName = abbrToState[abbr] || "UNITED STATES";
                 

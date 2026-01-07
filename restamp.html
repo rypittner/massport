@@ -336,19 +336,46 @@
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
-        function scrollGrid(dir) {
+    function scrollGrid(dir) {
             const grid = document.getElementById('main-grid');
             const wrapper = grid.querySelector('.stamp-wrapper');
             if(!wrapper) return;
+            
             if (scrollAnimId) cancelAnimationFrame(scrollAnimId);
             
-            const itemWidth = wrapper.offsetWidth + 20; // Include gap
+            // Disable snap temporarily to allow the custom animation to flow
+            grid.style.scrollSnapType = 'none';
+            
+            const itemWidth = wrapper.offsetWidth + 20; // width + gap
             const start = grid.scrollLeft;
             const target = start + (itemWidth * dir);
             
-            grid.scrollTo({ left: target, behavior: 'smooth' });
+            // CHANGED: Increased duration for a more luxurious feel
+            const duration = **750**; 
+            const startTime = performance.now();
+            
+            // CHANGED: Use Ease-Out-Quint for a much smoother "glide" into place
+            **const easeOutQuint = (x) => 1 - Math.pow(1 - x, 5);**
+
+            function step(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                **grid.scrollLeft = start + ((target - start) * easeOutQuint(progress));**
+
+                if (progress < 1) {
+                    scrollAnimId = requestAnimationFrame(step);
+                } else {
+                    // Re-enable snapping once animation finishes
+                    **grid.style.scrollSnapType = 'x mandatory';**
+                    scrollAnimId = null;
+                }
+            }
+            
+            scrollAnimId = requestAnimationFrame(step);
             triggerHaptic('light');
         }
+
 
         function generateStampHTML(loc, index) {
             const rotation = (Math.random() * 4 - 2).toFixed(2) + 'deg';

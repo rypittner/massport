@@ -21,6 +21,8 @@
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
             --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
             --stamp-red: #C65265;
+            /* Added spacing variable */
+            --inner-padding: 24px; 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +39,7 @@
         .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 0; text-align: center; position: relative; z-index: 10; transition: opacity 0.4s var(--ease-smooth); }
         .header h1 { font-family: 'Yrsa', serif; font-size: 42px; margin: 0; }
 
-        .tap-zone { position: fixed; top: 0; bottom: 0; width: 15%; z-index: 9999; cursor: pointer; }
+        .tap-zone { position: fixed; top: 0; bottom: 0; width: 10%; z-index: 9999; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
 
@@ -46,7 +48,7 @@
             position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
             background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px);
             padding: 6px; border-radius: 50px; border: 1px solid rgba(0,0,0,0.1);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             display: flex; align-items: center; z-index: 10000;
             max-width: 92vw; width: max-content;
         }
@@ -71,7 +73,7 @@
 
         /* ---------- MAIN GRID ---------- */
         #main-grid { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; 
             max-width: var(--grid-max); margin: 0 auto; 
             padding: 40px 30px 140px; 
             transition: opacity 0.5s ease; flex-grow: 1;
@@ -82,21 +84,21 @@
             .header { display: none; }
             #main-grid { 
                 display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: visible;
-                scroll-snap-type: x mandatory; gap: 0; width: 100vw;
-                padding: 0 7vw; scroll-padding: 0 7vw; 
+                scroll-snap-type: x mandatory; gap: 20px; width: 100vw;
+                padding: 0 10vw; scroll-padding: 0 10vw; 
                 -webkit-overflow-scrolling: touch; align-items: center; 
                 min-height: 90vh; scrollbar-width: none;
-                scroll-behavior: auto;
+                scroll-behavior: smooth;
             } 
             #main-grid .stamp-wrapper {
-                flex: 0 0 78vw; 
+                flex: 0 0 80vw; 
+                scroll-snap-align: center; /* SNAPPING ADDED HERE */
             }
         }
 
-        /* ---------- NEW SHADOW LOGIC ---------- */
-        /* Applying to wrapper to prevent the mask from clipping the shadow */
+        /* ---------- SHADOW LOGIC ---------- */
         #main-grid .stamp-wrapper:not(.state-ink-wrapper) {
-            filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3));
+            filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.12)); /* Decreased opacity */
         }
 
         /* ---------- STAMP VISUALS ---------- */
@@ -107,13 +109,14 @@
             cursor: pointer; position: relative; backface-visibility: hidden;
             transform: rotate(var(--r_deg, 0deg)); z-index: 2;
             
-            /* SCALLOP MASK - No filter here to avoid double-shadow/clipping */
             -webkit-mask: radial-gradient(50% 50%,#0000 66%,#000 67%) round var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), conic-gradient(#000 0 0) content-box;
             mask: radial-gradient(50% 50%,#0000 66%,#000 67%) round var(--r) var(--r)/calc(2*var(--r)) calc(2*var(--r)), conic-gradient(#000 0 0) content-box;
         }
         
         .stamp-image {
-            position: absolute; inset: var(--r);
+            position: absolute; 
+            /* CENTERED INNER RECTANGLE WITH MORE PADDING */
+            inset: var(--inner-padding); 
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
             display: flex; flex-direction: column; justify-content: flex-end;
@@ -131,19 +134,19 @@
 
         /* ---------- POSTMARKS & INK ---------- */
         .postmark-seal {
-            position: absolute; top: -15px; right: -15px; 
-            width: 120px; height: 120px; 
+            position: absolute; top: -10px; right: -10px; 
+            width: 110px; height: 110px; 
             border: 4px solid var(--stamp-red);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite'; 
-            font-size: 12px; text-align: center;
+            font-size: 11px; text-align: center;
             background: rgba(255,255,255,0.98); backdrop-filter: blur(2px);
             z-index: 20; color: var(--stamp-red); 
             cursor: pointer; pointer-events: none; opacity: 0;
             transform: scale(1.6) rotate(var(--seal-rot, 15deg));
             transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
-            box-shadow: inset 0 0 0 2px var(--stamp-red), 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 0 2px var(--stamp-red), 0 5px 15px rgba(0,0,0,0.08);
         }
         .postmark-seal::after { content: ''; position: absolute; inset: 4px; border: 1px solid var(--stamp-red); border-radius: 50%; }
         .postmark-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 75%; }
@@ -167,7 +170,7 @@
             font-family: 'Special Elite', cursive; color: var(--ink-color);
             text-transform: uppercase; text-align: center;
             position: relative; z-index: 2; mix-blend-mode: multiply;
-            opacity: 0.85; transition: all 0.6s var(--ease-smooth);
+            opacity: 0.8; transition: all 0.6s var(--ease-smooth);
         }
         .ink-stamp-inner { border: 6px double var(--ink-color); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 85%; height: 85%; }
         .ink-stamp-text-abbr { font-size: 62px; line-height: 0.8; margin: 18px 0 0 0; font-weight: 900; }
@@ -279,7 +282,19 @@
                 const btn = document.createElement('div');
                 btn.className = 'nav-tag'; btn.id = `nav-${s}`; btn.dataset.abbr = s;
                 btn.innerHTML = `${s} <span>(${stateCounts[s]})</span>`;
-                btn.onclick = () => { isManualScrolling = true; triggerHaptic('medium'); scrollToGroup(s); setActiveNav(btn, stateInkMap[s]); setTimeout(() => isManualScrolling = false, 800); };
+                btn.onclick = () => { 
+                    isManualScrolling = true; 
+                    triggerHaptic('medium'); 
+                    
+                    // IF MAP IS ACTIVE, CLOSE IT FIRST
+                    if(document.body.classList.contains('map-active')) {
+                        document.body.classList.remove('map-active');
+                    }
+                    
+                    scrollToGroup(s); 
+                    setActiveNav(btn, stateInkMap[s]); 
+                    setTimeout(() => isManualScrolling = false, 800); 
+                };
                 nav.appendChild(btn);
             });
             const mapBtn = document.createElement('div');
@@ -317,7 +332,7 @@
                         if (navBtn && lastHapticId !== state) { setActiveNav(navBtn, stateInkMap[state]); triggerHaptic('light'); lastHapticId = state; }
                     }
                 });
-            }, { root: grid, threshold: 0.8 });
+            }, { root: null, threshold: 0.6 }); // Increased threshold sensitivity
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
@@ -326,21 +341,12 @@
             const wrapper = grid.querySelector('.stamp-wrapper');
             if(!wrapper) return;
             if (scrollAnimId) cancelAnimationFrame(scrollAnimId);
-            grid.style.scrollSnapType = 'none';
-            const itemWidth = wrapper.offsetWidth;
+            
+            const itemWidth = wrapper.offsetWidth + 20; // Include gap
             const start = grid.scrollLeft;
             const target = start + (itemWidth * dir);
-            const duration = 400; 
-            const startTime = performance.now();
-            const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
-            function step(currentTime) {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-                grid.scrollLeft = start + ((target - start) * easeOutCubic(progress));
-                if (progress < 1) scrollAnimId = requestAnimationFrame(step);
-                else { grid.style.scrollSnapType = 'x mandatory'; scrollAnimId = null; }
-            }
-            scrollAnimId = requestAnimationFrame(step);
+            
+            grid.scrollTo({ left: target, behavior: 'smooth' });
             triggerHaptic('light');
         }
 

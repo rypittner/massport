@@ -21,7 +21,6 @@
             --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
             --ease-smooth: cubic-bezier(0.2, 0.8, 0.2, 1);
             --stamp-red: #C65265;
-            /* Added spacing variable */
             --inner-padding: 18px; 
         }
 
@@ -39,7 +38,7 @@
         .header { max-width: var(--grid-max); margin: 0 auto; padding: 40px var(--grid-pad) 0; text-align: center; position: relative; z-index: 10; transition: opacity 0.4s var(--ease-smooth); }
         .header h1 { font-family: 'Yrsa', serif; font-size: 42px; margin: 0; }
 
-        .tap-zone { position: fixed; top: 0; bottom: 0; width: 10%; z-index: 9999; cursor: pointer; }
+        .tap-zone { position: fixed; top: 0; bottom: 100px; width: 15%; z-index: 9999; cursor: pointer; }
         .tap-zone.left { left: 0; }
         .tap-zone.right { right: 0; }
 
@@ -59,7 +58,7 @@
         .nav-pill-bg { 
             position: absolute; top: 4px; left: 10px; height: calc(100% - 8px); 
             background: var(--accent); border-radius: 20px; 
-            transition: left 0.5s var(--ease-smooth), width 0.5s var(--ease-smooth), background 0.4s ease; 
+            transition: left 0.5s var(--ease-smooth), width 0.5s var(--ease-smooth), background 0.4s ease, opacity 0.3s ease; 
             z-index: 1; pointer-events: none; 
         }
         
@@ -68,7 +67,7 @@
         .nav-tag span { opacity: 0.7; margin-left: 4px; font-weight: 400; font-size: 0.85em; }
 
         .map-btn-wrapper { padding: 0 10px; border-left: 1px solid rgba(0,0,0,0.05); position: relative; }
-        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; transition: all 0.3s var(--ease-smooth); }
+        .map-tag { color: var(--accent) !important; font-weight: 700; border: 1.5px solid var(--accent); border-radius: 20px; transition: all 0.4s var(--ease-smooth); }
         .map-tag.active { background: var(--accent) !important; color: #fff !important; border-color: transparent; }
 
         /* ---------- MAIN GRID ---------- */
@@ -83,22 +82,24 @@
         @media (max-width: 600px) { 
             .header { display: none; }
             #main-grid { 
-                display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: visible;
-                scroll-snap-type: x mandatory; gap: 8px; width: 100vw;
+                display: flex; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden;
+                scroll-snap-type: x mandatory; gap: 12px; width: 100vw;
                 padding: 0 10vw; scroll-padding: 0 10vw; 
-                -webkit-overflow-scrolling: touch; align-items: center; 
-                min-height: 90vh; scrollbar-width: none;
+                -webkit-overflow-scrolling: touch; 
+                align-items: center; 
+                min-height: calc(100vh - 100px); /* Center in remaining space above nav */
+                scrollbar-width: none;
                 scroll-behavior: smooth;
             } 
             #main-grid .stamp-wrapper {
                 flex: 0 0 80vw; 
-                scroll-snap-align: center; /* SNAPPING ADDED HERE */
+                scroll-snap-align: center;
+                transition: transform 0.6s var(--ease-smooth), opacity 0.6s var(--ease-smooth);
             }
         }
 
-        /* ---------- SHADOW LOGIC ---------- */
         #main-grid .stamp-wrapper:not(.state-ink-wrapper) {
-            filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.12)); /* Decreased opacity */
+            filter: drop-shadow(1px 2px 4px rgba(0,0,0,0.12));
         }
 
         /* ---------- STAMP VISUALS ---------- */
@@ -115,7 +116,6 @@
         
         .stamp-image {
             position: absolute; 
-            /* CENTERED INNER RECTANGLE WITH MORE PADDING */
             inset: var(--inner-padding); 
             overflow: hidden;
             border: 4pt solid var(--theme-color); background: var(--theme-color);
@@ -134,24 +134,24 @@
 
         /* ---------- POSTMARKS & INK ---------- */
         .postmark-seal {
-            position: absolute; top: -10px; right: -10px; 
-            width: 110px; height: 110px; 
+            position: absolute; top: -15px; right: -25px; /* Moved slightly more to the left/inward */
+            width: 130px; height: 130px; /* Increased size */
             border: 4px solid var(--stamp-red);
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             font-family: 'Special Elite'; 
-            font-size: 11px; text-align: center;
+            font-size: 13px; text-align: center;
             background: rgba(255,255,255,0.98); backdrop-filter: blur(2px);
             z-index: 20; color: var(--stamp-red); 
             cursor: pointer; pointer-events: none; opacity: 0;
-            transform: scale(1.6) rotate(var(--seal-rot, 15deg));
-            transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
-            box-shadow: inset 0 0 0 2px var(--stamp-red), 0 5px 15px rgba(0,0,0,0.08);
+            transform: scale(1.4) rotate(var(--seal-rot, 15deg));
+            transition: transform 0.7s var(--ease-smooth), opacity 0.5s ease;
+            box-shadow: inset 0 0 0 2px var(--stamp-red), 0 8px 20px rgba(0,0,0,0.12);
         }
         .postmark-seal::after { content: ''; position: absolute; inset: 4px; border: 1px solid var(--stamp-red); border-radius: 50%; }
         .postmark-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 75%; }
-        .postmark-line { width: 100%; height: 1px; background: var(--stamp-red); margin: 3px 0; }
-        .postmark-text { text-transform: uppercase; line-height: 1.1; padding: 2px 0; }
+        .postmark-line { width: 100%; height: 1.5px; background: var(--stamp-red); margin: 4px 0; }
+        .postmark-text { text-transform: uppercase; line-height: 1.1; padding: 2px 0; font-weight: bold; }
         .is-centered .postmark-seal { opacity: 1; transform: scale(1) rotate(var(--seal-rot, 15deg)); pointer-events: auto; }
 
         .stamp-title-overlay { 
@@ -170,7 +170,7 @@
             font-family: 'Special Elite', cursive; color: var(--ink-color);
             text-transform: uppercase; text-align: center;
             position: relative; z-index: 2; mix-blend-mode: multiply;
-            opacity: 0.8; transition: all 0.6s var(--ease-smooth);
+            opacity: 0.6; transition: all 0.8s var(--ease-smooth);
         }
         .ink-stamp-inner { border: 6px double var(--ink-color); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 85%; height: 85%; }
         .ink-stamp-text-abbr { font-size: 62px; line-height: 0.8; margin: 18px 0 0 0; font-weight: 900; }
@@ -230,7 +230,6 @@
         let placeholderCounter = 0;
         let isManualScrolling = false;
         let lastHapticId = null;
-        let scrollAnimId = null;
 
         function triggerHaptic(type = 'light') {
             if (window.navigator && window.navigator.vibrate) {
@@ -285,12 +284,7 @@
                 btn.onclick = () => { 
                     isManualScrolling = true; 
                     triggerHaptic('medium'); 
-                    
-                    // IF MAP IS ACTIVE, CLOSE IT FIRST
-                    if(document.body.classList.contains('map-active')) {
-                        document.body.classList.remove('map-active');
-                    }
-                    
+                    if(document.body.classList.contains('map-active')) document.body.classList.remove('map-active');
                     scrollToGroup(s); 
                     setActiveNav(btn, stateInkMap[s]); 
                     setTimeout(() => isManualScrolling = false, 800); 
@@ -299,52 +293,74 @@
             });
             const mapBtn = document.createElement('div');
             mapBtn.className = 'nav-tag map-tag'; mapBtn.innerText = 'Map';
-            mapBtn.onclick = () => { triggerHaptic('medium'); document.body.classList.add('map-active'); setActiveNav(mapBtn, '#4478A2'); };
+            mapBtn.onclick = () => { 
+                triggerHaptic('medium'); 
+                document.body.classList.add('map-active'); 
+                setActiveNav(mapBtn, '#4478A2'); 
+            };
             mapAnchor.appendChild(mapBtn);
             setTimeout(() => { const first = document.querySelector('.nav-tag'); if(first) setActiveNav(first, stateInkMap[first.dataset.abbr]); }, 100);
         }
 
         function setActiveNav(el, color) {
             if (!el) return;
-            document.querySelectorAll('.nav-tag:not(.map-tag)').forEach(t => { t.innerHTML = `${t.dataset.abbr} <span>(${stateCounts[t.dataset.abbr]})</span>`; t.classList.remove('active'); });
+            const isMap = el.classList.contains('map-tag');
+            
+            // Handle State Tags
+            document.querySelectorAll('.nav-tag:not(.map-tag)').forEach(t => { 
+                t.innerHTML = `${t.dataset.abbr} <span>(${stateCounts[t.dataset.abbr]})</span>`; 
+                t.classList.remove('active'); 
+            });
+            
+            // Handle Map Tag Reset
+            const mapBtn = document.querySelector('.map-tag');
+            if (!isMap) mapBtn.classList.remove('active');
+
             if (el.dataset.abbr) el.innerHTML = `${abbrToState[el.dataset.abbr]} <span>(${stateCounts[el.dataset.abbr]})</span>`;
             el.classList.add('active');
+            
             const pill = document.getElementById('nav-pill');
-            pill.style.opacity = el.classList.contains('map-tag') ? "0" : "1";
-            pill.style.width = el.offsetWidth + 'px'; pill.style.left = el.offsetLeft + 'px';
+            pill.style.opacity = isMap ? "0" : "1";
+            pill.style.width = el.offsetWidth + 'px'; 
+            pill.style.left = el.offsetLeft + 'px';
             if(color) pill.style.background = color;
             el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
 
         function scrollToGroup(state) {
             const target = document.querySelector(`.stamp-wrapper[data-state="${state}"]`);
-            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            if (target) {
+                const grid = document.getElementById('main-grid');
+                grid.scrollTo({ left: target.offsetLeft - (window.innerWidth * 0.1), behavior: 'smooth' });
+            }
         }
 
         function setupAutoNavTracker() {
-            const grid = document.getElementById('main-grid');
             const observer = new IntersectionObserver((entries) => {
                 if (isManualScrolling || document.body.classList.contains('map-active')) return;
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const state = entry.target.getAttribute('data-state');
                         const navBtn = document.getElementById(`nav-${state}`);
-                        if (navBtn && lastHapticId !== state) { setActiveNav(navBtn, stateInkMap[state]); triggerHaptic('light'); lastHapticId = state; }
+                        if (navBtn && lastHapticId !== state) { 
+                            setActiveNav(navBtn, stateInkMap[state]); 
+                            triggerHaptic('light'); 
+                            lastHapticId = state; 
+                        }
                     }
                 });
-            }, { root: null, threshold: 0.6 }); // Increased threshold sensitivity
+            }, { root: document.getElementById('main-grid'), threshold: 0.7 });
             document.querySelectorAll('.stamp-wrapper').forEach(el => observer.observe(el));
         }
 
         function scrollGrid(dir) {
             const grid = document.getElementById('main-grid');
-            const wrapper = grid.querySelector('.stamp-wrapper');
-            if(!wrapper) return;
-            if (scrollAnimId) cancelAnimationFrame(scrollAnimId);
+            const wrappers = grid.querySelectorAll('.stamp-wrapper');
+            if(wrappers.length === 0) return;
             
-            const itemWidth = wrapper.offsetWidth + 20; // Include gap
-            const start = grid.scrollLeft;
-            const target = start + (itemWidth * dir);
+            const itemWidth = wrappers[0].offsetWidth + 12;
+            const currentScroll = grid.scrollLeft;
+            const target = currentScroll + (itemWidth * dir);
             
             grid.scrollTo({ left: target, behavior: 'smooth' });
             triggerHaptic('light');
@@ -375,8 +391,12 @@
                     const rect = w.getBoundingClientRect();
                     const cardCenter = rect.left + rect.width / 2;
                     const normalized = Math.min(Math.abs(centerX - cardCenter) / (window.innerWidth * 0.6), 1);
-                    if (w.classList.contains('state-ink-wrapper')) { w.style.transform = `scale(${1.0 - (normalized * 0.1)})`; w.style.opacity = 1 - (normalized * 0.4); }
-                    else { w.style.transform = `scale(${1.05 - (normalized * 0.15)}) translateY(${-15 + (normalized * 15)}px)`; }
+                    if (w.classList.contains('state-ink-wrapper')) { 
+                        w.style.transform = `scale(${1.0 - (normalized * 0.1)})`; 
+                        w.style.opacity = 1 - (normalized * 0.4); 
+                    } else { 
+                        w.style.transform = `scale(${1.05 - (normalized * 0.15)}) translateY(${-10 + (normalized * 10)}px)`; 
+                    }
                     if (normalized < 0.25) { w.classList.add('is-centered'); w.style.zIndex = "100"; }
                     else { w.classList.remove('is-centered'); w.style.zIndex = "1"; }
                 });

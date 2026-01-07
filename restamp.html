@@ -90,17 +90,13 @@
             } 
             #main-grid .stamp-wrapper {
                 flex: 0 0 78vw; 
-                scroll-snap-align: center; scroll-snap-stop: always;
-                padding: 10px 4px; /* Restored tight padding for original size */
-                position: relative; z-index: 1; flex-shrink: 0;
-                will-change: transform, filter; transform-style: preserve-3d;
             }
         }
 
         /* ---------- NEW SHADOW LOGIC ---------- */
         /* Applying to wrapper to prevent the mask from clipping the shadow */
         #main-grid .stamp-wrapper:not(.state-ink-wrapper) {
-            filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.4));
+            filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.3));
         }
 
         /* ---------- STAMP VISUALS ---------- */

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Location Journal Grid</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Yrsa:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #f7f5f0;
+            --card-bg: #ffffff;
+            --text-main: #2b2b2b;
+            --text-muted: #6e6e6e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px 48px;
+            min-height: 100vh;
+            font-family: "Inter", sans-serif;
+        }
+
+        header {
+            max-width: 1500px;
+            margin: 0 auto 28px auto;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0dbd1;
+        }
+
+        h1 {
+            font-family: "Yrsa", serif;
+            font-size: 3rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+            color: #2d2d2d;
+            line-height: 1;
+        }
+
+        /* ── Controls bar ─────────────────────────────────────────────────── */
+
+        .controls-bar {
+            display: flex;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-end;
+            flex: 1;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        select {
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #d3d0c9;
+            background-color: #fff;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            outline: none;
+            cursor: pointer;
+            min-width: 185px;
+            font-family: "Inter", sans-serif;
+            transition: border-color 0.2s ease;
+            height: 42px;
+        }
+
+        select:focus { border-color: #89974F; }
+
+        /* Reset button */
+        .btn-reset {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 16px;
+            height: 42px;
+            border-radius: 8px;
+            border: 1px solid #d3d0c9;
+            background: #fff;
+            font-family: "Inter", sans-serif;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            white-space: nowrap;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-reset:hover {
+            border-color: #b0ada6;
+            color: var(--text-main);
+            background: #f4f2ee;
+        }
+
+        .btn-reset svg {
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+        }
+
+        /* ── Mobile filter toggle ─────────────────────────────────────────── */
+
+        .mobile-filter-toggle {
+            display: none; /* hidden on desktop */
+            width: 100%;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #d3d0c9;
+            background: #fff;
+            font-family: "Inter", sans-serif;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            margin-bottom: 0;
+            transition: border-color 0.2s ease;
+        }
+
+        .mobile-filter-toggle svg {
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .mobile-filter-toggle.open svg { transform: rotate(180deg); }
+
+        .collapsible-controls {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-controls.open {
+            max-height: 600px; /* large enough for all controls */
+        }
+
+        /* ── Masonry ──────────────────────────────────────────────────────── */
+
+        .masonry-wrapper { max-width: 1500px; margin: 0 auto; }
+
+        .masonry-grid {
+            display: flex;
+            width: auto;
+            gap: 20px;
+        }
+
+        .masonry-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ── Cards ────────────────────────────────────────────────────────── */
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid #e0dbd1;
+            border-left: 4px solid transparent;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.09); }
+
+        .card-image-container {
+            width: 100%;
+            background-color: #eae7df;
+        }
+
+        .card-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card-header {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-family: "Yrsa", serif;
+            font-size: 1.55rem;
+            line-height: 1.15;
+            font-weight: 500;
+            color: #2b2b2b;
+            text-wrap: balance;
+        }
+
+        /* ── Meta row ─────────────────────────────────────────────────────── */
+        /*
+         * pill-dot-group keeps pill + dot together so the dot wraps with the
+         * pill not the date. JS detects the wrap and hides the dot, adding
+         * extra top margin to the date.
+         */
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px 8px;
+        }
+
+        .pill-dot-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Location Pill — colors set per-card via JS */
+        .location-link {
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+            text-decoration: none;
+            padding: 4px 10px;           /* slightly smaller */
+            border-radius: 999px;
+            font-size: 0.67rem;          /* shrunk */
+            font-weight: 700;
+            letter-spacing: 1.1px;
+            text-transform: uppercase;
+            border: 1.5px solid transparent;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .meta-dot {
+            color: #d0cdc7;
+            font-size: 12px;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        /* Date */
+        .card-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Inter', sans-serif;
+            font-size: 11.5px;           /* shrunk */
+            color: #94a3b8;
+            font-weight: 500;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .date-icon {
+            width: 11px;
+            height: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: #94a3b8;
+        }
+
+        .date-icon svg { width: 11px; height: 11px; }
+
+        /* Notes dashed divider */
+        .card-notes-divider {
+            border: none;
+            border-top: 1px dashed #dedad4;
+        }
+
+        .card-notes {
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: #444;
+            white-space: pre-line;
+        }
+
+        .status-msg {
+            text-align: center;
+            padding: 40px;
+            font-size: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Responsive ───────────────────────────────────────────────────── */
+
+        @media (max-width: 1200px) {
+            body { padding: 20px 36px; }
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 18px 28px; }
+            .masonry-grid  { gap: 16px; }
+            .masonry-column { gap: 16px; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 14px 16px; }
+            h1   { font-size: 1.9rem; }
+
+            /* Show toggle, hide the full controls bar normally */
+            .mobile-filter-toggle { display: flex; }
+
+            /* On mobile the controls-bar becomes a column stack */
+            .controls-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            /* Inside the collapsible, stack vertically */
+            .collapsible-controls .controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding-top: 12px;
+                gap: 10px;
+            }
+
+            .collapsible-controls .controls select { width: 100%; min-width: unset; }
+
+            .collapsible-controls .btn-reset {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Travel Journal & Locations</h1>
+
+    <div class="controls-bar">
+
+        <!-- Mobile-only toggle button -->
+        <button class="mobile-filter-toggle" id="filterToggle" aria-expanded="false">
+            <span id="filterToggleLabel">Filters &amp; Sorting</span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+        </button>
+
+        <!-- Collapsible wrapper (always open on desktop via CSS override below) -->
+        <div class="collapsible-controls open" id="collapsibleControls">
+            <div class="controls">
+
+                <div class="control-group">
+                    <label for="sortSelect">Sort By</label>
+                    <select id="sortSelect">
+                        <option value="visitDateDesc">Visit Date (Newest first)</option>
+                        <option value="visitDateAsc">Visit Date (Oldest first)</option>
+                        <option value="createdDesc">Date Created (Newest first)</option>
+                        <option value="createdAsc">Date Created (Oldest first)</option>
+                        <option value="locationAlpha">Region (A-Z, Intl last)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="filterYear">Filter by Year</label>
+                    <select id="filterYear">
+                        <option value="all">All Years</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label for="filterRegion">Filter by Region</label>
+                    <select id="filterRegion">
+                        <option value="all">All Regions</option>
+                    </select>
+                </div>
+
+                <button class="btn-reset" id="btnReset" title="Reset all filters and sorting">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 .49-4.5"></path>
+                    </svg>
+                    Reset
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+</header>
+
+<main class="masonry-wrapper">
+    <div id="status" class="status-msg">Loading entries...</div>
+    <div id="grid" class="masonry-grid"></div>
+</main>
+
+<script>
+    /* On desktop the collapsible is always open — override mobile-collapsed state */
+    (function keepOpenOnDesktop() {
+        const panel = document.getElementById('collapsibleControls');
+        if (window.innerWidth > 600) {
+            panel.style.maxHeight = 'none';
+            panel.style.overflow  = 'visible';
+        }
+    })();
+
+    /* ── Theme colors ───────────────────────────────────────────────────── */
+    const themes = [
+        '#4478A2','#C65265','#D78143','#297381',
+        '#89974F','#DAAD60','#757498','#AA7876',
+        '#D7A995','#6E917A'
+    ];
+
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR38SnvVw37DOxb0o6qiqVH5aQFZhEumtFdJHEigiXnN2h3XfG9QqJF5F9mpMudNi5r0irMhJzPyE-o/pub?gid=0&single=true&output=csv";
+
+    let rawData     = [];
+    let columnsCount = 4;
+
+    const gridContainer = document.getElementById('grid');
+    const statusEl      = document.getElementById('status');
+    const sortSelect    = document.getElementById('sortSelect');
+    const filterYear    = document.getElementById('filterYear');
+    const filterRegion  = document.getElementById('filterRegion');
+    const btnReset      = document.getElementById('btnReset');
+    const filterToggle  = document.getElementById('filterToggle');
+    const collapsible   = document.getElementById('collapsibleControls');
+
+    /* ── Helpers ────────────────────────────────────────────────────────── */
+
+    function getThemeColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return themes[Math.abs(hash) % themes.length];
+    }
+
+    function hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1,3),16);
+        const g = parseInt(hex.slice(3,5),16);
+        const b = parseInt(hex.slice(5,7),16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    /* ── Init ───────────────────────────────────────────────────────────── */
+
+    async function init() {
+        try {
+            const res = await fetch(CSV_URL);
+            if (!res.ok) throw new Error();
+            rawData = parseCSV(await res.text());
+            rawData.forEach(item => {
+                item.isInternational = String(item.isInternational).toLowerCase() === 'true';
+                item.hasImage        = !!(item.Image && item.Image.trim());
+                item.visitDateParsed = item.date ? new Date(item.date) : null;
+                item.createdAtParsed = item.createdAt
+                    ? new Date(item.createdAt)
+                    : (item.visitDateParsed || new Date(0));
+            });
+            statusEl.style.display = 'none';
+            populateFilterDropdowns();
+            setupEventListeners();
+            renderGrid();
+        } catch {
+            statusEl.textContent = "Error loading data. Please verify your spreadsheet CSV publication link.";
+        }
+    }
+
+    /* ── CSV parser ─────────────────────────────────────────────────────── */
+
+    function parseCSV(text) {
+        const lines = [];
+        let row = [""], inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i], next = text[i+1];
+            if (c === '"') {
+                if (inQuotes && next === '"') { row[row.length-1] += '"'; i++; }
+                else inQuotes = !inQuotes;
+            } else if (c === ',' && !inQuotes) {
+                row.push('');
+            } else if ((c === '\r' || c === '\n') && !inQuotes) {
+                if (c === '\r' && next === '\n') i++;
+                lines.push(row); row = [''];
+            } else {
+                row[row.length-1] += c;
+            }
+        }
+        if (row.length > 1 || row[0] !== '') lines.push(row);
+        const headers = lines[0].map(h => h.trim());
+        return lines.slice(1).map(line => {
+            const obj = {};
+            headers.forEach((h, i) => { obj[h] = line[i] ? line[i].trim() : ''; });
+            return obj;
+        });
+    }
+
+    /* ── Dropdowns ──────────────────────────────────────────────────────── */
+
+    function populateFilterDropdowns() {
+        const years = new Set(), regions = new Set();
+        rawData.forEach(item => {
+            if (item.visitDateParsed && !isNaN(item.visitDateParsed))
+                years.add(item.visitDateParsed.getFullYear());
+            if (item.isInternational) regions.add("International");
+            else if (item.Region)     regions.add(item.Region);
+        });
+        Array.from(years).sort((a,b) => b-a).forEach(y => {
+            const o = document.createElement('option'); o.value = y; o.textContent = y;
+            filterYear.appendChild(o);
+        });
+        Array.from(regions).sort((a,b) => {
+            if (a==="International") return 1;
+            if (b==="International") return -1;
+            return a.localeCompare(b);
+        }).forEach(r => {
+            const o = document.createElement('option'); o.value = r; o.textContent = r;
+            filterRegion.appendChild(o);
+        });
+    }
+
+    /* ── Event listeners ────────────────────────────────────────────────── */
+
+    function setupEventListeners() {
+        sortSelect.addEventListener('change', renderGrid);
+        filterYear.addEventListener('change', renderGrid);
+        filterRegion.addEventListener('change', renderGrid);
+
+        btnReset.addEventListener('click', () => {
+            sortSelect.value   = 'visitDateDesc';
+            filterYear.value   = 'all';
+            filterRegion.value = 'all';
+            renderGrid();
+        });
+
+        /* Mobile filter toggle */
+        filterToggle.addEventListener('click', () => {
+            const isOpen = collapsible.classList.toggle('open');
+            filterToggle.classList.toggle('open', isOpen);
+            filterToggle.setAttribute('aria-expanded', isOpen);
+        });
+
+        /* On resize: re-open on desktop, recalc columns */
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                /* Always open on desktop */
+                if (window.innerWidth > 600) {
+                    collapsible.style.maxHeight = 'none';
+                    collapsible.style.overflow  = 'visible';
+                } else {
+                    collapsible.style.maxHeight = '';
+                    collapsible.style.overflow  = '';
+                    if (!collapsible.classList.contains('open')) {
+                        /* leave closed state managed by class */
+                    }
+                }
+                const cols = getTargetColumnsCount();
+                if (cols !== columnsCount) renderGrid();
+                else requestAnimationFrame(updateDotVisibility);
+            }, 80);
+        });
+    }
+
+    /* ── Column count ───────────────────────────────────────────────────── */
+
+    function getTargetColumnsCount() {
+        const w = window.innerWidth;
+        if (w < 600)  return 1;
+        if (w < 850)  return 2;
+        if (w < 1200) return 3;
+        return 4;
+    }
+
+    /* ── Data processing ────────────────────────────────────────────────── */
+
+    function getProcessedData() {
+        let d = [...rawData];
+        const yearVal = filterYear.value;
+        if (yearVal !== 'all')
+            d = d.filter(i => i.visitDateParsed && i.visitDateParsed.getFullYear().toString() === yearVal);
+        const regionVal = filterRegion.value;
+        if (regionVal !== 'all') {
+            if (regionVal === 'International') d = d.filter(i => i.isInternational);
+            else d = d.filter(i => !i.isInternational && i.Region === regionVal);
+        }
+        d.sort((a,b) => {
+            switch (sortSelect.value) {
+                case 'visitDateDesc': return (b.visitDateParsed||0)-(a.visitDateParsed||0);
+                case 'visitDateAsc':  return (a.visitDateParsed||0)-(b.visitDateParsed||0);
+                case 'createdDesc':   return (b.createdAtParsed||0)-(a.createdAtParsed||0);
+                case 'createdAsc':    return (a.createdAtParsed||0)-(b.createdAtParsed||0);
+                case 'locationAlpha':
+                    if (a.isInternational && !b.isInternational) return 1;
+                    if (!a.isInternational && b.isInternational) return -1;
+                    return (a.Region||"").localeCompare(b.Region||"");
+                default: return 0;
+            }
+        });
+        return d;
+    }
+
+    /*
+     * ── Image distribution ────────────────────────────────────────────────
+     *
+     * Goal: spread image cards as evenly as possible across columns while
+     * preserving sort order within each column.
+     *
+     * Strategy:
+     *  1. Keep sorted order but assign each item to a column greedily,
+     *     choosing the column that currently has the fewest image cards
+     *     (tiebreak: fewest total cards, then lowest index).
+     *  2. This means items are NOT strictly round-robined — they may skip
+     *     a column — but their relative order within a column is preserved.
+     *
+     * Note: this is a best-effort heuristic. With very skewed data (e.g.
+     * 1 image card among 20 text cards) the result is inherently uneven.
+     */
+    function distributeToColumns(data, numCols) {
+        const columns    = Array.from({length: numCols}, () => []);
+        const imgCounts  = new Array(numCols).fill(0);
+        const totCounts  = new Array(numCols).fill(0);
+
+        data.forEach(item => {
+            /* Pick column with fewest image cards; break ties by total count then index */
+            let best = 0;
+            for (let c = 1; c < numCols; c++) {
+                if (
+                    imgCounts[c] < imgCounts[best] ||
+                    (imgCounts[c] === imgCounts[best] && totCounts[c] < totCounts[best])
+                ) best = c;
+            }
+            columns[best].push(item);
+            totCounts[best]++;
+            if (item.hasImage) imgCounts[best]++;
+        });
+
+        return columns;
+    }
+
+    /* ── Render grid ─────────────────────────────────────────────────────── */
+
+    function renderGrid() {
+        gridContainer.innerHTML = '';
+        columnsCount = getTargetColumnsCount();
+
+        const colEls = Array.from({length: columnsCount}, () => {
+            const el = document.createElement('div');
+            el.className = 'masonry-column';
+            gridContainer.appendChild(el);
+            return el;
+        });
+
+        const data = getProcessedData();
+
+        if (data.length === 0) {
+            gridContainer.innerHTML = '<div class="status-msg" style="width:100%">No entries found matching filters.</div>';
+            return;
+        }
+
+        const distributed = distributeToColumns(data, columnsCount);
+        distributed.forEach((colData, ci) =>
+            colData.forEach(item => colEls[ci].appendChild(createCardElement(item)))
+        );
+
+        requestAnimationFrame(updateDotVisibility);
+    }
+
+    /* ── Dot visibility ──────────────────────────────────────────────────── */
+
+    function updateDotVisibility() {
+        document.querySelectorAll('.meta-row').forEach(row => {
+            const group = row.querySelector('.pill-dot-group');
+            const date  = row.querySelector('.card-date');
+            const dot   = row.querySelector('.meta-dot');
+            if (!group || !date || !dot) return;
+
+            const wrapped = date.getBoundingClientRect().top > group.getBoundingClientRect().bottom - 2;
+            dot.style.display    = wrapped ? 'none' : '';
+            date.style.marginTop = wrapped ? '6px'  : '';  /* extra breathing room on wrap */
+        });
+    }
+
+    /* ── SVG constants ───────────────────────────────────────────────────── */
+
+    const DATE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+    </svg>`;
+
+    /* ── Card builder ────────────────────────────────────────────────────── */
+
+    function createCardElement(item) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        const themeColor = getThemeColor(item.Name || '');
+        card.style.borderLeftColor = themeColor;
+
+        /* Image */
+        if (item.hasImage) {
+            const wrap = document.createElement('div');
+            wrap.className = 'card-image-container';
+            const img = document.createElement('img');
+            img.className = 'card-image';
+            img.src = item.Image; img.alt = item.Name || 'Location'; img.loading = 'lazy';
+            wrap.appendChild(img); card.appendChild(wrap);
+        }
+
+        /* Content */
+        const content = document.createElement('div');
+        content.className = 'card-content';
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+
+        const title = document.createElement('div');
+        title.className = 'card-title';
+        title.textContent = item.Name || 'Untitled Location';
+        header.appendChild(title);
+
+        /* Meta row */
+        const metaRow = document.createElement('div');
+        metaRow.className = 'meta-row';
+
+        let displayLocation = '';
+        if (item.isInternational)
+            displayLocation = [item.City, item.Country].filter(Boolean).join(', ');
+        else
+            displayLocation = [item.City, item.Region].filter(Boolean).join(', ');
+
+        const pillDotGroup = document.createElement('span');
+        pillDotGroup.className = 'pill-dot-group';
+
+        if (displayLocation) {
+            const link = document.createElement('a');
+            link.className = 'location-link';
+            link.style.backgroundColor = hexToRgba(themeColor, 0.10);
+            link.style.color = themeColor;
+            link.addEventListener('mouseenter', () => {
+                link.style.borderColor = themeColor;
+                link.style.boxShadow   = `0 0 0 1.5px ${hexToRgba(themeColor, 0.25)}`;
+            });
+            link.addEventListener('mouseleave', () => {
+                link.style.borderColor = 'transparent';
+                link.style.boxShadow   = 'none';
+            });
+            const name = item.Name || displayLocation;
+            link.href   = `https://maps.google.com/?q=${encodeURIComponent(name)},${encodeURIComponent(displayLocation)}`;
+            link.target = '_blank'; link.rel = 'noopener noreferrer';
+            link.innerHTML = `<span>${displayLocation}</span>`;
+            pillDotGroup.appendChild(link);
+        }
+
+        if (displayLocation && item.date) {
+            const dot = document.createElement('span');
+            dot.className = 'meta-dot'; dot.textContent = '•';
+            pillDotGroup.appendChild(dot);
+        }
+
+        metaRow.appendChild(pillDotGroup);
+
+        if (item.date) {
+            const dateEl = document.createElement('div');
+            dateEl.className = 'card-date';
+            dateEl.innerHTML = `<span class="date-icon">${DATE_SVG}</span><span>${item.date}</span>`;
+            metaRow.appendChild(dateEl);
+        }
+
+        header.appendChild(metaRow);
+        content.appendChild(header);
+
+        if (item.Notes && item.Notes.trim()) {
+            const hr = document.createElement('hr');
+            hr.className = 'card-notes-divider';
+            content.appendChild(hr);
+            const notes = document.createElement('div');
+            notes.className = 'card-notes';
+            notes.textContent = item.Notes;
+            content.appendChild(notes);
+        }
+
+        card.appendChild(content);
+        return card;
+    }
+
+    init();
+</script>
+
+</body>
+</html>
